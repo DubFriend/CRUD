@@ -1,2 +1,2 @@
 #CRUD
-##For when you need to some serious crud done.
+##For when you need to get some serious crud done.

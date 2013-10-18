@@ -1,19 +1,76 @@
 <html>
 <head>
     <title>CRUD</title>
-    <style></style>
+    <style>
+        body {
+            font-family: "HelveticaNeue-Light",
+                         "Helvetica Neue Light",
+                         "Helvetica Neue",
+                         Helvetica,
+                         Arial,
+                         "Lucida Grande",
+                         sans-serif;
+            font-weight: 300;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="submit"],
+        select,
+        textarea {
+            width: 100%;
+        }
+
+        legend {
+            font-size: 150%;
+        }
+
+        .control-set {
+            clear: left;
+            padding: 1em;
+        }
+
+        .control-set .label {
+            width: 23%;
+            float: left;
+            text-align: right;
+            padding-right: 2%;
+        }
+
+        .control-set .input {
+            width: 50%;
+            float: left;
+        }
+
+        .control-set .crud-help {
+            width: 23%;
+            float: left;
+            padding-left: 2%;
+            color: red;
+        }
+
+        #thing-crud-container {
+            width:50%;
+            float: left;
+        }
+
+        #thing-crud-list-container {
+            width: 50%;
+            float: left;
+        }
+    </style>
 </head>
 <body>
     <h1>CRUD</h1>
-    <div id="thing-container"></div>
-    <div id="thing-list-container"></div>
+    <div id="thing-crud-container"></div>
+    <div id="thing-crud-list-container"></div>
 
-    <script src="jquery-1.10.2.js"></script>
-    <script src="mustache.js"></script>
+    <script src="lib/jquery-1.10.2.js"></script>
+    <script src="lib/mustache.js"></script>
     <script src="crud.js"></script>
     <script>
         var crud = createCRUD({
-            id: 'thing',
+            name: 'thing',
             url: 'crud.php',
             validate: function (data) {
                 var error = {};
@@ -39,23 +96,29 @@
                     type: 'text',
                     value: 'default'
                 },
+                password: {
+                    type: 'password'
+                },
                 textarea: {
-                    type: 'text'
+                    type: 'textarea'
                 },
                 checkbox: {
                     type: 'checkbox',
                     value: true
                 },
                 radio: {
-                    type: 'radio'
-                    value: 'apple'
+                    type: 'radio',
+                    values: ['a', 'b'],
+                    value: 'a'
                 },
                 select: {
                     type: 'select',
-                    value: 'blue'
+                    values: ['a', 'b'],
+                    value: ['a']
                 }
             }
         });
+        crud.init();
     </script>
 </body>
 </html>
