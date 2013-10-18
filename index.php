@@ -11,6 +11,7 @@
                          "Lucida Grande",
                          sans-serif;
             font-weight: 300;
+            color: rgb(41, 41, 41);
         }
 
         input[type="text"],
@@ -94,27 +95,30 @@
             schema: {
                 text: {
                     type: 'text',
-                    value: 'default'
+                    value: 'default text'
                 },
                 password: {
-                    type: 'password'
+                    type: 'password',
+                    value: 'pass'
                 },
                 textarea: {
-                    type: 'textarea'
+                    type: 'textarea',
+                    value: 'default textarea'
                 },
-                checkbox: {
+                fruit: {
                     type: 'checkbox',
-                    value: true
+                    values: ['apple', 'orange'],
+                    value: ['apple', 'orange']
                 },
-                radio: {
+                letter: {
                     type: 'radio',
-                    values: ['a', 'b'],
-                    value: 'a'
+                    values: ['a', 'b', 'c', 'd'],
+                    value: 'c'
                 },
-                select: {
+                color: {
                     type: 'select',
-                    values: ['a', 'b'],
-                    value: ['a']
+                    values: ['red', 'yellow', 'blue'],
+                    value: ['yellow']
                 }
             }
         });

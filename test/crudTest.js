@@ -20,7 +20,7 @@
                     if(data.checkbox !== true) {
                         error.checkbox = 'checkbox error';
                     }
-                    if(data.textarea !== '') {
+                    if(data.textarea !== 'default') {
                         error.textarea = 'textarea error';
                     }
                     if(data.radio !== 'apple') {
@@ -40,11 +40,13 @@
                         type: 'password'
                     },
                     textarea: {
-                        type: 'textarea'
+                        type: 'textarea',
+                        value: 'default'
                     },
                     checkbox: {
                         type: 'checkbox',
-                        value: true
+                        values: ['a', 'b'],
+                        value: ['a', 'b']
                     },
                     radio: {
                         type: 'radio',
@@ -54,19 +56,48 @@
                     select: {
                         type: 'select',
                         values: ['a', 'b'],
-                        value: ['a']
+                        value: ['a', 'b']
                     }
                 }
             });
         }
     });
 
+    var getFormData = function () {
+        var $el = $('#thing-crud-container');
+        var checkbox = [], select = [];
+        $el.find('[name="checkbox"]:checked').each(function () {
+            checkbox.push($(this).val());
+        });
+        $el.find('[name="select"] option:selected').each(function () {
+            select.push($(this).val());
+        });
+        return {
+            text: $el.find('[name="text"]').val(),
+            password: $el.find('[name="password"]').val(),
+            textarea: $el.find('[name="textarea"]').val(),
+            checkbox: checkbox,
+            radio: $el.find('[name="radio"]:checked').val(),
+            select: select
+        };
+    };
+
     test('initial render', function () {
         crud.init();
-        //console.log('form-template', crud.formTemplate);
-        //console.log('list-template', crud.listTemplate);
-        ok($('#thing-crud-container').html(), 'form rendered');
-        ok($('#thing-crud-list-container').html(), 'list rendered');
+        ok($('#thing-crud-container').html(), 'form container not empty');
+        ok($('#thing-crud-list-container').html(), 'list container not empty');
+    });
+
+    test('renders initial values', function () {
+        crud.init();
+        deepEqual(getFormData(), {
+            checkbox: ['a', 'b'],
+            password: '',
+            radio: 'a',
+            text: 'default',
+            select: ['b'],
+            textarea: 'default'
+        }, 'renders initial default form values');
     });
 
 }());

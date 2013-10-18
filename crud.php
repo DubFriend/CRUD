@@ -1,5 +1,5 @@
 <?php
-
+$response;
 switch($_SERVER['REQUEST_METHOD']) {
     case 'GET':
     case 'PUT':
@@ -7,5 +7,5 @@ switch($_SERVER['REQUEST_METHOD']) {
     case 'DELETE':
     default:
 }
-
+echo json_encode($response);
 ?>

@@ -184,16 +184,44 @@
 
     var createController = function (fig) {
         var that = {},
-            el = fig.el;
+            el = fig.el,
+            schema = fig.schema;
 
+        that.model = fig.model;
         that.template = fig.template;
 
         that.$ = function (selector) {
             return selector ? $(el).find(selector) : $(el);
         };
 
+        that.mapModelToView = function (modelData) {
+            var isSelected = function (choice, value, name) {
+                return schema[name].type === 'radio' ?
+                    choice === value : value.indexOf(choice) !== -1;
+            };
+
+            return map(modelData, function (value, name) {
+                var type = schema[name].type;
+                if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
+                    var mappedValue = {};
+                    foreach(schema[name].values, function (choice) {
+                        if(isSelected(choice, value, name)) {
+                            mappedValue[choice] = true;
+                        }
+                    });
+                    return mappedValue;
+                }
+                else {
+                    return value;
+                }
+            });
+        };
+
         that.render = function (data) {
-            that.$().html(Mustache.render(that.template, data));
+            that.$().html(Mustache.render(
+                that.template,
+                that.mapModelToView(data || that.model.get())
+            ));
         };
 
         return that;
@@ -223,23 +251,14 @@
             var input = function (checked, value, isInputClass) {
                 isInputClass = isInputClass === undefined ? true : isInputClass;
                 var valueHTML = function () {
-                    switch(item.type) {
-                        case 'checkbox':
-                            return ' ';
-                        case 'radio':
-                            return 'value="' + value + '" ';
-                        default:
-                            return 'value="{{' + name + '}}" ';
-                    }
+                    return item.type === 'checkbox' || item.type === 'radio' ?
+                        'value="' + value + '" ' : 'value="{{' + name + '}}" ';
                 };
 
                 var id = function () {
-                    if(item.type === 'radio') {
-                        return 'id="' + name + '-' + value + '" ';
-                    }
-                    else  {
-                        return 'id="' + crudName + '-' + name + '" ';
-                    }
+                    return item.type === 'checkbox' || item.type === 'radio' ?
+                        'id="' + name + '-' + value + '" ' :
+                        'id="' + crudName + '-' + name + '" ';
                 };
 
                 return '' +
@@ -250,21 +269,29 @@
                 (isInputClass ? '</div>' : '');
             };
 
+            var inputGroup = function () {
+                return '' +
+                '<div class="input">' +
+                    reduce(item.values, function (acc, value) {
+                        acc = acc || '';
+                        return acc +
+                        '<label for="' + name + '-' + value + '">' +
+                            value +
+                        '</label>' +
+                        '{{#' + name + '.' + value + '}}' +
+                            input(true, value, false) +
+                        '{{/' + name + '.' + value + '}}' +
+                        '{{^' + name + '.' + value + '}}' +
+                            input(false, value, false) +
+                        '{{/' + name + '.' + value + '}}';
+                    }) +
+                '</div>';
+            };
+
             switch(item.type) {
                 case 'text':
-                    return input();
-
                 case 'password':
                     return input();
-
-                case 'checkbox':
-                    return '' +
-                    '{{#' + name + '}}' +
-                        input(true) +
-                    '{{/' + name + '}}' +
-                    '{{^' + name + '}}' +
-                        input() +
-                    '{{/' + name + '}}';
 
                 case 'textarea':
                     return '' +
@@ -274,23 +301,9 @@
                         '</textarea>' +
                     '</div>';
 
+                case 'checkbox':
                 case 'radio':
-                    return '' +
-                    '<div class="input">' +
-                        reduce(item.values, function (acc, value) {
-                            acc = acc || '';
-                            return acc +
-                            '<label for="' + name + '-' + value + '">' +
-                                value +
-                            '</label>' +
-                            '{{#' + name + '.' + value + '}}' +
-                                input(true, value, false) +
-                            '{{/' + name + '.' + value + '}}' +
-                            '{{^' + name + '.' + value + '}}' +
-                                input(false, value, false) +
-                            '{{/' + name + '.' + value + '}}';
-                        }) +
-                    '</div>';
+                    return inputGroup();
 
                 case 'select':
                     return '' +
@@ -300,7 +313,7 @@
                                 acc = acc || '';
                                 return acc +
                                 '{{#' + name + '.' + value + '}}' +
-                                    '<option value="' + value + '">' +
+                                    '<option value="' + value + '" selected>' +
                                         value +
                                     '</option>' +
                                 '{{/' + name + '.' + value + '}}' +
@@ -348,6 +361,10 @@
         '<table>' +
             '<thead>' +
                 '<tr>' +
+                    '<th>' +
+                        '<label for="crud-list-select-all">All</label>' +
+                        '<input type="checkbox" id="crud-list-select-all"/>' +
+                    '</th>' +
                     reduce(schema, function (acc, item, name) {
                         acc = acc || '';
                         return acc + '<th>' + name + '</th>';
@@ -355,14 +372,15 @@
                 '</tr>' +
             '</thead>' +
             '<tbody>' +
-                '{{#items}}' +
-                    '<tr>' +
-                        reduce(schema, function(acc, item, name) {
-                            acc = acc || '';
-                            return acc + '<td>{{' + name + '}}</td>';
-                        }) +
-                    '</tr>' +
-                '{{/items}}' +
+                // '{{#items}}' +
+                //     '<tr>' +
+                //         '<td><input type="checkbox" class="js-select"/></td>' +
+                //         reduce(schema, function(acc, item, name) {
+                //             acc = acc || '';
+                //             return acc + '<td>{{' + name + '}}</td>';
+                //         }) +
+                //     '</tr>' +
+                // '{{/items}}' +
             '</tbody>' +
         '</table>';
     };
@@ -381,14 +399,21 @@
         that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
 
         that.init = function () {
-            var model = createModel();
+            var model = createModel({
+                data: map(schema, function (item) {
+                    return item.value || null;
+                })
+            });
+
             var formController = createFormController({
                 el: '#' + name + '-crud-container',
+                schema: schema,
                 model: model,
                 template: that.formTemplate
             });
             var listController = createListController({
                 el: '#' + name + '-crud-list-container',
+                schema: schema,
                 model: model,
                 template: that.listTemplate
             });
