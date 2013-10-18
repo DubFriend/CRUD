@@ -118,7 +118,7 @@
                 color: {
                     type: 'select',
                     values: ['red', 'yellow', 'blue'],
-                    value: ['yellow']
+                    value: 'yellow'
                 }
             }
         });

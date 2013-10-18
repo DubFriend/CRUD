@@ -56,7 +56,7 @@
                     select: {
                         type: 'select',
                         values: ['a', 'b'],
-                        value: ['a', 'b']
+                        value: 'b'
                     }
                 }
             });
@@ -69,16 +69,13 @@
         $el.find('[name="checkbox"]:checked').each(function () {
             checkbox.push($(this).val());
         });
-        $el.find('[name="select"] option:selected').each(function () {
-            select.push($(this).val());
-        });
         return {
             text: $el.find('[name="text"]').val(),
             password: $el.find('[name="password"]').val(),
             textarea: $el.find('[name="textarea"]').val(),
             checkbox: checkbox,
             radio: $el.find('[name="radio"]:checked').val(),
-            select: select
+            select: $el.find('[name="select"] option:selected').val()
         };
     };
 
@@ -95,7 +92,7 @@
             password: '',
             radio: 'a',
             text: 'default',
-            select: ['b'],
+            select: 'b',
             textarea: 'default'
         }, 'renders initial default form values');
     });

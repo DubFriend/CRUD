@@ -196,7 +196,8 @@
 
         that.mapModelToView = function (modelData) {
             var isSelected = function (choice, value, name) {
-                return schema[name].type === 'radio' ?
+                var type = schema[name].type;
+                return type === 'radio' || type === 'select' ?
                     choice === value : value.indexOf(choice) !== -1;
             };
 
