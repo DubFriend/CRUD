@@ -1,0 +1,22 @@
+{
+  "name": "crud",
+  "version": "0.0.0",
+  "description": "client side crud ui generator",
+  "authors": [
+    {
+      "name": "Brian Detering",
+      "email": "BDeterin@gmail.com",
+      "website": "BrianDetering.net"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DubFriend/CRUD.git"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.4",
+    "grunt-contrib-watch": "~0.5.3"
+  }
+}

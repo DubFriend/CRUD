@@ -1,3 +1,5 @@
+'use strict';
+
 var identity = function (x) {
     return x;
 };
