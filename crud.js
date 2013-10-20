@@ -1,104 +1,6 @@
 (function () {
     'use strict';
 
-    var isArray = function (value) {
-        return value instanceof Array;
-    };
-
-    var isObject = function (value) {
-        return !isArray(value) && (value instanceof Object);
-    };
-
-    var isFunction = function (value) {
-        return value instanceof Function;
-    };
-
-    var isEmpty = function (object) {
-        for(var i in object) {
-            if(object.hasOwnProperty(i)) {
-                return false;
-            }
-        }
-        return true;
-    };
-
-    //deep copy of json objects
-    var copy = function (object) {
-        return JSON.parse(JSON.stringify(object));
-    };
-
-    var foreach = function (collection, callback) {
-        for(var i in collection) {
-            if(collection.hasOwnProperty(i)) {
-                callback(collection[i], i, collection);
-            }
-        }
-    };
-
-    var map = function (collection, callback, keyCallback) {
-        var mapped;
-        if(isArray(collection)) {
-            mapped = [];
-            foreach(collection, function (value, key, coll) {
-                mapped.push(callback(value, key, coll));
-            });
-        }
-        else {
-            mapped = {};
-            foreach(collection, function (value, key, coll) {
-                key = keyCallback ? keyCallback(key) : key;
-                mapped[key] = callback(value, key, coll);
-            });
-        }
-        return mapped;
-    };
-
-    var reduce = function (collection, callback) {
-        var accumulation;
-        foreach(collection, function (val, key) {
-            accumulation = callback(accumulation, val, key, collection);
-        });
-        return accumulation;
-    };
-
-    var union = function () {
-        var united = {};
-        foreach(arguments, function (object) {
-            foreach(object, function (value, key) {
-                united[key] = value;
-            });
-        });
-        return united;
-    };
-
-    var mixinPubSub = function (object) {
-        object = object || {};
-        var topics = {};
-        object.publish = function (topic, data) {
-            foreach(topics[topic], function (callback) {
-                callback(data);
-            });
-        };
-
-        object.subscribe = function (topic, callback) {
-            topics[topic] = topics[topic] || [];
-            topics[topic].push(callback);
-        };
-
-        object.unsubscribe = function (callback) {
-            foreach(topics, function (subscribers) {
-                var index = subscribers.indexOf(callback);
-                if(index !== -1) {
-                    subscribers.splice(index, 1);
-                }
-            });
-        };
-
-        return object;
-    };
-
-
-
     var createModel = function (fig) {
         fig = fig || {};
         var that = mixinPubSub(),
@@ -184,9 +86,9 @@
 
     var createController = function (fig) {
         var that = {},
-            el = fig.el,
-            schema = fig.schema;
+            el = fig.el;
 
+        that.schema = fig.schema;
         that.model = fig.model;
         that.template = fig.template;
 
@@ -196,16 +98,16 @@
 
         that.mapModelToView = function (modelData) {
             var isSelected = function (choice, value, name) {
-                var type = schema[name].type;
+                var type = that.schema[name].type;
                 return type === 'radio' || type === 'select' ?
                     choice === value : value.indexOf(choice) !== -1;
             };
 
             return map(modelData, function (value, name) {
-                var type = schema[name].type;
+                var type = that.schema[name].type;
                 if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                     var mappedValue = {};
-                    foreach(schema[name].values, function (choice) {
+                    foreach(that.schema[name].values, function (choice) {
                         if(isSelected(choice, value, name)) {
                             mappedValue[choice] = true;
                         }
@@ -218,12 +120,21 @@
             });
         };
 
-        that.render = function (data) {
-            that.$().html(Mustache.render(
-                that.template,
-                that.mapModelToView(data || that.model.get())
-            ));
+        var render = function (isRenderError, data) {
+            data = data || that.model.get();
+            that.$().html(Mustache.render(that.template, union(
+                that.mapModelToView(data),
+                (isRenderError ? map(that.model.validate(data),
+                    identity,
+                    function (key) {
+                        return key + 'Help';
+                    }) : {}
+                )
+            )));
         };
+
+        that.render = partial(render, true);
+        that.renderNoError = partial(render, false);
 
         return that;
     };
@@ -238,6 +149,33 @@
     var createFormController = function (fig) {
         fig = fig || {};
         var that = createController(fig);
+
+        that.serialize = function () {
+            return map(that.schema, function (item, name) {
+                var get = function (pseudo) {
+                    return that.$('[name="' + name + '"]' + (pseudo || '')).val();
+                };
+
+                var checkbox = function () {
+                    var checked = [];
+                    that.$('[name="' + name + '"]:checked').each(function () {
+                        checked.push($(this).val());
+                    });
+                    return checked;
+                };
+
+                switch(item.type) {
+                    case 'radio':
+                        return get(':checked');
+                    case 'select':
+                        return get(' option:selected');
+                    case 'checkbox':
+                        return checkbox();
+                    default:
+                        return that.$('[name="' + name + '"]').val();
+                }
+            });
+        };
 
         return that;
     };
@@ -297,7 +235,8 @@
                 case 'textarea':
                     return '' +
                     '<div class="input">' +
-                        '<textarea id="' + crudName + '-' + name + '" name="' + name + '">' +
+                        '<textarea id="' + crudName + '-' + name + '" ' +
+                                  'name="' + name + '">' +
                             '{{' + name + '}}' +
                         '</textarea>' +
                     '</div>';
@@ -372,17 +311,7 @@
                     }) +
                 '</tr>' +
             '</thead>' +
-            '<tbody>' +
-                // '{{#items}}' +
-                //     '<tr>' +
-                //         '<td><input type="checkbox" class="js-select"/></td>' +
-                //         reduce(schema, function(acc, item, name) {
-                //             acc = acc || '';
-                //             return acc + '<td>{{' + name + '}}</td>';
-                //         }) +
-                //     '</tr>' +
-                // '{{/items}}' +
-            '</tbody>' +
+            '<tbody></tbody>' +
         '</table>';
     };
 
@@ -394,32 +323,43 @@
         var that = {},
             name = fig.name,
             schema = fig.schema,
-            validate = fig.validate;
+            validate = fig.validate,
+            model = createModel({
+                data: map(schema, function (item) {
+                    return item.value || null;
+                }),
+                validate: validate
+            });
 
         that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
         that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
 
-        that.init = function () {
-            var model = createModel({
-                data: map(schema, function (item) {
-                    return item.value || null;
-                })
-            });
+        var formController = createFormController({
+            el: '#' + name + '-crud-container',
+            schema: schema,
+            model: model,
+            template: that.formTemplate
+        });
 
-            var formController = createFormController({
-                el: '#' + name + '-crud-container',
-                schema: schema,
-                model: model,
-                template: that.formTemplate
-            });
-            var listController = createListController({
-                el: '#' + name + '-crud-list-container',
-                schema: schema,
-                model: model,
-                template: that.listTemplate
-            });
-            formController.render();
-            listController.render();
+        var listController = createListController({
+            el: '#' + name + '-crud-list-container',
+            schema: schema,
+            model: model,
+            template: that.listTemplate
+        });
+
+        that.init = function () {
+            formController.renderNoError();
+            listController.renderNoError();
+        };
+
+        that.render = function (data) {
+            formController.render(data);
+            listController.render(data);
+        };
+
+        that.serialize = function (data) {
+            return formController.serialize();
         };
 
         return that;

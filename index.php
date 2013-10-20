@@ -68,6 +68,7 @@
 
     <script src="lib/jquery-1.10.2.js"></script>
     <script src="lib/mustache.js"></script>
+    <script src="lib.js"></script>
     <script src="crud.js"></script>
     <script>
         var crud = createCRUD({
@@ -114,6 +115,15 @@
                     type: 'radio',
                     values: ['a', 'b', 'c', 'd'],
                     value: 'c'
+                },
+                awesome: {
+                    type: 'select',
+                    values: [1,2,3,4],
+                    value: 4
+                },
+                what: {
+                    type: 'radio',
+                    values: ['fee', 'fi', 'fo', 'fum']
                 },
                 color: {
                     type: 'select',
