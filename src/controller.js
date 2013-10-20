@@ -57,6 +57,7 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig);
 
+
     return that;
 };
 
@@ -90,6 +91,20 @@ var createFormController = function (fig) {
             }
         });
     };
+
+    that.$().submit(function (e) {
+        e.preventDefault();
+        that.model.set(that.serialize());
+        that.model.save();
+    });
+
+    that.model.subscribe('change', function (model) {
+        that.render();
+    });
+
+    that.model.subscribe('saved', function (model) {
+        console.log('saved event');
+    });
 
     return that;
 };

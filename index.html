@@ -78,17 +78,17 @@
                 if(data.text !== 'default') {
                     error.text = 'text error';
                 }
-                if(data.checkbox !== true) {
-                    error.checkbox = 'checkbox error';
+                if(data.fruit[0] !== 'apple' || data.fruit[1] !== 'orange') {
+                    error.fruit = 'checkbox error';
                 }
                 if(data.textarea !== '') {
                     error.textarea = 'textarea error';
                 }
-                if(data.radio !== 'apple') {
-                    error.radio = 'radio error';
+                if(data.letter !== 'c') {
+                    error.letter = 'radio error';
                 }
-                if(data.select !== 'blue') {
-                    error.select = 'select error';
+                if(data.color !== 'yellow') {
+                    error.color = 'select error';
                 }
                 return error;
             },

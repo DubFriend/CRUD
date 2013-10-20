@@ -4,7 +4,7 @@ var createModel = function (fig) {
         url = fig.url,
         data = fig.data || {},
         id = fig.id || undefined,
-        ajax = function (fig) {
+        ajax = fig.ajax || function (fig) {
             $.ajax({
                 url: url,
                 method: fig.method,
@@ -30,8 +30,8 @@ var createModel = function (fig) {
         return key ? data[key] : copy(data);
     };
 
-    that.set = function (data) {
-        foreach(data, function (value, key) {
+    that.set = function (newData) {
+        foreach(newData, function (value, key) {
             data[key] = value;
         });
         that.publish('change', that);
@@ -40,6 +40,7 @@ var createModel = function (fig) {
     that.clear = function () {
         data = {};
         id = undefined;
+        that.publish('change', that);
     };
 
     that.validate = fig.validate || function () {
@@ -47,7 +48,7 @@ var createModel = function (fig) {
     };
 
     that.save = function () {
-        var errors = that.validate();
+        var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
                 url: that.isNew() ? url : url + '/' + id,
@@ -65,14 +66,17 @@ var createModel = function (fig) {
     that.delete = function () {
         if(!that.isNew()) {
             ajax({
+                url: url + '/' + id,
                 method: 'DELETE',
-                data: { id: id },
                 success: function (response) {
+                    that.clear();
                     that.publish('destroyed', that);
                 }
             });
         }
-        that.clear();
+        else {
+            that.clear();
+        }
     };
 
     return that;

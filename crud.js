@@ -120,7 +120,7 @@ var createModel = function (fig) {
         url = fig.url,
         data = fig.data || {},
         id = fig.id || undefined,
-        ajax = function (fig) {
+        ajax = fig.ajax || function (fig) {
             $.ajax({
                 url: url,
                 method: fig.method,
@@ -146,8 +146,8 @@ var createModel = function (fig) {
         return key ? data[key] : copy(data);
     };
 
-    that.set = function (data) {
-        foreach(data, function (value, key) {
+    that.set = function (newData) {
+        foreach(newData, function (value, key) {
             data[key] = value;
         });
         that.publish('change', that);
@@ -156,6 +156,7 @@ var createModel = function (fig) {
     that.clear = function () {
         data = {};
         id = undefined;
+        that.publish('change', that);
     };
 
     that.validate = fig.validate || function () {
@@ -163,7 +164,7 @@ var createModel = function (fig) {
     };
 
     that.save = function () {
-        var errors = that.validate();
+        var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
                 url: that.isNew() ? url : url + '/' + id,
@@ -181,14 +182,17 @@ var createModel = function (fig) {
     that.delete = function () {
         if(!that.isNew()) {
             ajax({
+                url: url + '/' + id,
                 method: 'DELETE',
-                data: { id: id },
                 success: function (response) {
+                    that.clear();
                     that.publish('destroyed', that);
                 }
             });
         }
-        that.clear();
+        else {
+            that.clear();
+        }
     };
 
     return that;
@@ -300,7 +304,7 @@ var createFormTemplate = function (schema, crudName) {
             '<div class="control-set">' +
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
-                    '<input type="submit" value="Save"/>' +
+                    '<input type="submit" class="js-crud-save" value="Save"/>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -387,6 +391,7 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig);
 
+
     return that;
 };
 
@@ -421,6 +426,20 @@ var createFormController = function (fig) {
         });
     };
 
+    that.$().submit(function (e) {
+        e.preventDefault();
+        that.model.set(that.serialize());
+        that.model.save();
+    });
+
+    that.model.subscribe('change', function (model) {
+        that.render();
+    });
+
+    that.model.subscribe('saved', function (model) {
+        console.log('saved event');
+    });
+
     return that;
 };
 
@@ -431,14 +450,15 @@ this.createCRUD = function (fig) {
         schema = fig.schema,
         validate = fig.validate,
         model = createModel({
+            url: fig.url,
             data: map(schema, function (item) {
                 return item.value || null;
             }),
             validate: validate
         });
 
-    that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
+    that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
 
     var formController = createFormController({
         el: '#' + name + '-crud-container',
@@ -462,10 +482,6 @@ this.createCRUD = function (fig) {
     that.render = function (data) {
         formController.render(data);
         listController.render(data);
-    };
-
-    that.serialize = function (data) {
-        return formController.serialize();
     };
 
     return that;
