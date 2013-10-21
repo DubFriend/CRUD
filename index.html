@@ -50,6 +50,15 @@
             color: red;
         }
 
+        .hover {
+            background-color: yellow;
+            cursor: pointer;
+        }
+
+        .selected {
+            background-color: lightgreen;
+        }
+
         #thing-crud-container {
             width:50%;
             float: left;
@@ -78,24 +87,12 @@
                 if(data.text !== 'default') {
                     error.text = 'text error';
                 }
-                if(data.fruit[0] !== 'apple' || data.fruit[1] !== 'orange') {
-                    error.fruit = 'checkbox error';
-                }
-                if(data.textarea !== '') {
-                    error.textarea = 'textarea error';
-                }
-                if(data.letter !== 'c') {
-                    error.letter = 'radio error';
-                }
-                if(data.color !== 'yellow') {
-                    error.color = 'select error';
-                }
                 return error;
             },
             schema: {
                 text: {
                     type: 'text',
-                    value: 'default text'
+                    value: 'default'
                 },
                 password: {
                     type: 'password',
@@ -103,7 +100,7 @@
                 },
                 textarea: {
                     type: 'textarea',
-                    value: 'default textarea'
+                    value: ''
                 },
                 fruit: {
                     type: 'checkbox',
@@ -117,8 +114,8 @@
                 },
                 awesome: {
                     type: 'select',
-                    values: [1,2,3,4],
-                    value: 4
+                    values: ['1','2','3','4'],
+                    value: '4'
                 },
                 what: {
                     type: 'radio',

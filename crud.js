@@ -51,22 +51,39 @@ var foreach = function (collection, callback) {
     }
 };
 
-var map = function (collection, callback, keyCallback) {
-    var mapped;
-    if(isArray(collection)) {
-        mapped = [];
-        foreach(collection, function (value, key, coll) {
-            mapped.push(callback(value, key, coll));
-        });
-    }
-    else {
-        mapped = {};
-        foreach(collection, function (value, key, coll) {
-            key = keyCallback ? keyCallback(key) : key;
-            mapped[key] = callback(value, key, coll);
-        });
-    }
+var mapToArray = function (collection, callback) {
+    var mapped = [];
+    foreach(collection, function (value, key, coll) {
+        mapped.push(callback(value, key, coll));
+    });
     return mapped;
+};
+
+var mapToObject = function (collection, callback, keyCallback) {
+    var mapped = {};
+    foreach(collection, function (value, key, coll) {
+        key = keyCallback ? keyCallback(key) : key;
+        mapped[key] = callback(value, key, coll);
+    });
+    return mapped;
+};
+
+var map = function (collection, callback, keyCallback) {
+    return isArray(collection) ?
+        mapToArray(collection, callback) :
+        mapToObject(collection, callback, keyCallback);
+};
+
+var keys = function (collection) {
+    return mapToArray(collection, function (val, key) {
+        return key;
+    });
+};
+
+var values = function (collection) {
+    return mapToArray(collection, function (val) {
+        return val;
+    });
 };
 
 var reduce = function (collection, callback) {
@@ -75,6 +92,29 @@ var reduce = function (collection, callback) {
         accumulation = callback(accumulation, val, key, collection);
     });
     return accumulation;
+};
+
+var filter = function (collection, callback) {
+    var filtered;
+
+    if(isArray(collection)) {
+        filtered = [];
+        foreach(collection, function (val, key, coll) {
+            if(callback(val, key, coll)) {
+                filtered.push(val);
+            }
+        });
+    }
+    else {
+        filtered = {};
+        foreach(collection, function (val, key, coll) {
+            if(callback(val, key, coll)) {
+                filtered[key] = val;
+            }
+        });
+    }
+
+    return filtered;
 };
 
 var union = function () {
@@ -185,8 +225,9 @@ var createModel = function (fig) {
                 url: url + '/' + id,
                 method: 'DELETE',
                 success: function (response) {
+                    var id = that.id();
                     that.clear();
-                    that.publish('destroyed', that);
+                    that.publish('destroyed', id);
                 }
             });
         }
@@ -227,8 +268,7 @@ var createFormTemplate = function (schema, crudName) {
             return '' +
             '<div class="input">' +
                 reduce(item.values, function (acc, value) {
-                    acc = acc || '';
-                    return acc +
+                    return (acc || '') +
                     '<label for="' + name + '-' + value + '">' +
                         value +
                     '</label>' +
@@ -244,6 +284,8 @@ var createFormTemplate = function (schema, crudName) {
 
         switch(item.type) {
             case 'text':
+                return input();
+
             case 'password':
                 return input();
 
@@ -257,6 +299,8 @@ var createFormTemplate = function (schema, crudName) {
                 '</div>';
 
             case 'checkbox':
+                return inputGroup();
+
             case 'radio':
                 return inputGroup();
 
@@ -291,8 +335,7 @@ var createFormTemplate = function (schema, crudName) {
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
             reduce(schema, function (acc, item, name) {
-                acc = acc || '';
-                return acc +
+                return (acc || '') +
                 '<div class="control-set">' +
                     '<label for="' + crudName + '-' + name + '" class="label">' +
                         name +
@@ -323,18 +366,37 @@ var createListTemplate = function (schema, crudName) {
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
                 reduce(schema, function (acc, item, name) {
-                    acc = acc || '';
-                    return acc + '<th>' + name + '</th>';
+                    return (acc || '') + '<th>' + name + '</th>';
                 }) +
             '</tr>' +
         '</thead>' +
-        '<tbody></tbody>' +
+        '<tbody id="crud-list-item-container"></tbody>' +
     '</table>';
+};
+
+var createListItemTemplate = function (schema, crudName) {
+    return '' +
+    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    reduce(schema, function (acc, item, name) {
+        return (acc || '') + '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+    });
 };
 
 var createController = function (fig) {
     var that = {},
-        el = fig.el;
+        el = fig.el,
+        render = function (isRenderError, data) {
+            data = data || that.model.get();
+            that.$().html(Mustache.render(that.template, union(
+                that.mapModelToView(data),
+                (isRenderError ? map(that.model.validate(data),
+                    identity,
+                    function (key) {
+                        return key + 'Help';
+                    }) : {}
+                )
+            )));
+        };
 
     that.schema = fig.schema;
     that.model = fig.model;
@@ -368,29 +430,112 @@ var createController = function (fig) {
         });
     };
 
-    var render = function (isRenderError, data) {
-        data = data || that.model.get();
-        that.$().html(Mustache.render(that.template, union(
-            that.mapModelToView(data),
-            (isRenderError ? map(that.model.validate(data),
-                identity,
-                function (key) {
-                    return key + 'Help';
-                }) : {}
-            )
-        )));
-    };
-
     that.render = partial(render, true);
     that.renderNoError = partial(render, false);
 
     return that;
 };
 
+var createListItemController = function (fig) {
+    fig = fig || {};
+    fig.el = fig.el || '#crud-list-item-' + fig.model.id();
+    var that = mixinPubSub(createController(fig));
+
+    that.isSelected = function () {
+        return that.$('.crud-list-selected').attr('checked') ? true : false;
+    };
+
+    var parentMapModelToView = that.mapModelToView;
+    that.mapModelToView = function (modelData) {
+        return map(parentMapModelToView(modelData), function (value, name) {
+            if(isObject(value)) {
+                return mapToArray(value, function (isSelected, name) {
+                    return name;
+                }).join(', ');
+            }
+            else {
+                return value;
+            }
+        });
+    };
+
+    var parentRender = that.render;
+    that.render = function (data) {
+        parentRender(data);
+        that.bindView();
+    };
+
+    that.select = function () {
+        that.$().addClass('selected');
+    };
+
+    that.deselect = function () {
+        that.$().removeClass('selected');
+    };
+
+    that.bindView = function () {
+        that.$('.crud-list-item-column').hover(
+            function () {
+                that.$().addClass('hover');
+            },
+            function () {
+                that.$().removeClass('hover');
+            }
+        );
+
+        that.$('.crud-list-item-column').click(function () {
+            that.publish('selected', that);
+        });
+    };
+
+    that.model.subscribe('saved', function (model) {
+        that.render();
+    });
+
+    return that;
+};
+
 var createListController = function (fig) {
     fig = fig || {};
-    var that = createController(fig);
+    var that = createController(fig),
+        items = [],
+        renderItems = function () {
+            var $container = that.$('#crud-list-item-container');
+            $container.html('');
+            foreach(items, function (item) {
+                console.log(item.model.id());
+                var elID = 'crud-list-item-' + item.model.id();
+                $container.append(
+                    '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
+                );
+                item.render();
+            });
+        };
 
+    that.setSelected = function (selectedItemController) {
+        foreach(items, function (itemController) {
+            itemController.deselect();
+        });
+        selectedItemController.select();
+    };
+
+    that.add = function (itemController) {
+        items.push(itemController);
+        renderItems();
+    };
+
+    that.getItemControllerByID = function (id) {
+        return filter(items, function (controller) {
+            return controller.model.id() === id;
+        })[0];
+    };
+
+    that.remove = function (id) {
+        items = filter(items, function (controller) {
+            return controller.model.id() !== id;
+        });
+        renderItems();
+    };
 
     return that;
 };
@@ -405,40 +550,39 @@ var createFormController = function (fig) {
                 return that.$('[name="' + name + '"]' + (pseudo || '')).val();
             };
 
-            var checkbox = function () {
-                var checked = [];
-                that.$('[name="' + name + '"]:checked').each(function () {
-                    checked.push($(this).val());
-                });
-                return checked;
-            };
-
             switch(item.type) {
                 case 'radio':
                     return get(':checked');
                 case 'select':
                     return get(' option:selected');
                 case 'checkbox':
-                    return checkbox();
+                    var checked = [];
+                    that.$('[name="' + name + '"]:checked').each(function () {
+                        checked.push($(this).val());
+                    });
+                    return checked;
                 default:
                     return that.$('[name="' + name + '"]').val();
             }
         });
     };
 
-    that.$().submit(function (e) {
-        e.preventDefault();
-        that.model.set(that.serialize());
-        that.model.save();
-    });
+    that.bind = function () {
+        that.$().unbind();
+        that.$().submit(function (e) {
+            e.preventDefault();
+            that.model.set(that.serialize());
+            that.model.save();
+        });
 
-    that.model.subscribe('change', function (model) {
-        that.render();
-    });
+        that.model.subscribe('saved', function (model) {
+            console.log('saved event');
+        });
 
-    that.model.subscribe('saved', function (model) {
-        console.log('saved event');
-    });
+        that.model.subscribe('change', function (model) {
+            that.render();
+        });
+    };
 
     return that;
 };
@@ -449,39 +593,72 @@ this.createCRUD = function (fig) {
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
-        model = createModel({
-            url: fig.url,
-            data: map(schema, function (item) {
-                return item.value || null;
-            }),
-            validate: validate
-        });
+        createDefaultModel = function () {
+            return createModel({
+                url: fig.url,
+                data: map(schema, function (item) {
+                    return item.value || null;
+                }),
+                validate: validate
+            });
+        };
 
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
+    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
-
-    var formController = createFormController({
-        el: '#' + name + '-crud-container',
-        schema: schema,
-        model: model,
-        template: that.formTemplate
-    });
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
-        model: model,
+        model: createDefaultModel(),
         template: that.listTemplate
     });
+    listController.renderNoError();
 
-    that.init = function () {
+    var formController = createFormController({
+        el: '#' + name + '-crud-container',
+        schema: schema,
+        model: createDefaultModel(),
+        template: that.formTemplate
+    });
+
+    var setForm = function (model) {
+        formController.model = model;
+        formController.bind();
         formController.renderNoError();
-        listController.renderNoError();
     };
 
-    that.render = function (data) {
-        formController.render(data);
-        listController.render(data);
+    that.newItem = function () {
+        var defaultModel = createDefaultModel();
+
+        setForm(defaultModel);
+
+        var selectedCallback = function (itemController) {
+            listController.setSelected(itemController);
+            setForm(itemController.model);
+            console.log('selected id: ' + itemController.model.id());
+        };
+
+        defaultModel.subscribe('saved', function () {
+            that.newItem();
+            var itemController = createListItemController({
+                model: defaultModel,
+                schema: schema,
+                template: that.listItemTemplate
+            });
+            itemController.subscribe('selected', selectedCallback);
+            listController.add(itemController);
+        });
+
+        defaultModel.subscribe('deleted', function (id) {
+            var itemController = listController.getItemControllerByID(id);
+            itemController.unsubscribe(selectedCallback);
+            listController.remove(id);
+        });
+    };
+
+    that.init = function () {
+        that.newItem();
     };
 
     return that;

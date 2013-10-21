@@ -27,8 +27,7 @@ var createFormTemplate = function (schema, crudName) {
             return '' +
             '<div class="input">' +
                 reduce(item.values, function (acc, value) {
-                    acc = acc || '';
-                    return acc +
+                    return (acc || '') +
                     '<label for="' + name + '-' + value + '">' +
                         value +
                     '</label>' +
@@ -44,6 +43,8 @@ var createFormTemplate = function (schema, crudName) {
 
         switch(item.type) {
             case 'text':
+                return input();
+
             case 'password':
                 return input();
 
@@ -57,6 +58,8 @@ var createFormTemplate = function (schema, crudName) {
                 '</div>';
 
             case 'checkbox':
+                return inputGroup();
+
             case 'radio':
                 return inputGroup();
 
@@ -91,8 +94,7 @@ var createFormTemplate = function (schema, crudName) {
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
             reduce(schema, function (acc, item, name) {
-                acc = acc || '';
-                return acc +
+                return (acc || '') +
                 '<div class="control-set">' +
                     '<label for="' + crudName + '-' + name + '" class="label">' +
                         name +
@@ -123,11 +125,18 @@ var createListTemplate = function (schema, crudName) {
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
                 reduce(schema, function (acc, item, name) {
-                    acc = acc || '';
-                    return acc + '<th>' + name + '</th>';
+                    return (acc || '') + '<th>' + name + '</th>';
                 }) +
             '</tr>' +
         '</thead>' +
-        '<tbody></tbody>' +
+        '<tbody id="crud-list-item-container"></tbody>' +
     '</table>';
+};
+
+var createListItemTemplate = function (schema, crudName) {
+    return '' +
+    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    reduce(schema, function (acc, item, name) {
+        return (acc || '') + '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+    });
 };

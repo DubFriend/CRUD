@@ -48,22 +48,39 @@ var foreach = function (collection, callback) {
     }
 };
 
-var map = function (collection, callback, keyCallback) {
-    var mapped;
-    if(isArray(collection)) {
-        mapped = [];
-        foreach(collection, function (value, key, coll) {
-            mapped.push(callback(value, key, coll));
-        });
-    }
-    else {
-        mapped = {};
-        foreach(collection, function (value, key, coll) {
-            key = keyCallback ? keyCallback(key) : key;
-            mapped[key] = callback(value, key, coll);
-        });
-    }
+var mapToArray = function (collection, callback) {
+    var mapped = [];
+    foreach(collection, function (value, key, coll) {
+        mapped.push(callback(value, key, coll));
+    });
     return mapped;
+};
+
+var mapToObject = function (collection, callback, keyCallback) {
+    var mapped = {};
+    foreach(collection, function (value, key, coll) {
+        key = keyCallback ? keyCallback(key) : key;
+        mapped[key] = callback(value, key, coll);
+    });
+    return mapped;
+};
+
+var map = function (collection, callback, keyCallback) {
+    return isArray(collection) ?
+        mapToArray(collection, callback) :
+        mapToObject(collection, callback, keyCallback);
+};
+
+var keys = function (collection) {
+    return mapToArray(collection, function (val, key) {
+        return key;
+    });
+};
+
+var values = function (collection) {
+    return mapToArray(collection, function (val) {
+        return val;
+    });
 };
 
 var reduce = function (collection, callback) {
@@ -72,6 +89,29 @@ var reduce = function (collection, callback) {
         accumulation = callback(accumulation, val, key, collection);
     });
     return accumulation;
+};
+
+var filter = function (collection, callback) {
+    var filtered;
+
+    if(isArray(collection)) {
+        filtered = [];
+        foreach(collection, function (val, key, coll) {
+            if(callback(val, key, coll)) {
+                filtered.push(val);
+            }
+        });
+    }
+    else {
+        filtered = {};
+        foreach(collection, function (val, key, coll) {
+            if(callback(val, key, coll)) {
+                filtered[key] = val;
+            }
+        });
+    }
+
+    return filtered;
 };
 
 var union = function () {

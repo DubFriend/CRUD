@@ -36,13 +36,35 @@
         });
     };
 
-    var buildListController = function () {
-        createListController({
-            el: '#' + name + '-crud-list-container',
-            schema: schema,
-            model: buildModel(),
-            template: createListTemplate(schema, name)
-        });
+    var buildSchema = function () {
+        return {
+            text: {
+                type: 'text',
+                value: 'default'
+            },
+            password: {
+                type: 'password'
+            },
+            textarea: {
+                type: 'textarea',
+                value: 'default'
+            },
+            checkbox: {
+                type: 'checkbox',
+                values: ['a', 'b'],
+                value: ['a', 'b']
+            },
+            radio: {
+                type: 'radio',
+                values: ['a', 'b'],
+                value: 'a'
+            },
+            select: {
+                type: 'select',
+                values: ['a', 'b'],
+                value: 'b'
+            }
+        };
     };
 
     module('crud', {
@@ -52,41 +74,14 @@
                 '<div id="thing-crud-list-container"></div>'
             );
 
-            schema = {
-                text: {
-                    type: 'text',
-                    value: 'default'
-                },
-                password: {
-                    type: 'password'
-                },
-                textarea: {
-                    type: 'textarea',
-                    value: 'default'
-                },
-                checkbox: {
-                    type: 'checkbox',
-                    values: ['a', 'b'],
-                    value: ['a', 'b']
-                },
-                radio: {
-                    type: 'radio',
-                    values: ['a', 'b'],
-                    value: 'a'
-                },
-                select: {
-                    type: 'select',
-                    values: ['a', 'b'],
-                    value: 'b'
-                }
-            };
+            schema = buildSchema();
 
             validate = function (data) {
                 var error = {};
                 if(data.text !== 'default') {
                     error.text = 'text error';
                 }
-                if(data.password !== null) {
+                if(data.password !== '') {
                     error.password = 'password error';
                 }
                 if(data.checkbox[0] !== 'a' || data.checkbox[1] !== 'b') {
@@ -114,8 +109,8 @@
     });
 
     var getDefaultData = function () {
-        return map(schema, function (obj) {
-            return obj.value || null;
+        return map(buildSchema(), function (obj) {
+            return obj.value || '';
         });
     };
 
@@ -182,8 +177,7 @@
     });
 
     test('renders errors', function () {
-        crud.init();
-        crud.render(union(getDefaultData(), { text: 'wrong' }));
+        buildFormController().render(union(getDefaultData(), { text: 'wrong' }));
         deepEqual(
             getFormErrorData(),
             union(nullError(), { text: 'text error' }),
@@ -262,11 +256,11 @@
             ajax: function (fig) {
                 equal(fig.url, 'testurl/5', 'id added to url');
                 equal(fig.method, 'DELETE', 'method is delete');
-                model.subscribe('destroyed', function (thisModel) {
-                    equal(thisModel, model, 'models are the same object');
-                    strictEqual(true, thisModel.isNew(), 'model is reset to new');
-                    strictEqual(thisModel.id(), undefined, 'id is cleared');
-                    deepEqual(thisModel.get(), {}, 'model is cleared');
+                model.subscribe('destroyed', function (id) {
+                    equal(id, 5, 'models are the same object');
+                    strictEqual(true, model.isNew(), 'model is reset to new');
+                    strictEqual(model.id(), undefined, 'id is cleared');
+                    deepEqual(model.get(), {}, 'model is cleared');
                     start();
                 });
                 fig.success('?');
@@ -284,7 +278,7 @@
         });
         model.delete();
         strictEqual(false, isAjaxCalled, 'ajax not called');
-        deepEqual({}, model.get(), 'model cleared');
+        deepEqual(model.get(), {}, 'model cleared');
     });
 
     test('controller.mapModelToView', function () {
@@ -292,11 +286,11 @@
             buildController().mapModelToView(getDefaultData()),
             {
                 checkbox: { a: true, b: true },
-                password: null,
+                password: '',
                 radio: { a: true },
                 select: { b: true },
-                text: "default",
-                textarea: "default"
+                text: 'default',
+                textarea: 'default'
             },
             'maps data for view'
         );
@@ -304,6 +298,134 @@
 
     test('formController.serialize', function () {
         deepEqual(buildFormController().serialize(), getFormData());
+    });
+
+    test('formController updates view on model change', function () {
+        var controller = buildFormController();
+        controller.bind();
+        controller.model.set({ text: 'foo' });
+        deepEqual(getFormData(), union(getDefaultData(), { text: 'foo' }));
+    });
+
+
+    var listItemController;
+    var buildListItemController = function (el) {
+        return createListItemController({
+            el: el || '#list-item-container',
+            model: buildModel({ id: 5 }),
+            schema: buildSchema(),
+            template: createListItemTemplate(buildSchema())
+        });
+    };
+
+    var getListItemData = function (el) {
+        var $el = $(el || '#list-item-container');
+        return map(buildSchema(), function (val, name) {
+            return $el.find('[name="' + name + '"]').html();
+        });
+    };
+
+    module('listItemController', {
+        setup: function () {
+            $fixture.html('<tr id="list-item-container"></tr>');
+            listItemController = buildListItemController();
+        }
+    });
+
+    test('listItemController, renders data', function () {
+        listItemController.render();
+        deepEqual(
+            getListItemData(),
+            union(getDefaultData(), { checkbox: 'a, b' }),
+            'renders expected data'
+        );
+    });
+
+    test('listItemController, does not render on model change', function () {
+        listItemController.render();
+        listItemController.model.set({ checkbox: ['b'] });
+        deepEqual(
+            getListItemData(),
+            union(getDefaultData(), { checkbox: 'a, b' }),
+            'renders expected data'
+        );
+    });
+
+    test('listItemController, renders on model saved', function () {
+        listItemController.model.publish('saved', listItemController.model);
+        deepEqual(
+            getListItemData(),
+            union(getDefaultData(), { checkbox: 'a, b' }),
+            'renders expected data'
+        );
+    });
+
+    test('listItemController, publishes selected on click', function () {
+        var isSelectedPublished;
+        listItemController.render();
+        listItemController.subscribe('selected', function (controller) {
+            isSelectedPublished = true;
+        });
+        listItemController.$('.crud-list-item-column').click();
+        strictEqual(isSelectedPublished, true, 'publishes on click');
+    });
+
+
+
+    test('listItemController.isSelected', function () {
+        listItemController.render();
+        strictEqual(listItemController.isSelected(), false, 'initially unselected');
+        $('.crud-list-selected').attr('checked', true);
+        strictEqual(listItemController.isSelected(), true, 'selected');
+    });
+
+    var listController;
+    var buildListController = function () {
+        return createListController({
+            el: '#' + name + '-crud-list-container',
+            schema: buildSchema(),
+            model: buildModel(),
+            template: createListTemplate(buildSchema(), name)
+        });
+    };
+
+    var getListHeaderData = function () {
+        var $el = $('#thing-crud-list-container');
+        var mapped = [];
+        $el.find('th').each(function () {
+            mapped.push($(this).html());
+        });
+        mapped.shift(); //remove the "All" checkbox
+        return mapped;
+    };
+
+    module('listController', {
+        setup: function () {
+            listController = buildListController();
+            $fixture.html('<div id="thing-crud-list-container"></div>');
+        }
+    });
+
+    test('renders head', function () {
+        listController.render();
+        deepEqual(getListHeaderData(), keys(getDefaultData()));
+    });
+
+    test('add', function () {
+        listController.render();
+        listController.add(buildListItemController('#crud-list-item-5'));
+        deepEqual(
+            getListItemData('#crud-list-item-5'),
+            union(getDefaultData(), { checkbox: 'a, b' }),
+            'item gets rendered'
+        );
+    });
+
+    test('remove', function () {
+        listController.render();
+        listController.add(buildListItemController('#crud-list-item-5'));
+        listController.remove(5);
+        strictEqual($('#crud-list-item-container').html(), '', 'item removed');
     });
 
 }());

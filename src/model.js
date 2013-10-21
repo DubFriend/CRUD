@@ -69,8 +69,9 @@ var createModel = function (fig) {
                 url: url + '/' + id,
                 method: 'DELETE',
                 success: function (response) {
+                    var id = that.id();
                     that.clear();
-                    that.publish('destroyed', that);
+                    that.publish('destroyed', id);
                 }
             });
         }

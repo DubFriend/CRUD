@@ -4,39 +4,72 @@ this.createCRUD = function (fig) {
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
-        model = createModel({
-            url: fig.url,
-            data: map(schema, function (item) {
-                return item.value || null;
-            }),
-            validate: validate
-        });
+        createDefaultModel = function () {
+            return createModel({
+                url: fig.url,
+                data: map(schema, function (item) {
+                    return item.value || null;
+                }),
+                validate: validate
+            });
+        };
 
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
+    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
-
-    var formController = createFormController({
-        el: '#' + name + '-crud-container',
-        schema: schema,
-        model: model,
-        template: that.formTemplate
-    });
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
-        model: model,
+        model: createDefaultModel(),
         template: that.listTemplate
     });
+    listController.renderNoError();
 
-    that.init = function () {
+    var formController = createFormController({
+        el: '#' + name + '-crud-container',
+        schema: schema,
+        model: createDefaultModel(),
+        template: that.formTemplate
+    });
+
+    var setForm = function (model) {
+        formController.model = model;
+        formController.bind();
         formController.renderNoError();
-        listController.renderNoError();
     };
 
-    that.render = function (data) {
-        formController.render(data);
-        listController.render(data);
+    that.newItem = function () {
+        var defaultModel = createDefaultModel();
+
+        setForm(defaultModel);
+
+        var selectedCallback = function (itemController) {
+            listController.setSelected(itemController);
+            setForm(itemController.model);
+            console.log('selected id: ' + itemController.model.id());
+        };
+
+        defaultModel.subscribe('saved', function () {
+            that.newItem();
+            var itemController = createListItemController({
+                model: defaultModel,
+                schema: schema,
+                template: that.listItemTemplate
+            });
+            itemController.subscribe('selected', selectedCallback);
+            listController.add(itemController);
+        });
+
+        defaultModel.subscribe('deleted', function (id) {
+            var itemController = listController.getItemControllerByID(id);
+            itemController.unsubscribe(selectedCallback);
+            listController.remove(id);
+        });
+    };
+
+    that.init = function () {
+        that.newItem();
     };
 
     return that;
