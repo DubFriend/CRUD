@@ -211,8 +211,9 @@ var createModel = function (fig) {
                 method: that.isNew() ? 'POST' : 'PUT',
                 data: data,
                 success: function (response) {
+                    var wasNew = that.isNew();
                     id = that.isNew() ? response : id;
-                    that.publish('saved', that);
+                    that.publish('saved', wasNew);
                 }
             });
         }
@@ -348,6 +349,7 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
+                    '<button id="crud-new-item">New ' + crudName + '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -371,7 +373,8 @@ var createListTemplate = function (schema, crudName) {
             '</tr>' +
         '</thead>' +
         '<tbody id="crud-list-item-container"></tbody>' +
-    '</table>';
+    '</table>' +
+    '<button id="crud-delete-selected">Delete Selected</button>';
 };
 
 var createListItemTemplate = function (schema, crudName) {
@@ -567,6 +570,19 @@ var createFormController = function (fig) {
         });
     };
 
+    var parentRender = that.render;
+    that.render = function (data) {
+        parentRender(data);
+        var $newItemButton = that.$('#crud-new-item');
+        if(that.model.isNew() && !$newItemButton.is(':hidden')) {
+            $newItemButton.slideUp();
+        }
+        else if(!that.model.isNew() && $newItemButton.is(':hidden')) {
+            $newItemButton.slideDown();
+        }
+
+    };
+
     that.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {
@@ -590,12 +606,13 @@ var createFormController = function (fig) {
 this.createCRUD = function (fig) {
     fig = fig || {};
     var that = {},
+        url = fig.url,
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
         createDefaultModel = function () {
             return createModel({
-                url: fig.url,
+                url: url,
                 data: map(schema, function (item) {
                     return item.value || null;
                 }),
@@ -628,26 +645,31 @@ this.createCRUD = function (fig) {
         formController.renderNoError();
     };
 
+    var selectedCallback = function (itemController) {
+        listController.setSelected(itemController);
+        setForm(itemController.model);
+    };
+
+    var addItem = function (model) {
+        var itemController = createListItemController({
+            model: model,
+            schema: schema,
+            template: that.listItemTemplate
+        });
+        itemController.subscribe('selected', selectedCallback);
+        listController.add(itemController);
+    };
+
     that.newItem = function () {
         var defaultModel = createDefaultModel();
 
         setForm(defaultModel);
 
-        var selectedCallback = function (itemController) {
-            listController.setSelected(itemController);
-            setForm(itemController.model);
-            console.log('selected id: ' + itemController.model.id());
-        };
-
-        defaultModel.subscribe('saved', function () {
+        defaultModel.subscribe('saved', function (wasNew) {
             that.newItem();
-            var itemController = createListItemController({
-                model: defaultModel,
-                schema: schema,
-                template: that.listItemTemplate
-            });
-            itemController.subscribe('selected', selectedCallback);
-            listController.add(itemController);
+            if(wasNew) {
+                addItem(defaultModel);
+            }
         });
 
         defaultModel.subscribe('deleted', function (id) {
@@ -659,6 +681,23 @@ this.createCRUD = function (fig) {
 
     that.init = function () {
         that.newItem();
+        $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'json',
+            success: function (rows) {
+                foreach(rows, function (row) {
+                    var id = row.id;
+                    delete row.id;
+                    addItem(createModel({
+                        url: url,
+                        id: id,
+                        data: row,
+                        validate: validate
+                    }));
+                });
+            }
+        });
     };
 
     return that;

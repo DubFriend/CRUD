@@ -183,6 +183,18 @@ var createFormController = function (fig) {
         });
     };
 
+    var parentRender = that.render;
+    that.render = function (data) {
+        parentRender(data);
+        var $newItemButton = that.$('#crud-new-item');
+        if(that.model.isNew() && !$newItemButton.is(':hidden')) {
+            $newItemButton.slideUp();
+        }
+        else if(!that.model.isNew() && $newItemButton.is(':hidden')) {
+            $newItemButton.slideDown();
+        }
+    };
+
     that.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {

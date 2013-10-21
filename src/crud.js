@@ -1,12 +1,13 @@
 this.createCRUD = function (fig) {
     fig = fig || {};
     var that = {},
+        url = fig.url,
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
         createDefaultModel = function () {
             return createModel({
-                url: fig.url,
+                url: url,
                 data: map(schema, function (item) {
                     return item.value || null;
                 }),
@@ -39,26 +40,31 @@ this.createCRUD = function (fig) {
         formController.renderNoError();
     };
 
+    var selectedCallback = function (itemController) {
+        listController.setSelected(itemController);
+        setForm(itemController.model);
+    };
+
+    var addItem = function (model) {
+        var itemController = createListItemController({
+            model: model,
+            schema: schema,
+            template: that.listItemTemplate
+        });
+        itemController.subscribe('selected', selectedCallback);
+        listController.add(itemController);
+    };
+
     that.newItem = function () {
         var defaultModel = createDefaultModel();
 
         setForm(defaultModel);
 
-        var selectedCallback = function (itemController) {
-            listController.setSelected(itemController);
-            setForm(itemController.model);
-            console.log('selected id: ' + itemController.model.id());
-        };
-
-        defaultModel.subscribe('saved', function () {
+        defaultModel.subscribe('saved', function (wasNew) {
             that.newItem();
-            var itemController = createListItemController({
-                model: defaultModel,
-                schema: schema,
-                template: that.listItemTemplate
-            });
-            itemController.subscribe('selected', selectedCallback);
-            listController.add(itemController);
+            if(wasNew) {
+                addItem(defaultModel);
+            }
         });
 
         defaultModel.subscribe('deleted', function (id) {
@@ -70,6 +76,23 @@ this.createCRUD = function (fig) {
 
     that.init = function () {
         that.newItem();
+        $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'json',
+            success: function (rows) {
+                foreach(rows, function (row) {
+                    var id = row.id;
+                    delete row.id;
+                    addItem(createModel({
+                        url: url,
+                        id: id,
+                        data: row,
+                        validate: validate
+                    }));
+                });
+            }
+        });
     };
 
     return that;

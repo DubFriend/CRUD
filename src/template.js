@@ -107,6 +107,7 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
+                    '<button id="crud-new-item">New ' + crudName + '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -130,7 +131,8 @@ var createListTemplate = function (schema, crudName) {
             '</tr>' +
         '</thead>' +
         '<tbody id="crud-list-item-container"></tbody>' +
-    '</table>';
+    '</table>' +
+    '<button id="crud-delete-selected">Delete Selected</button>';
 };
 
 var createListItemTemplate = function (schema, crudName) {

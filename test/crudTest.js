@@ -198,10 +198,15 @@
                 equal(fig.url, 'testurl', 'ajax correct url');
                 equal(fig.method, 'POST', 'ajax post on new save');
                 deepEqual(getDefaultData(), fig.data, 'ajax data set');
-                model.subscribe('saved', function (thisModel) {
-                    equal(thisModel, model, 'models are the same object');
-                    strictEqual(false, thisModel.isNew(), 'model no longer new');
+                model.subscribe('saved', function (wasNew) {
+                    //equal(thisModel, model, 'models are the same object');
+                    //setTimeout(function () {
+                    strictEqual(wasNew, true, 'passed previous "new" status');
+                    //strictEqual(false, thisModel.isNew(), 'model no longer new');
+                    strictEqual(false, model.isNew(), 'model no longer new');
                     start();
+                    //}, 0);
+
                 });
                 fig.success(5);
             }
@@ -237,10 +242,10 @@
                 equal(fig.url, 'testurl/5', 'id added to url');
                 equal(fig.method, 'PUT', 'method is put');
                 deepEqual(getDefaultData(), fig.data, 'ajax data set (id not included)');
-                model.subscribe('saved', function (thisModel) {
-                    equal(thisModel, model, 'models are the same object');
-                    strictEqual(false, thisModel.isNew(), 'model not new');
-                    strictEqual(5, thisModel.id(), 'id is not set by response');
+                model.subscribe('saved', function (wasNew) {
+                    strictEqual(wasNew, false, 'previous "new" status is false');
+                    strictEqual(model.isNew(), false, 'model not new');
+                    strictEqual(5, model.id(), 'id is not set by response');
                     start();
                 });
                 fig.success('not five');

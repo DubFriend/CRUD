@@ -55,8 +55,9 @@ var createModel = function (fig) {
                 method: that.isNew() ? 'POST' : 'PUT',
                 data: data,
                 success: function (response) {
+                    var wasNew = that.isNew();
                     id = that.isNew() ? response : id;
-                    that.publish('saved', that);
+                    that.publish('saved', wasNew);
                 }
             });
         }

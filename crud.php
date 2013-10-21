@@ -2,6 +2,21 @@
 $response;
 switch($_SERVER['REQUEST_METHOD']) {
     case 'GET':
+        $response = array(
+            array(
+                'id' => '7',
+                'text' => 'foo',
+                'fruit' => array('apple', 'orange'),
+                'letter' => 'b',
+                'awesome' => '4'
+            ),
+            array(
+                'id' => '8',
+                'fruit' => array('apple'),
+                'text' => 'default',
+                'color' => 'blue'
+            )
+        );
         break;
     case 'PUT':
         $response = true;
