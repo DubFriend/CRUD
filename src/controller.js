@@ -195,22 +195,38 @@ var createFormController = function (fig) {
         }
     };
 
-    that.bind = function () {
-        that.$().unbind();
-        that.$().submit(function (e) {
-            e.preventDefault();
-            that.model.set(that.serialize());
-            that.model.save();
-        });
+    that.setModel = (function () {
 
-        that.model.subscribe('saved', function (model) {
-            console.log('saved event');
-        });
-
-        that.model.subscribe('change', function (model) {
+        var changeCallback = function (model) {
             that.render();
-        });
-    };
+        };
+
+        var savedCallback = function (model) {
+            console.log('saved');
+        };
+
+        return function (newModel) {
+            that.model.unsubscribe(changeCallback);
+            that.model.unsubscribe(savedCallback);
+            newModel.subscribe('change', changeCallback);
+            newModel.subscribe('saved', savedCallback);
+            that.model = newModel;
+            if(newModel.isNew()) {
+                that.renderNoError();
+            }
+            else {
+                that.render();
+            }
+        };
+
+    }());
+
+    that.setModel(that.model);
+    that.$().submit(function (e) {
+        e.preventDefault();
+        that.model.set(that.serialize());
+        that.model.save();
+    });
 
     return that;
 };

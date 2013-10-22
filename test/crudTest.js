@@ -307,7 +307,24 @@
 
     test('formController updates view on model change', function () {
         var controller = buildFormController();
-        controller.bind();
+
+
+
+
+
+
+
+
+        //controller.bind();
+
+
+
+
+
+
+
+
+
         controller.model.set({ text: 'foo' });
         deepEqual(getFormData(), union(getDefaultData(), { text: 'foo' }));
     });

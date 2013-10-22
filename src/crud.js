@@ -35,9 +35,10 @@ this.createCRUD = function (fig) {
     });
 
     var setForm = function (model) {
-        formController.model = model;
-        formController.bind();
-        formController.renderNoError();
+        formController.setModel(model);
+        // formController.model = model;
+        // formController.bind();
+        // formController.renderNoError();
     };
 
     var selectedCallback = function (itemController) {
