@@ -349,7 +349,7 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
-                    '<button id="crud-new-item">New ' + crudName + '</button>' +
+                    '<button id="crud-new-item" type="button">New ' + crudName + '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -545,6 +545,7 @@ var createListController = function (fig) {
 
 var createFormController = function (fig) {
     fig = fig || {};
+    fig.model = fig.model || fig.createDefaultModel();
     var that = createController(fig);
 
     that.serialize = function () {
@@ -570,9 +571,23 @@ var createFormController = function (fig) {
         });
     };
 
-    var parentRender = that.render;
-    that.render = function (data) {
-        parentRender(data);
+    var bind = function () {
+        that.$().unbind();
+        that.$().submit(function (e) {
+            e.preventDefault();
+            that.model.set(that.serialize());
+            that.model.save();
+        });
+
+        $('#crud-new-item').click(function () {
+            console.log('new item');
+            that.setModel(fig.createDefaultModel());
+        });
+    };
+
+    bind();
+
+    var setNewModelButtonVisibility = function () {
         var $newItemButton = that.$('#crud-new-item');
         if(that.model.isNew() && !$newItemButton.is(':hidden')) {
             $newItemButton.slideUp();
@@ -580,6 +595,20 @@ var createFormController = function (fig) {
         else if(!that.model.isNew() && $newItemButton.is(':hidden')) {
             $newItemButton.slideDown();
         }
+    };
+
+    var parentRender = that.render;
+    that.render = function (data) {
+        parentRender(data);
+        setNewModelButtonVisibility();
+        bind();
+    };
+
+    var parentRenderNoError = that.renderNoError;
+    that.renderNoError = function (data) {
+        parentRenderNoError(data);
+        setNewModelButtonVisibility();
+        bind();
     };
 
     that.setModel = (function () {
@@ -609,11 +638,6 @@ var createFormController = function (fig) {
     }());
 
     that.setModel(that.model);
-    that.$().submit(function (e) {
-        e.preventDefault();
-        that.model.set(that.serialize());
-        that.model.save();
-    });
 
     return that;
 };
@@ -625,10 +649,10 @@ this.createCRUD = function (fig) {
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
-        createDefaultModel = function () {
+        createDefaultModel = function (data) {
             return createModel({
                 url: url,
-                data: map(schema, function (item) {
+                data: data || map(schema, function (item) {
                     return item.value || null;
                 }),
                 validate: validate
@@ -643,22 +667,38 @@ this.createCRUD = function (fig) {
         el: '#' + name + '-crud-list-container',
         schema: schema,
         model: createDefaultModel(),
+        createModel: createDefaultModel,
         template: that.listTemplate
     });
     listController.renderNoError();
 
+    var bindModel = function (model) {
+        model.subscribe('saved', function (wasNew) {
+            if(wasNew) {
+                addItem(model);
+            }
+        });
+
+        model.subscribe('deleted', function (id) {
+            var itemController = listController.getItemControllerByID(id);
+            itemController.unsubscribe(selectedCallback);
+            listController.remove(id);
+        });
+
+        return model;
+    };
+
     var formController = createFormController({
         el: '#' + name + '-crud-container',
         schema: schema,
-        model: createDefaultModel(),
+        createDefaultModel: function() {
+            return bindModel(createDefaultModel());
+        },
         template: that.formTemplate
     });
 
     var setForm = function (model) {
         formController.setModel(model);
-        // formController.model = model;
-        // formController.bind();
-        // formController.renderNoError();
     };
 
     var selectedCallback = function (itemController) {
@@ -678,21 +718,8 @@ this.createCRUD = function (fig) {
 
     that.newItem = function () {
         var defaultModel = createDefaultModel();
-
         setForm(defaultModel);
-
-        defaultModel.subscribe('saved', function (wasNew) {
-            that.newItem();
-            if(wasNew) {
-                addItem(defaultModel);
-            }
-        });
-
-        defaultModel.subscribe('deleted', function (id) {
-            var itemController = listController.getItemControllerByID(id);
-            itemController.unsubscribe(selectedCallback);
-            listController.remove(id);
-        });
+        bindModel(defaultModel);
     };
 
     that.init = function () {

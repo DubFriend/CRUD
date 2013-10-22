@@ -32,6 +32,7 @@
             el: '#' + name + '-crud-container',
             schema: schema,
             model: buildModel(),
+            createDefaultModel: buildModel,
             template: createFormTemplate(schema, name)
         });
     };
@@ -307,24 +308,6 @@
 
     test('formController updates view on model change', function () {
         var controller = buildFormController();
-
-
-
-
-
-
-
-
-        //controller.bind();
-
-
-
-
-
-
-
-
-
         controller.model.set({ text: 'foo' });
         deepEqual(getFormData(), union(getDefaultData(), { text: 'foo' }));
     });

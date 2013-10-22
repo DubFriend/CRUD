@@ -158,6 +158,7 @@ var createListController = function (fig) {
 
 var createFormController = function (fig) {
     fig = fig || {};
+    fig.model = fig.model || fig.createDefaultModel();
     var that = createController(fig);
 
     that.serialize = function () {
@@ -183,9 +184,23 @@ var createFormController = function (fig) {
         });
     };
 
-    var parentRender = that.render;
-    that.render = function (data) {
-        parentRender(data);
+    var bind = function () {
+        that.$().unbind();
+        that.$().submit(function (e) {
+            e.preventDefault();
+            that.model.set(that.serialize());
+            that.model.save();
+        });
+
+        $('#crud-new-item').click(function () {
+            console.log('new item');
+            that.setModel(fig.createDefaultModel());
+        });
+    };
+
+    bind();
+
+    var setNewModelButtonVisibility = function () {
         var $newItemButton = that.$('#crud-new-item');
         if(that.model.isNew() && !$newItemButton.is(':hidden')) {
             $newItemButton.slideUp();
@@ -193,6 +208,20 @@ var createFormController = function (fig) {
         else if(!that.model.isNew() && $newItemButton.is(':hidden')) {
             $newItemButton.slideDown();
         }
+    };
+
+    var parentRender = that.render;
+    that.render = function (data) {
+        parentRender(data);
+        setNewModelButtonVisibility();
+        bind();
+    };
+
+    var parentRenderNoError = that.renderNoError;
+    that.renderNoError = function (data) {
+        parentRenderNoError(data);
+        setNewModelButtonVisibility();
+        bind();
     };
 
     that.setModel = (function () {
@@ -222,11 +251,6 @@ var createFormController = function (fig) {
     }());
 
     that.setModel(that.model);
-    that.$().submit(function (e) {
-        e.preventDefault();
-        that.model.set(that.serialize());
-        that.model.save();
-    });
 
     return that;
 };

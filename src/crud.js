@@ -5,10 +5,10 @@ this.createCRUD = function (fig) {
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
-        createDefaultModel = function () {
+        createDefaultModel = function (data) {
             return createModel({
                 url: url,
-                data: map(schema, function (item) {
+                data: data || map(schema, function (item) {
                     return item.value || null;
                 }),
                 validate: validate
@@ -23,22 +23,38 @@ this.createCRUD = function (fig) {
         el: '#' + name + '-crud-list-container',
         schema: schema,
         model: createDefaultModel(),
+        createModel: createDefaultModel,
         template: that.listTemplate
     });
     listController.renderNoError();
 
+    var bindModel = function (model) {
+        model.subscribe('saved', function (wasNew) {
+            if(wasNew) {
+                addItem(model);
+            }
+        });
+
+        model.subscribe('deleted', function (id) {
+            var itemController = listController.getItemControllerByID(id);
+            itemController.unsubscribe(selectedCallback);
+            listController.remove(id);
+        });
+
+        return model;
+    };
+
     var formController = createFormController({
         el: '#' + name + '-crud-container',
         schema: schema,
-        model: createDefaultModel(),
+        createDefaultModel: function() {
+            return bindModel(createDefaultModel());
+        },
         template: that.formTemplate
     });
 
     var setForm = function (model) {
         formController.setModel(model);
-        // formController.model = model;
-        // formController.bind();
-        // formController.renderNoError();
     };
 
     var selectedCallback = function (itemController) {
@@ -58,21 +74,8 @@ this.createCRUD = function (fig) {
 
     that.newItem = function () {
         var defaultModel = createDefaultModel();
-
         setForm(defaultModel);
-
-        defaultModel.subscribe('saved', function (wasNew) {
-            that.newItem();
-            if(wasNew) {
-                addItem(defaultModel);
-            }
-        });
-
-        defaultModel.subscribe('deleted', function (id) {
-            var itemController = listController.getItemControllerByID(id);
-            itemController.unsubscribe(selectedCallback);
-            listController.remove(id);
-        });
+        bindModel(defaultModel);
     };
 
     that.init = function () {
