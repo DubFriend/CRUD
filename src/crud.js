@@ -5,8 +5,9 @@ this.createCRUD = function (fig) {
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
-        createDefaultModel = function (data) {
+        createDefaultModel = function (data, id) {
             return createModel({
+                id: id,
                 url: url,
                 data: data || map(schema, function (item) {
                     return item.value || null;
@@ -53,6 +54,10 @@ this.createCRUD = function (fig) {
         template: that.formTemplate
     });
 
+    formController.subscribe('new', function () {
+        listController.setSelected();
+    });
+
     var setForm = function (model) {
         formController.setModel(model);
     };
@@ -70,6 +75,7 @@ this.createCRUD = function (fig) {
         });
         itemController.subscribe('selected', selectedCallback);
         listController.add(itemController);
+        listController.setSelected(itemController);
     };
 
     that.newItem = function () {
@@ -88,12 +94,7 @@ this.createCRUD = function (fig) {
                 foreach(rows, function (row) {
                     var id = row.id;
                     delete row.id;
-                    addItem(createModel({
-                        url: url,
-                        id: id,
-                        data: row,
-                        validate: validate
-                    }));
+                    addItem(createDefaultModel(row, id));
                 });
             }
         });

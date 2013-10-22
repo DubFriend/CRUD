@@ -519,7 +519,9 @@ var createListController = function (fig) {
         foreach(items, function (itemController) {
             itemController.deselect();
         });
-        selectedItemController.select();
+        if(selectedItemController) {
+            selectedItemController.select();
+        }
     };
 
     that.add = function (itemController) {
@@ -546,7 +548,7 @@ var createListController = function (fig) {
 var createFormController = function (fig) {
     fig = fig || {};
     fig.model = fig.model || fig.createDefaultModel();
-    var that = createController(fig);
+    var that = mixinPubSub(createController(fig));
 
     that.serialize = function () {
         return map(that.schema, function (item, name) {
@@ -580,8 +582,8 @@ var createFormController = function (fig) {
         });
 
         $('#crud-new-item').click(function () {
-            console.log('new item');
             that.setModel(fig.createDefaultModel());
+            that.publish('new');
         });
     };
 
@@ -590,10 +592,10 @@ var createFormController = function (fig) {
     var setNewModelButtonVisibility = function () {
         var $newItemButton = that.$('#crud-new-item');
         if(that.model.isNew() && !$newItemButton.is(':hidden')) {
-            $newItemButton.slideUp();
+            $newItemButton.hide();
         }
         else if(!that.model.isNew() && $newItemButton.is(':hidden')) {
-            $newItemButton.slideDown();
+            $newItemButton.show();
         }
     };
 
@@ -607,6 +609,7 @@ var createFormController = function (fig) {
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
         parentRenderNoError(data);
+        that.$('#crud-new-item').hide();
         setNewModelButtonVisibility();
         bind();
     };
@@ -649,8 +652,9 @@ this.createCRUD = function (fig) {
         name = fig.name,
         schema = fig.schema,
         validate = fig.validate,
-        createDefaultModel = function (data) {
+        createDefaultModel = function (data, id) {
             return createModel({
+                id: id,
                 url: url,
                 data: data || map(schema, function (item) {
                     return item.value || null;
@@ -697,6 +701,10 @@ this.createCRUD = function (fig) {
         template: that.formTemplate
     });
 
+    formController.subscribe('new', function () {
+        listController.setSelected();
+    });
+
     var setForm = function (model) {
         formController.setModel(model);
     };
@@ -714,6 +722,7 @@ this.createCRUD = function (fig) {
         });
         itemController.subscribe('selected', selectedCallback);
         listController.add(itemController);
+        listController.setSelected(itemController);
     };
 
     that.newItem = function () {
@@ -732,12 +741,7 @@ this.createCRUD = function (fig) {
                 foreach(rows, function (row) {
                     var id = row.id;
                     delete row.id;
-                    addItem(createModel({
-                        url: url,
-                        id: id,
-                        data: row,
-                        validate: validate
-                    }));
+                    addItem(createDefaultModel(row, id));
                 });
             }
         });
