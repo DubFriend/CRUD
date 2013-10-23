@@ -65,6 +65,11 @@
             background-color: lightgreen;
         }
 
+        .crud-list-selected {
+            float: right;
+            margin-right: 4px;
+        }
+
         #thing-crud-container {
             width:50%;
             float: left;
@@ -105,8 +110,7 @@
                     value: 'pass'
                 },
                 textarea: {
-                    type: 'textarea',
-                    value: ''
+                    type: 'textarea'
                 },
                 fruit: {
                     type: 'checkbox',
@@ -122,15 +126,6 @@
                     type: 'select',
                     values: ['1','2','3','4'],
                     value: '4'
-                },
-                what: {
-                    type: 'radio',
-                    values: ['fee', 'fi', 'fo', 'fum']
-                },
-                color: {
-                    type: 'select',
-                    values: ['red', 'yellow', 'blue'],
-                    value: 'yellow'
                 }
             }
         });

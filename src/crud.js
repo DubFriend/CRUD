@@ -3,7 +3,12 @@ this.createCRUD = function (fig) {
     var that = {},
         url = fig.url,
         name = fig.name,
-        schema = fig.schema,
+        schema = map(fig.schema, function (item, name) {
+            if(item.type === 'checkbox') {
+                item.value = item.value || [];
+            }
+            return item;
+        }),
         validate = fig.validate,
         createDefaultModel = function (data, id) {
             return createModel({

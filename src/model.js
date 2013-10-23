@@ -8,7 +8,8 @@ var createModel = function (fig) {
             $.ajax({
                 url: url,
                 method: fig.method,
-                data: fig.data,
+                data: fig.method === 'PUT' || fig.method === 'DELETE' ?
+                        JSON.stringify(data) : data,
                 dataType: 'json',
                 success: fig.success,
                 error: function () {

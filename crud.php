@@ -1,35 +1,4 @@
 <?php
-class JSONstore {
-    private $path;
-    function __construct($path) {
-        $this->path = $path;
-    }
-
-    function select(array $whereEquals = array()) {
-
-    }
-
-    function insert(array $row = array()) {
-
-    }
-
-    function update(array $row = array(), array $whereEquals = array()) {
-
-    }
-
-    function delete(array $whereEquals = array()) {
-
-    }
-
-    private function load() {
-
-    }
-
-    private function save(array $data) {
-
-    }
-}
-
 $response;
 switch($_SERVER['REQUEST_METHOD']) {
     case 'GET':
@@ -44,19 +13,18 @@ switch($_SERVER['REQUEST_METHOD']) {
             array(
                 'id' => '8',
                 'fruit' => array('apple'),
-                'text' => 'default',
-                'color' => 'blue'
+                'text' => 'default'
             )
         );
         break;
     case 'PUT':
-        $response = true;
+        $response = true;//json_decode(file_get_contents('php://input'));
         break;
     case 'POST':
         $response = substr(md5(rand()), 0, 7);
         break;
     case 'DELETE':
-        $response = true;
+        $response = true;//json_decode(file_get_contents('php://input'));
         break;
     default:
         throw new Exception("Invalid Request Method");

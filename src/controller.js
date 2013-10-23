@@ -126,6 +126,15 @@ var createListController = function (fig) {
                 );
                 item.render();
             });
+            bind();
+        },
+        bind = function () {
+            that.$('#crud-list-select-all').unbind();
+            that.$('#crud-list-select-all').change(function (e) {
+                that.$('.crud-list-selected').prop(
+                    'checked', $(this).is(':checked')
+                );
+            });
         };
 
     that.setSelected = function (selectedItemController) {
@@ -194,6 +203,7 @@ var createFormController = function (fig) {
             that.model.save();
         });
 
+        $('#crud-new-item').unbind();
         $('#crud-new-item').click(function () {
             that.setModel(fig.createDefaultModel());
             that.publish('new');

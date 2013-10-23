@@ -37,8 +37,8 @@
         });
     };
 
-    var buildSchema = function () {
-        return {
+    var buildSchema = function (extend) {
+        return union({
             text: {
                 type: 'text',
                 value: 'default'
@@ -65,7 +65,7 @@
                 values: ['a', 'b'],
                 value: 'b'
             }
-        };
+        }, extend || {});
     };
 
     module('crud', {
@@ -104,7 +104,7 @@
                 name: 'thing',
                 url: 'crud.php',
                 validate: validate,
-                schema: schema
+                schema: buildSchema()//schema
             });
         }
     });
@@ -184,6 +184,22 @@
             union(nullError(), { text: 'text error' }),
             'renders error message'
         );
+    });
+
+    test('checkbox no values', function () {
+        crud = createCRUD({
+            name: 'thing',
+            url: 'crud.php',
+            validate: validate,
+            schema: buildSchema({
+                checkbox: {
+                    type: 'checkbox',
+                    values: ['a', 'b']
+                }
+            })
+        });
+        crud.init();
+        ok(true, 'initiated without error');
     });
 
 
