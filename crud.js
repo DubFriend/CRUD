@@ -552,15 +552,15 @@ var createFormController = function (fig) {
 
     that.serialize = function () {
         return map(that.schema, function (item, name) {
-            var get = function (pseudo) {
+            var getValue = function (pseudo) {
                 return that.$('[name="' + name + '"]' + (pseudo || '')).val();
             };
 
             switch(item.type) {
                 case 'radio':
-                    return get(':checked');
+                    return getValue(':checked');
                 case 'select':
-                    return get(' option:selected');
+                    return getValue(' option:selected');
                 case 'checkbox':
                     var checked = [];
                     that.$('[name="' + name + '"]:checked').each(function () {
@@ -568,7 +568,7 @@ var createFormController = function (fig) {
                     });
                     return checked;
                 default:
-                    return that.$('[name="' + name + '"]').val();
+                    return getValue();
             }
         });
     };
@@ -620,9 +620,7 @@ var createFormController = function (fig) {
             that.render();
         };
 
-        var savedCallback = function (model) {
-            console.log('saved');
-        };
+        var savedCallback = setNewModelButtonVisibility;
 
         return function (newModel) {
             that.model.unsubscribe(changeCallback);
