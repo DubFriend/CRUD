@@ -3,7 +3,7 @@ var createModel = function (fig) {
     var that = mixinPubSub(),
         url = fig.url,
         data = fig.data || {},
-        id = fig.id || undefined,
+        id = fig.id,
         ajax = fig.ajax || function (fig) {
             $.ajax({
                 url: that.isNew() ? url : url + '/' + that.id(),
@@ -12,9 +12,10 @@ var createModel = function (fig) {
                         JSON.stringify(data) : data,
                 dataType: 'json',
                 success: fig.success,
-                error: function () {
-                    console.error('crud ajax error', arguments);
-                    that.publish('ajaxError', arguments);
+                error: function (jqXHR) {
+                    if(jqXHR.status === 409) {
+                        that.publish('error', jqXHR.responseJSON);
+                    }
                 }
             });
         };
@@ -62,7 +63,7 @@ var createModel = function (fig) {
                 }
             });
         }
-        that.publish('formError', errors);
+        that.publish('error', errors);
     };
 
     that.delete = function () {

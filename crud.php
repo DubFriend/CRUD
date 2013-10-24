@@ -1,6 +1,8 @@
 <?php
-require 'jsonStore.php';
+ini_set('display_errors', 1);
+error_reporting(E_STRICT|E_ALL);
 
+require 'jsonStore.php';
 $file = new jsonStore('data');
 
 function getID() {
@@ -15,7 +17,13 @@ switch($_SERVER['REQUEST_METHOD']) {
         break;
     case 'PUT':
         $file->update($requestData, array('id' => getID()));
-        $response = true;
+        if($requestData['letter'] === 'a') {
+            http_response_code(409);
+            $response = array('letter' => 'server dont like letter a');
+        }
+        else {
+            $response = true;
+        }
         break;
     case 'POST':
         $response = $file->insert($_POST);

@@ -1,4 +1,6 @@
 <?php
+//documentation can be found at.
+//https://github.com/DubFriend/jsonStore
 class jsonStore {
     private $path, $data;
     function __construct($path) {

@@ -241,7 +241,7 @@
             data: union(getDefaultData(), { text: 'wrong' })
         });
 
-        model.subscribe('formError', function (errors) {
+        model.subscribe('error', function (errors) {
             strictEqual(ajaxCalled, false, 'ajax not called');
             strictEqual(model.isNew(), true, 'still new');
             deepEqual(errors, { text: 'text error' }, 'publishes form errors');

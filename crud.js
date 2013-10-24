@@ -159,7 +159,7 @@ var createModel = function (fig) {
     var that = mixinPubSub(),
         url = fig.url,
         data = fig.data || {},
-        id = fig.id || undefined,
+        id = fig.id,
         ajax = fig.ajax || function (fig) {
             $.ajax({
                 url: that.isNew() ? url : url + '/' + that.id(),
@@ -168,9 +168,10 @@ var createModel = function (fig) {
                         JSON.stringify(data) : data,
                 dataType: 'json',
                 success: fig.success,
-                error: function () {
-                    console.error('crud ajax error', arguments);
-                    that.publish('ajaxError', arguments);
+                error: function (jqXHR) {
+                    if(jqXHR.status === 409) {
+                        that.publish('error', jqXHR.responseJSON);
+                    }
                 }
             });
         };
@@ -218,7 +219,7 @@ var createModel = function (fig) {
                 }
             });
         }
-        that.publish('formError', errors);
+        that.publish('error', errors);
     };
 
     that.delete = function () {
@@ -389,18 +390,26 @@ var createListItemTemplate = function (schema, crudName) {
 var createController = function (fig) {
     var that = {},
         el = fig.el,
-        render = function (isRenderError, data) {
+        render = function (isRenderError, data, errors) {
             data = data || that.model.get();
+            if(isRenderError) {
+                errors = that.mapErrorData(union(that.model.validate(data), errors));
+            }
+            else {
+                errors = {};
+            }
             that.$().html(Mustache.render(that.template, union(
                 that.mapModelToView(data),
-                (isRenderError ? map(that.model.validate(data),
-                    identity,
-                    function (key) {
-                        return key + 'Help';
-                    }) : {}
-                )
+                errors
+                //isRenderError ? that.mapErrorData(that.model.validate(data)) : {}
             )));
         };
+
+    that.mapErrorData = function (errorData) {
+        return map(errorData, identity, function (key) {
+            return key + 'Help';
+        });
+    };
 
     that.schema = fig.schema;
     that.model = fig.model;
@@ -611,8 +620,8 @@ var createFormController = function (fig) {
     };
 
     var parentRender = that.render;
-    that.render = function (data) {
-        parentRender(data);
+    that.render = function (data, errors) {
+        parentRender(data, errors);
         setNewModelButtonVisibility();
         bind();
     };
@@ -633,11 +642,17 @@ var createFormController = function (fig) {
 
         var savedCallback = setNewModelButtonVisibility;
 
+        var errorCallback = function (errors) {
+            that.render(that.model.get(), errors);
+        };
+
         return function (newModel) {
             that.model.unsubscribe(changeCallback);
             that.model.unsubscribe(savedCallback);
+            that.model.unsubscribe(errorCallback);
             newModel.subscribe('change', changeCallback);
             newModel.subscribe('saved', savedCallback);
+            newModel.subscribe('error', errorCallback);
             that.model = newModel;
             if(newModel.isNew()) {
                 that.renderNoError();
