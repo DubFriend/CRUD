@@ -67,11 +67,13 @@ var createModel = function (fig) {
     };
 
     that.delete = function () {
+        console.log('delete', that.id());
         if(!that.isNew()) {
             ajax({
                 url: url + '/' + id,
                 method: 'DELETE',
                 success: function (response) {
+                    console.log('delete success', response);
                     var id = that.id();
                     that.clear();
                     that.publish('destroyed', id);

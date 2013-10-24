@@ -41,9 +41,8 @@ this.createCRUD = function (fig) {
             }
         });
 
-        model.subscribe('deleted', function (id) {
-            var itemController = listController.getItemControllerByID(id);
-            itemController.unsubscribe(selectedCallback);
+        model.subscribe('destroyed', function (id) {
+            console.log('destroyed', id);
             listController.remove(id);
         });
 
@@ -81,6 +80,7 @@ this.createCRUD = function (fig) {
         itemController.subscribe('selected', selectedCallback);
         listController.add(itemController);
         listController.setSelected(itemController);
+        bindModel(model);
     };
 
     that.newItem = function () {
@@ -101,6 +101,7 @@ this.createCRUD = function (fig) {
                     delete row.id;
                     addItem(createDefaultModel(row, id));
                 });
+                listController.setSelected();
             }
         });
     };

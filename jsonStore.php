@@ -63,6 +63,7 @@ class jsonStore {
         for($i = count($toDelete) - 1; $i >= 0; $i -= 1) {
             unset($this->data[$toDelete[$i]]);
         }
+        $this->data = $this->reIndexArray($this->data);
         $this->save();
     }
 
@@ -79,6 +80,14 @@ class jsonStore {
                 $callback($row, $i);
             }
         }
+    }
+
+    private function reIndexArray(array $array) {
+        $reIndexed = array();
+        foreach($array as $value) {
+            $reIndexed[] = $value;
+        }
+        return $reIndexed;
     }
 
     private function load() {

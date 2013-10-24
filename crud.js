@@ -223,11 +223,13 @@ var createModel = function (fig) {
     };
 
     that.delete = function () {
+        console.log('delete', that.id());
         if(!that.isNew()) {
             ajax({
                 url: url + '/' + id,
                 method: 'DELETE',
                 success: function (response) {
+                    console.log('delete success', response);
                     var id = that.id();
                     that.clear();
                     that.publish('destroyed', id);
@@ -455,7 +457,7 @@ var createListItemController = function (fig) {
     var that = mixinPubSub(createController(fig));
 
     that.isSelected = function () {
-        return that.$('.crud-list-selected').attr('checked') ? true : false;
+        return that.$('.crud-list-selected').prop('checked') ? true : false;
     };
 
     var parentMapModelToView = that.mapModelToView;
@@ -532,6 +534,17 @@ var createListController = function (fig) {
                     'checked', $(this).is(':checked')
                 );
             });
+
+            that.$('#crud-delete-selected').unbind();
+            that.$('#crud-delete-selected').click(function (e) {
+                console.log('delete selected click');
+                e.preventDefault();
+                foreach(items, function (listItemController) {
+                    if(listItemController.isSelected()) {
+                        listItemController.model.delete();
+                    }
+                });
+            });
         };
 
     that.setSelected = function (selectedItemController) {
@@ -556,7 +569,7 @@ var createListController = function (fig) {
 
     that.remove = function (id) {
         items = filter(items, function (controller) {
-            return controller.model.id() !== id;
+            return controller.model.id() != id;
         });
         renderItems();
     };
@@ -712,9 +725,8 @@ this.createCRUD = function (fig) {
             }
         });
 
-        model.subscribe('deleted', function (id) {
-            var itemController = listController.getItemControllerByID(id);
-            itemController.unsubscribe(selectedCallback);
+        model.subscribe('destroyed', function (id) {
+            console.log('destroyed', id);
             listController.remove(id);
         });
 
@@ -752,6 +764,7 @@ this.createCRUD = function (fig) {
         itemController.subscribe('selected', selectedCallback);
         listController.add(itemController);
         listController.setSelected(itemController);
+        bindModel(model);
     };
 
     that.newItem = function () {
@@ -772,6 +785,7 @@ this.createCRUD = function (fig) {
                     delete row.id;
                     addItem(createDefaultModel(row, id));
                 });
+                listController.setSelected();
             }
         });
     };

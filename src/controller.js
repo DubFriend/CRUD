@@ -66,7 +66,7 @@ var createListItemController = function (fig) {
     var that = mixinPubSub(createController(fig));
 
     that.isSelected = function () {
-        return that.$('.crud-list-selected').attr('checked') ? true : false;
+        return that.$('.crud-list-selected').prop('checked') ? true : false;
     };
 
     var parentMapModelToView = that.mapModelToView;
@@ -143,6 +143,17 @@ var createListController = function (fig) {
                     'checked', $(this).is(':checked')
                 );
             });
+
+            that.$('#crud-delete-selected').unbind();
+            that.$('#crud-delete-selected').click(function (e) {
+                console.log('delete selected click');
+                e.preventDefault();
+                foreach(items, function (listItemController) {
+                    if(listItemController.isSelected()) {
+                        listItemController.model.delete();
+                    }
+                });
+            });
         };
 
     that.setSelected = function (selectedItemController) {
@@ -167,7 +178,7 @@ var createListController = function (fig) {
 
     that.remove = function (id) {
         items = filter(items, function (controller) {
-            return controller.model.id() !== id;
+            return controller.model.id() != id;
         });
         renderItems();
     };
