@@ -6,7 +6,7 @@ var createModel = function (fig) {
         id = fig.id || undefined,
         ajax = fig.ajax || function (fig) {
             $.ajax({
-                url: url,
+                url: that.isNew() ? url : url + '/' + that.id(),
                 method: fig.method,
                 data: fig.method === 'PUT' || fig.method === 'DELETE' ?
                         JSON.stringify(data) : data,
