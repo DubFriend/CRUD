@@ -51,6 +51,22 @@ var foreach = function (collection, callback) {
     }
 };
 
+var range = function (a, b) {
+    var i, start, end, array = [];
+    if(b === undefined) {
+        start = 0;
+        end = a - 1;
+    }
+    else {
+        start = a;
+        end = b;
+    }
+    for(i = start; i <= end; i += 1) {
+        array.push(i);
+    }
+    return array;
+};
+
 var mapToArray = function (collection, callback) {
     var mapped = [];
     foreach(collection, function (value, key, coll) {
@@ -154,7 +170,7 @@ var mixinPubSub = function (object) {
     return object;
 };
 
-var createModel = function (fig) {
+var createSchemaModel = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(),
         url = fig.url,
@@ -238,16 +254,63 @@ var createModel = function (fig) {
         }
         else {
             that.clear();
+            that.publish('change', that);
         }
     };
 
     return that;
 };
 
+
+
+
+var createPaginatorModel = function (fig) {
+    fig = fig || {};
+    var that = mixinPubSub(), data = {};
+
+    data.pageNumber = fig.pageNumber || 1;
+    data.numberOfPages = fig.numberOfPages || 1;
+
+    that.validate = function (testData) {
+        testData = testData || data;
+        var errors = {};
+        var tempNumberOfPages = testData.numberOfPages !== undefined ?
+            testData.numberOfPages : data.numberOfPages;
+        var tempPageNumber = testData.pageNumber !== undefined ?
+            testData.pageNumber : data.pageNumber;
+
+        if(tempPageNumber <= 0) {
+            errors.pageNumber = 'Page number must be greater than zero.';
+        }
+        else if(tempPageNumber > tempNumberOfPages) {
+            errors.pageNumber = 'Page number must be less than or ' +
+                                'equal to the number of pages.';
+        }
+        return errors;
+    };
+
+    that.set = function (newData) {
+        var errors = that.validate(newData);
+        if(isEmpty(errors)) {
+            data = union(data, newData);
+            that.publish('change', newData);
+            return true;
+        }
+        else {
+            that.publish('error', errors);
+            return false;
+        }
+    };
+
+    that.get = function (key) {
+        return key ? data[key] : copy(data);
+    };
+
+    return that;
+};
+
 var createFormTemplate = function (schema, crudName) {
-
     var createInput = function (item, name) {
-
         var input = function (checked, value, isInputClass) {
             isInputClass = isInputClass === undefined ? true : isInputClass;
             var valueHTML = function () {
@@ -353,12 +416,16 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
-                    '<button id="crud-new-item" type="button">New ' + crudName + '</button>' +
+                    '<button id="crud-new-item" type="button">New ' +
+                        crudName +
+                    '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';
 };
+
+
 
 
 
@@ -381,11 +448,28 @@ var createListTemplate = function (schema, crudName) {
     '<button id="crud-delete-selected">Delete Selected</button>';
 };
 
+
+
+
+var createPaginatorTemplate = function () {
+    return '' +
+    '<ol class="crud-pages">' +
+        '{{#pages}}' +
+            '<li>{{.}}</li>' +
+        '{{/pages}}' +
+    '</ol>';
+};
+
+
+
+
+
 var createListItemTemplate = function (schema, crudName) {
     return '' +
     '<td><input type="checkbox" class="crud-list-selected"/></td>' +
     reduce(schema, function (acc, item, name) {
-        return (acc || '') + '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+        return (acc || '') +
+        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
     });
 };
 
@@ -401,9 +485,7 @@ var createController = function (fig) {
                 errors = {};
             }
             that.$().html(Mustache.render(that.template, union(
-                that.mapModelToView(data),
-                errors
-                //isRenderError ? that.mapErrorData(that.model.validate(data)) : {}
+                that.mapModelToView(data), errors
             )));
         };
 
@@ -450,6 +532,10 @@ var createController = function (fig) {
 
     return that;
 };
+
+
+
+
 
 var createListItemController = function (fig) {
     fig = fig || {};
@@ -510,9 +596,57 @@ var createListItemController = function (fig) {
     return that;
 };
 
+
+
+var createPaginatorController = function (fig) {
+    fig = fig || {};
+    var that = createController(fig);
+
+    that.render = function (numberOfPages) {
+        //numberOfPages = numberOfPages || that.calculateNumberOfPagesToDisplay();
+        var error = that.model.validate();
+        alert('render paginator');
+        console.log(that.template);
+        that.$().html(Mustache.render(that.template, {
+            pages: range(1, numberOfPages),
+            error: error
+        }));
+    };
+
+    //determines how many page list items to render based on width of the list
+    //template by default.
+    // that.calculateNumberOfPagesToDisplay = (function () {
+    //     var lastCalculation = 1;
+    //     return function () {
+    //         if(fig.maxPageNavIcons) {
+    //             return fig.maxPageNavIcons;
+    //         }
+    //         else {
+    //             that.$().css({ visibility: "hidden" });
+    //             that.render(1);
+    //             var maxWidth = $('#thing-crud-list-container').width();
+    //             var navIconWidth = that.$('li').width();
+    //             var paddingWidth = that.$('.crud-pages').width() - navIconWidth;
+    //             that.render(lastCalculation);
+    //             that.$().removeAttr('style');
+
+    //             console.log(maxWidth, paddingWidth, navIconWidth);
+
+    //             var maximumIcons = Math.floor((maxWidth - paddingWidth) / navIconWidth);
+    //             lastCalculation = maximumIcons;
+    //             return maximumIcons;
+    //         }
+    //     };
+    // }());
+
+    return that;
+};
+
+
+
 var createListController = function (fig) {
     fig = fig || {};
-    var that = createController(fig),
+    var that = mixinPubSub(createController(fig)),
         items = [],
         renderItems = function () {
             var $container = that.$('#crud-list-item-container');
@@ -529,7 +663,7 @@ var createListController = function (fig) {
         },
         bind = function () {
             that.$('#crud-list-select-all').unbind();
-            that.$('#crud-list-select-all').change(function (e) {
+            that.$('#crud-list-select-all').change(function () {
                 that.$('.crud-list-selected').prop(
                     'checked', $(this).is(':checked')
                 );
@@ -537,13 +671,17 @@ var createListController = function (fig) {
 
             that.$('#crud-delete-selected').unbind();
             that.$('#crud-delete-selected').click(function (e) {
-                console.log('delete selected click');
                 e.preventDefault();
                 foreach(items, function (listItemController) {
                     if(listItemController.isSelected()) {
                         listItemController.model.delete();
                     }
                 });
+            });
+
+            that.$('.crud-list-selected').unbind();
+            that.$('.crud-list-selected').change(function () {
+                $('#crud-list-select-all').prop('checked', false);
             });
         };
 
@@ -554,6 +692,10 @@ var createListController = function (fig) {
         if(selectedItemController) {
             selectedItemController.select();
         }
+    };
+
+    that.setSelectAll = function (isSelected) {
+        $('#crud-list-select-all').prop('checked', isSelected);
     };
 
     that.add = function (itemController) {
@@ -576,6 +718,10 @@ var createListController = function (fig) {
 
     return that;
 };
+
+
+
+
 
 var createFormController = function (fig) {
     fig = fig || {};
@@ -648,13 +794,10 @@ var createFormController = function (fig) {
     };
 
     that.setModel = (function () {
-
+        var savedCallback = setNewModelButtonVisibility;
         var changeCallback = function (model) {
             that.render();
         };
-
-        var savedCallback = setNewModelButtonVisibility;
-
         var errorCallback = function (errors) {
             that.render(that.model.get(), errors);
         };
@@ -674,7 +817,6 @@ var createFormController = function (fig) {
                 that.render();
             }
         };
-
     }());
 
     that.setModel(that.model);
@@ -694,8 +836,9 @@ this.createCRUD = function (fig) {
             return item;
         }),
         validate = fig.validate,
+
         createDefaultModel = function (data, id) {
-            return createModel({
+            return createSchemaModel({
                 id: id,
                 url: url,
                 data: data || map(schema, function (item) {
@@ -708,6 +851,20 @@ this.createCRUD = function (fig) {
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
+    that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+
+
+
+    var paginatorController = createPaginatorController({
+        el: '#' + name + '-crud-paginator-nav',
+        model: createPaginatorModel(),
+        template: that.paginatorTemplate
+    });
+    paginatorController.render(3);
+
+
+
+
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
@@ -717,6 +874,7 @@ this.createCRUD = function (fig) {
         template: that.listTemplate
     });
     listController.renderNoError();
+
 
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
@@ -728,6 +886,7 @@ this.createCRUD = function (fig) {
         model.subscribe('destroyed', function (id) {
             console.log('destroyed', id);
             listController.remove(id);
+            listController.setSelectAll(false);
         });
 
         return model;
@@ -779,8 +938,8 @@ this.createCRUD = function (fig) {
             url: url,
             method: 'GET',
             dataType: 'json',
-            success: function (rows) {
-                foreach(rows, function (row) {
+            success: function (response) {
+                foreach(response.data, function (row) {
                     var id = row.id;
                     delete row.id;
                     addItem(createDefaultModel(row, id));

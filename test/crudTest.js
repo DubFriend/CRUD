@@ -9,7 +9,7 @@
         fig = fig || {};
         var id = fig.id || undefined;
         var ajax = fig.ajax || function () {};
-        return createModel({
+        return createSchemaModel({
             id: id,
             url: 'testurl',
             data: fig.data || getDefaultData(),
@@ -104,7 +104,7 @@
                 name: 'thing',
                 url: 'crud.php',
                 validate: validate,
-                schema: buildSchema()//schema
+                schema: buildSchema()
             });
         }
     });
@@ -449,4 +449,105 @@
         strictEqual($('#crud-list-item-container').html(), '', 'item removed');
     });
 
+
+    var paginatorModel;
+    module('paginator model', {
+        setup: function () {
+            paginatorModel = createPaginatorModel();
+        }
+    });
+
+    var getDefaultPaginatorData = function (){
+        return { pageNumber: 1, numberOfPages: 1 };
+    };
+
+    test('validate zero', function () {
+        deepEqual(paginatorModel.validate({ pageNumber: 0 }), {
+            pageNumber: 'Page number must be greater than zero.'
+        }, 'pageNumber must be > 0');
+    });
+
+    test('validate pageNumber too large', function () {
+        deepEqual(paginatorModel.validate({ pageNumber: 2 }), {
+            pageNumber: 'Page number must be less than or ' +
+                        'equal to the number of pages.'
+        }, 'pageNumber cannot exceed number of pages');
+    });
+
+    test('validate based on supplied numberOfPages if given.', function () {
+        deepEqual(
+            paginatorModel.validate({ pageNumber: 3, numberOfPages: 3 }), {},
+            'responds to numberOfPages being set.'
+        );
+    });
+
+    test('validate if only numberOfPages given and makes pageNumber too large', function () {
+        paginatorModel.set({ pageNumber: 2, numberOfPages: 3 });
+        deepEqual(paginatorModel.validate({ numberOfPages: 1 }), {
+            pageNumber: 'Page number must be less than or ' +
+                        'equal to the number of pages.'
+        });
+    });
+
+    asyncTest('set', function () {
+        expect(2);
+        paginatorModel.subscribe('change', function (data) {
+            deepEqual(data, { numberOfPages: 3, pageNumber: 2 }, 'publishes');
+            start();
+        });
+        paginatorModel.set({numberOfPages: 3, pageNumber: 2 });
+        deepEqual(paginatorModel.get(), {numberOfPages: 3, pageNumber: 2 }, 'data set');
+    });
+
+    asyncTest('set error', function () {
+        expect(2);
+        paginatorModel.subscribe('error', function (errors) {
+            deepEqual(errors, {
+                pageNumber: 'Page number must be less than or ' +
+                            'equal to the number of pages.'
+            }, 'publishes error');
+            start();
+        });
+        paginatorModel.set({ pageNumber: 2 });
+        deepEqual(paginatorModel.get(), getDefaultPaginatorData(), 'data not set');
+    });
+
+
+    // var buildFormController = function () {
+    //     return createFormController({
+    //         el: '#' + name + '-crud-container',
+    //         schema: schema,
+    //         model: buildModel(),
+    //         createDefaultModel: buildModel,
+    //         template: createFormTemplate(schema, name)
+    //     });
+    // };
+
+    var paginatorController;
+    module('paginatorController', {
+        setup: function () {
+            //note: .crud-pages has a padding of 6px and zero margin.
+            //      .crud-pages li have widths of 10px.
+            //set in the html test file.
+            $fixture.html(
+                '<div id="thing-crud-list-container"></div>' +
+                '<div id="thing-crud-paginator-nav"></div>'
+            );
+            $fixture.find('#thing-crud-list-container').width(31);
+            paginatorController = createPaginatorController({
+                el: '#thing-crud-paginator-nav',
+                model: createPaginatorModel(),
+                template: createPaginatorTemplate()
+            });
+        }
+    });
+
+    test('calculateNumberOfPagesToDisplay', function () {
+        strictEqual(
+            paginatorController.calculateNumberOfPagesToDisplay(), 2,
+            'accounts for padding'
+        );
+    });
+
 }());
+

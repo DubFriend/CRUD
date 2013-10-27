@@ -48,6 +48,22 @@ var foreach = function (collection, callback) {
     }
 };
 
+var range = function (a, b) {
+    var i, start, end, array = [];
+    if(b === undefined) {
+        start = 0;
+        end = a - 1;
+    }
+    else {
+        start = a;
+        end = b;
+    }
+    for(i = start; i <= end; i += 1) {
+        array.push(i);
+    }
+    return array;
+};
+
 var mapToArray = function (collection, callback) {
     var mapped = [];
     foreach(collection, function (value, key, coll) {

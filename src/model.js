@@ -1,4 +1,4 @@
-var createModel = function (fig) {
+var createSchemaModel = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(),
         url = fig.url,
@@ -82,7 +82,56 @@ var createModel = function (fig) {
         }
         else {
             that.clear();
+            that.publish('change', that);
         }
+    };
+
+    return that;
+};
+
+
+
+
+var createPaginatorModel = function (fig) {
+    fig = fig || {};
+    var that = mixinPubSub(), data = {};
+
+    data.pageNumber = fig.pageNumber || 1;
+    data.numberOfPages = fig.numberOfPages || 1;
+
+    that.validate = function (testData) {
+        testData = testData || data;
+        var errors = {};
+        var tempNumberOfPages = testData.numberOfPages !== undefined ?
+            testData.numberOfPages : data.numberOfPages;
+        var tempPageNumber = testData.pageNumber !== undefined ?
+            testData.pageNumber : data.pageNumber;
+
+        if(tempPageNumber <= 0) {
+            errors.pageNumber = 'Page number must be greater than zero.';
+        }
+        else if(tempPageNumber > tempNumberOfPages) {
+            errors.pageNumber = 'Page number must be less than or ' +
+                                'equal to the number of pages.';
+        }
+        return errors;
+    };
+
+    that.set = function (newData) {
+        var errors = that.validate(newData);
+        if(isEmpty(errors)) {
+            data = union(data, newData);
+            that.publish('change', newData);
+            return true;
+        }
+        else {
+            that.publish('error', errors);
+            return false;
+        }
+    };
+
+    that.get = function (key) {
+        return key ? data[key] : copy(data);
     };
 
     return that;

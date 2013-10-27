@@ -10,9 +10,7 @@ var createController = function (fig) {
                 errors = {};
             }
             that.$().html(Mustache.render(that.template, union(
-                that.mapModelToView(data),
-                errors
-                //isRenderError ? that.mapErrorData(that.model.validate(data)) : {}
+                that.mapModelToView(data), errors
             )));
         };
 
@@ -59,6 +57,10 @@ var createController = function (fig) {
 
     return that;
 };
+
+
+
+
 
 var createListItemController = function (fig) {
     fig = fig || {};
@@ -119,9 +121,57 @@ var createListItemController = function (fig) {
     return that;
 };
 
+
+
+var createPaginatorController = function (fig) {
+    fig = fig || {};
+    var that = createController(fig);
+
+    that.render = function (numberOfPages) {
+        //numberOfPages = numberOfPages || that.calculateNumberOfPagesToDisplay();
+        var error = that.model.validate();
+        alert('render paginator');
+        console.log(that.template);
+        that.$().html(Mustache.render(that.template, {
+            pages: range(1, numberOfPages),
+            error: error
+        }));
+    };
+
+    //determines how many page list items to render based on width of the list
+    //template by default.
+    // that.calculateNumberOfPagesToDisplay = (function () {
+    //     var lastCalculation = 1;
+    //     return function () {
+    //         if(fig.maxPageNavIcons) {
+    //             return fig.maxPageNavIcons;
+    //         }
+    //         else {
+    //             that.$().css({ visibility: "hidden" });
+    //             that.render(1);
+    //             var maxWidth = $('#thing-crud-list-container').width();
+    //             var navIconWidth = that.$('li').width();
+    //             var paddingWidth = that.$('.crud-pages').width() - navIconWidth;
+    //             that.render(lastCalculation);
+    //             that.$().removeAttr('style');
+
+    //             console.log(maxWidth, paddingWidth, navIconWidth);
+
+    //             var maximumIcons = Math.floor((maxWidth - paddingWidth) / navIconWidth);
+    //             lastCalculation = maximumIcons;
+    //             return maximumIcons;
+    //         }
+    //     };
+    // }());
+
+    return that;
+};
+
+
+
 var createListController = function (fig) {
     fig = fig || {};
-    var that = createController(fig),
+    var that = mixinPubSub(createController(fig)),
         items = [],
         renderItems = function () {
             var $container = that.$('#crud-list-item-container');
@@ -138,7 +188,7 @@ var createListController = function (fig) {
         },
         bind = function () {
             that.$('#crud-list-select-all').unbind();
-            that.$('#crud-list-select-all').change(function (e) {
+            that.$('#crud-list-select-all').change(function () {
                 that.$('.crud-list-selected').prop(
                     'checked', $(this).is(':checked')
                 );
@@ -146,13 +196,17 @@ var createListController = function (fig) {
 
             that.$('#crud-delete-selected').unbind();
             that.$('#crud-delete-selected').click(function (e) {
-                console.log('delete selected click');
                 e.preventDefault();
                 foreach(items, function (listItemController) {
                     if(listItemController.isSelected()) {
                         listItemController.model.delete();
                     }
                 });
+            });
+
+            that.$('.crud-list-selected').unbind();
+            that.$('.crud-list-selected').change(function () {
+                $('#crud-list-select-all').prop('checked', false);
             });
         };
 
@@ -163,6 +217,10 @@ var createListController = function (fig) {
         if(selectedItemController) {
             selectedItemController.select();
         }
+    };
+
+    that.setSelectAll = function (isSelected) {
+        $('#crud-list-select-all').prop('checked', isSelected);
     };
 
     that.add = function (itemController) {
@@ -185,6 +243,10 @@ var createListController = function (fig) {
 
     return that;
 };
+
+
+
+
 
 var createFormController = function (fig) {
     fig = fig || {};
@@ -257,13 +319,10 @@ var createFormController = function (fig) {
     };
 
     that.setModel = (function () {
-
+        var savedCallback = setNewModelButtonVisibility;
         var changeCallback = function (model) {
             that.render();
         };
-
-        var savedCallback = setNewModelButtonVisibility;
-
         var errorCallback = function (errors) {
             that.render(that.model.get(), errors);
         };
@@ -283,7 +342,6 @@ var createFormController = function (fig) {
                 that.render();
             }
         };
-
     }());
 
     that.setModel(that.model);

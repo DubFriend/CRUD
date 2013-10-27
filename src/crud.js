@@ -10,8 +10,9 @@ this.createCRUD = function (fig) {
             return item;
         }),
         validate = fig.validate,
+
         createDefaultModel = function (data, id) {
-            return createModel({
+            return createSchemaModel({
                 id: id,
                 url: url,
                 data: data || map(schema, function (item) {
@@ -24,6 +25,14 @@ this.createCRUD = function (fig) {
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
+    that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+
+    var paginatorController = createPaginatorController({
+        el: '#' + name + '-crud-paginator-nav',
+        model: createPaginatorModel(),
+        template: that.paginatorTemplate
+    });
+    paginatorController.render(3);
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
@@ -44,6 +53,7 @@ this.createCRUD = function (fig) {
         model.subscribe('destroyed', function (id) {
             console.log('destroyed', id);
             listController.remove(id);
+            listController.setSelectAll(false);
         });
 
         return model;
@@ -95,8 +105,8 @@ this.createCRUD = function (fig) {
             url: url,
             method: 'GET',
             dataType: 'json',
-            success: function (rows) {
-                foreach(rows, function (row) {
+            success: function (response) {
+                foreach(response.data, function (row) {
                     var id = row.id;
                     delete row.id;
                     addItem(createDefaultModel(row, id));

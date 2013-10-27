@@ -1,7 +1,5 @@
 var createFormTemplate = function (schema, crudName) {
-
     var createInput = function (item, name) {
-
         var input = function (checked, value, isInputClass) {
             isInputClass = isInputClass === undefined ? true : isInputClass;
             var valueHTML = function () {
@@ -107,12 +105,16 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
-                    '<button id="crud-new-item" type="button">New ' + crudName + '</button>' +
+                    '<button id="crud-new-item" type="button">New ' +
+                        crudName +
+                    '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';
 };
+
+
 
 
 
@@ -135,10 +137,27 @@ var createListTemplate = function (schema, crudName) {
     '<button id="crud-delete-selected">Delete Selected</button>';
 };
 
+
+
+
+var createPaginatorTemplate = function () {
+    return '' +
+    '<ol class="crud-pages">' +
+        '{{#pages}}' +
+            '<li>{{.}}</li>' +
+        '{{/pages}}' +
+    '</ol>';
+};
+
+
+
+
+
 var createListItemTemplate = function (schema, crudName) {
     return '' +
     '<td><input type="checkbox" class="crud-list-selected"/></td>' +
     reduce(schema, function (acc, item, name) {
-        return (acc || '') + '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+        return (acc || '') +
+        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
     });
 };
