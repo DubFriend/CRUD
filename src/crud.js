@@ -29,11 +29,12 @@ this.createCRUD = function (fig) {
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
-        model: createPaginatorModel(),
+        model: createPaginatorModel({ url: url }),
         template: that.paginatorTemplate
     });
-    //paginatorController.render([1, 12, 123, 1234, 12345, 123456, 1234567]);
     paginatorController.render();
+
+
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
@@ -94,28 +95,30 @@ this.createCRUD = function (fig) {
         bindModel(model);
     };
 
+
     that.newItem = function () {
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
     };
 
+    var setCRUDList = function (rows) {
+        listController.clear();
+        foreach(rows, function (row) {
+            var id = row.id;
+            delete row.id;
+            addItem(createDefaultModel(row, id));
+        });
+    };
+
     that.init = function () {
         that.newItem();
-        $.ajax({
-            url: url,
-            method: 'GET',
-            dataType: 'json',
-            success: function (response) {
-                foreach(response.data, function (row) {
-                    var id = row.id;
-                    delete row.id;
-                    addItem(createDefaultModel(row, id));
-                });
-                paginatorController.model.set({ numberOfPages: response.pages });
-                listController.setSelected();
-            }
+        paginatorController.model.subscribe('load', function (response) {
+            console.log('load', response);
+            setCRUDList(response.data);
+            paginatorController.model.set({ numberOfPages: response.pages });
         });
+        paginatorController.setPage(1);
     };
 
     return that;

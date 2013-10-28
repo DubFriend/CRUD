@@ -190,6 +190,12 @@ var mixinPubSub = function (object) {
     return object;
 };
 
+var ajaxErrorResponse = function (that, jqXHR) {
+    if(jqXHR.status === 409) {
+        that.publish('error', jqXHR.responseJSON);
+    }
+};
+
 var createSchemaModel = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(),
@@ -204,11 +210,7 @@ var createSchemaModel = function (fig) {
                         JSON.stringify(data) : data,
                 dataType: 'json',
                 success: fig.success,
-                error: function (jqXHR) {
-                    if(jqXHR.status === 409) {
-                        that.publish('error', jqXHR.responseJSON);
-                    }
-                }
+                error: partial(ajaxErrorResponse, that)
             });
         };
 
@@ -286,7 +288,8 @@ var createSchemaModel = function (fig) {
 
 var createPaginatorModel = function (fig) {
     fig = fig || {};
-    var that = mixinPubSub(), data = {};
+    var that = mixinPubSub(), data = {},
+        url = fig.url;
 
     data.pageNumber = fig.pageNumber || 1;
     data.numberOfPages = fig.numberOfPages || 1;
@@ -314,6 +317,15 @@ var createPaginatorModel = function (fig) {
         if(isEmpty(errors)) {
             data = union(data, newData);
             that.publish('change', newData);
+            if(newData.pageNumber) {
+                $.ajax({
+                    url: url + '/page/' + that.get('pageNumber'),
+                    method: 'GET',
+                    dataType: 'json',
+                    success: partial(that.publish, 'load'),
+                    error: partial(ajaxErrorResponse, that)
+                });
+            }
             return true;
         }
         else {
@@ -476,7 +488,7 @@ var createPaginatorTemplate = function () {
     '<div class="crud-paginator">' +
         '<ol class="crud-pages">' +
             '{{#pages}}' +
-                '<li><a href="#/page/{{.}}">{{.}}</a></li>' +
+                '<li><a data-page-number="{{.}}" href="#/page/{{.}}">{{.}}</a></li>' +
             '{{/pages}}' +
         '</ol>' +
         '<form class="crud-goto-page-form">' +
@@ -629,6 +641,26 @@ var createPaginatorController = function (fig) {
     fig = fig || {};
     var that = createController(fig);
 
+    var bind = function () {
+        that.$('li a').unbind();
+        that.$('li a').click(function () {
+            var pageNumber = Number($(this).data('page-number'));
+            that.model.set({ pageNumber: pageNumber });
+            that.setSelected(pageNumber);
+        });
+    };
+
+    that.setSelected = function (pageNumber) {
+        console.log('setSelected', pageNumber);
+        that.$('li a').removeClass('selected');
+        that.$('li a').each(function () {
+            if(Number($(this).data('page-number')) === pageNumber) {
+                console.log('set selected match', this);
+                $(this).addClass('selected');
+            }
+        });
+    };
+
     that.render = function (pages) {
         pages = pages || that.calculatePageRange();
         var error = that.model.validate();
@@ -636,6 +668,11 @@ var createPaginatorController = function (fig) {
             pages: pages,
             error: error
         }));
+        bind();
+    };
+
+    that.setPage = function (pageNumber) {
+        that.model.set({ pageNumber: pageNumber });
     };
 
     //determines how many page list items to render based on width of the list
@@ -687,7 +724,6 @@ var createPaginatorController = function (fig) {
         // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
         var shiftNonPositiveValues = function (array) {
             var shifted = [];
-
             foreach(reverse(array), function (number) {
                 if(number <= 0) {
                     shifted.push(last(shifted) + 1);
@@ -696,31 +732,25 @@ var createPaginatorController = function (fig) {
                     shifted.unshift(number);
                 }
             });
-
             return shifted;
         };
 
         return function () {
-            if(fig.maxPageNavIcons) {
-                return fig.maxPageNavIcons;
-            }
-            else {
-                initHTMLWidths();
-                //TODO: move logic into model?
-                console.log(widths);
-                var currentPage = that.model.get('pageNumber');
-                var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
-
-                return shiftNonPositiveValues(
-                    reverse(getPageNumbers(currentPage, bufferWidth, false))
-                        .concat([currentPage])
-                        .concat(getPageNumbers(currentPage, bufferWidth, true))
-                );
-            }
+            initHTMLWidths();
+            var currentPage = that.model.get('pageNumber');
+            var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
+            return filter(shiftNonPositiveValues(
+                reverse(getPageNumbers(currentPage, bufferWidth, false))
+                .concat([currentPage])
+                .concat(getPageNumbers(currentPage, bufferWidth, true))
+            ), function (pageNumber) {
+                return pageNumber <= that.model.get('numberOfPages');
+            });
         };
     }());
 
     that.model.subscribe('change', function (data) {
+        console.log(that.model.get());
         that.render();
     });
 
@@ -737,7 +767,6 @@ var createListController = function (fig) {
             var $container = that.$('#crud-list-item-container');
             $container.html('');
             foreach(items, function (item) {
-                //console.log(item.model.id());
                 var elID = 'crud-list-item-' + item.model.id();
                 $container.append(
                     '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
@@ -792,6 +821,10 @@ var createListController = function (fig) {
         return filter(items, function (controller) {
             return controller.model.id() === id;
         })[0];
+    };
+
+    that.clear = function () {
+        items = [];
     };
 
     that.remove = function (id) {
@@ -940,11 +973,12 @@ this.createCRUD = function (fig) {
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
-        model: createPaginatorModel(),
+        model: createPaginatorModel({ url: url }),
         template: that.paginatorTemplate
     });
-    //paginatorController.render([1, 12, 123, 1234, 12345, 123456, 1234567]);
     paginatorController.render();
+
+
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
@@ -1005,28 +1039,30 @@ this.createCRUD = function (fig) {
         bindModel(model);
     };
 
+
     that.newItem = function () {
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
     };
 
+    var setCRUDList = function (rows) {
+        listController.clear();
+        foreach(rows, function (row) {
+            var id = row.id;
+            delete row.id;
+            addItem(createDefaultModel(row, id));
+        });
+    };
+
     that.init = function () {
         that.newItem();
-        $.ajax({
-            url: url,
-            method: 'GET',
-            dataType: 'json',
-            success: function (response) {
-                foreach(response.data, function (row) {
-                    var id = row.id;
-                    delete row.id;
-                    addItem(createDefaultModel(row, id));
-                });
-                paginatorController.model.set({ numberOfPages: response.pages });
-                listController.setSelected();
-            }
+        paginatorController.model.subscribe('load', function (response) {
+            console.log('load', response);
+            setCRUDList(response.data);
+            paginatorController.model.set({ numberOfPages: response.pages });
         });
+        paginatorController.setPage(1);
     };
 
     return that;

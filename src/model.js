@@ -1,3 +1,9 @@
+var ajaxErrorResponse = function (that, jqXHR) {
+    if(jqXHR.status === 409) {
+        that.publish('error', jqXHR.responseJSON);
+    }
+};
+
 var createSchemaModel = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(),
@@ -12,11 +18,7 @@ var createSchemaModel = function (fig) {
                         JSON.stringify(data) : data,
                 dataType: 'json',
                 success: fig.success,
-                error: function (jqXHR) {
-                    if(jqXHR.status === 409) {
-                        that.publish('error', jqXHR.responseJSON);
-                    }
-                }
+                error: partial(ajaxErrorResponse, that)
             });
         };
 
@@ -94,7 +96,8 @@ var createSchemaModel = function (fig) {
 
 var createPaginatorModel = function (fig) {
     fig = fig || {};
-    var that = mixinPubSub(), data = {};
+    var that = mixinPubSub(), data = {},
+        url = fig.url;
 
     data.pageNumber = fig.pageNumber || 1;
     data.numberOfPages = fig.numberOfPages || 1;
@@ -122,6 +125,15 @@ var createPaginatorModel = function (fig) {
         if(isEmpty(errors)) {
             data = union(data, newData);
             that.publish('change', newData);
+            if(newData.pageNumber) {
+                $.ajax({
+                    url: url + '/page/' + that.get('pageNumber'),
+                    method: 'GET',
+                    dataType: 'json',
+                    success: partial(that.publish, 'load'),
+                    error: partial(ajaxErrorResponse, that)
+                });
+            }
             return true;
         }
         else {

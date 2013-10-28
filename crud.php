@@ -53,12 +53,29 @@ function getPageNO() {
     return explode('/', $_SERVER['PATH_INFO'])[2];
 }
 
+function limit(array $allRows, $begining, $numberOfResults) {
+    $limited = array();
+    for($i = $begining; $i < $begining + $numberOfResults; $i += 1) {
+        $limited[] = $allRows[$i];
+    }
+    return $limited;
+}
+
 $requestData = json_decode(file_get_contents('php://input'), true);
+$rowsPerPage = 3;
+$numberOfPages = ceil(count($file->select()) / $rowsPerPage);
 
 $response = null;
 switch($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        $response = array('pages' => 150, 'data' => $file->select());
+        $page = getPageNO();
+        $response = array(
+            'pages' => $numberOfPages,
+            'data' => limit(
+                $file->select(),
+                $rowsPerPage * ($page - 1),
+                $rowsPerPage
+            ));
         break;
     case 'PUT':
         $file->update($requestData, array('id' => getID()));

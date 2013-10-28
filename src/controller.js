@@ -127,6 +127,26 @@ var createPaginatorController = function (fig) {
     fig = fig || {};
     var that = createController(fig);
 
+    var bind = function () {
+        that.$('li a').unbind();
+        that.$('li a').click(function () {
+            var pageNumber = Number($(this).data('page-number'));
+            that.model.set({ pageNumber: pageNumber });
+            that.setSelected(pageNumber);
+        });
+    };
+
+    that.setSelected = function (pageNumber) {
+        console.log('setSelected', pageNumber);
+        that.$('li a').removeClass('selected');
+        that.$('li a').each(function () {
+            if(Number($(this).data('page-number')) === pageNumber) {
+                console.log('set selected match', this);
+                $(this).addClass('selected');
+            }
+        });
+    };
+
     that.render = function (pages) {
         pages = pages || that.calculatePageRange();
         var error = that.model.validate();
@@ -134,6 +154,11 @@ var createPaginatorController = function (fig) {
             pages: pages,
             error: error
         }));
+        bind();
+    };
+
+    that.setPage = function (pageNumber) {
+        that.model.set({ pageNumber: pageNumber });
     };
 
     //determines how many page list items to render based on width of the list
@@ -185,7 +210,6 @@ var createPaginatorController = function (fig) {
         // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
         var shiftNonPositiveValues = function (array) {
             var shifted = [];
-
             foreach(reverse(array), function (number) {
                 if(number <= 0) {
                     shifted.push(last(shifted) + 1);
@@ -194,31 +218,25 @@ var createPaginatorController = function (fig) {
                     shifted.unshift(number);
                 }
             });
-
             return shifted;
         };
 
         return function () {
-            if(fig.maxPageNavIcons) {
-                return fig.maxPageNavIcons;
-            }
-            else {
-                initHTMLWidths();
-                //TODO: move logic into model?
-                console.log(widths);
-                var currentPage = that.model.get('pageNumber');
-                var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
-
-                return shiftNonPositiveValues(
-                    reverse(getPageNumbers(currentPage, bufferWidth, false))
-                        .concat([currentPage])
-                        .concat(getPageNumbers(currentPage, bufferWidth, true))
-                );
-            }
+            initHTMLWidths();
+            var currentPage = that.model.get('pageNumber');
+            var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
+            return filter(shiftNonPositiveValues(
+                reverse(getPageNumbers(currentPage, bufferWidth, false))
+                .concat([currentPage])
+                .concat(getPageNumbers(currentPage, bufferWidth, true))
+            ), function (pageNumber) {
+                return pageNumber <= that.model.get('numberOfPages');
+            });
         };
     }());
 
     that.model.subscribe('change', function (data) {
+        console.log(that.model.get());
         that.render();
     });
 
@@ -235,7 +253,6 @@ var createListController = function (fig) {
             var $container = that.$('#crud-list-item-container');
             $container.html('');
             foreach(items, function (item) {
-                //console.log(item.model.id());
                 var elID = 'crud-list-item-' + item.model.id();
                 $container.append(
                     '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
@@ -290,6 +307,10 @@ var createListController = function (fig) {
         return filter(items, function (controller) {
             return controller.model.id() === id;
         })[0];
+    };
+
+    that.clear = function () {
+        items = [];
     };
 
     that.remove = function (id) {

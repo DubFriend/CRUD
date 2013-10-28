@@ -145,7 +145,7 @@ var createPaginatorTemplate = function () {
     '<div class="crud-paginator">' +
         '<ol class="crud-pages">' +
             '{{#pages}}' +
-                '<li><a href="#/page/{{.}}">{{.}}</a></li>' +
+                '<li><a data-page-number="{{.}}" href="#/page/{{.}}">{{.}}</a></li>' +
             '{{/pages}}' +
         '</ol>' +
         '<form class="crud-goto-page-form">' +
