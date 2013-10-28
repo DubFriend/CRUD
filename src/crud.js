@@ -108,6 +108,7 @@ this.createCRUD = function (fig) {
             var id = row.id;
             delete row.id;
             addItem(createDefaultModel(row, id));
+            listController.setSelected();
         });
     };
 

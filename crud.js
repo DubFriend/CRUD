@@ -196,6 +196,14 @@ var ajaxErrorResponse = function (that, jqXHR) {
     }
 };
 
+//  ######    ######   ##     ##  ########  ##     ##     ###
+// ##    ##  ##    ##  ##     ##  ##        ###   ###    ## ##
+// ##        ##        ##     ##  ##        #### ####   ##   ##
+//  ######   ##        #########  ######    ## ### ##  ##     ##
+//       ##  ##        ##     ##  ##        ##     ##  #########
+// ##    ##  ##    ##  ##     ##  ##        ##     ##  ##     ##
+//  ######    ######   ##     ##  ########  ##     ##  ##     ##
+
 var createSchemaModel = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(),
@@ -283,8 +291,13 @@ var createSchemaModel = function (fig) {
     return that;
 };
 
-
-
+// ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
+// ##     ##    ## ##    ##    ##    ##   ###   ##    ## ##       ##     ##     ##  ##     ##
+// ##     ##   ##   ##   ##          ##   ####  ##   ##   ##      ##     ##     ##  ##     ##
+// ########   ##     ##  ##   ####   ##   ## ## ##  ##     ##     ##     ##     ##  ########
+// ##         #########  ##    ##    ##   ##  ####  #########     ##     ##     ##  ##   ##
+// ##         ##     ##  ##    ##    ##   ##   ###  ##     ##     ##     ##     ##  ##    ##
+// ##         ##     ##   ######    ####  ##    ##  ##     ##     ##      #######   ##     ##
 
 var createPaginatorModel = function (fig) {
     fig = fig || {};
@@ -340,6 +353,14 @@ var createPaginatorModel = function (fig) {
 
     return that;
 };
+
+// ########   #######   ########   ##     ##
+// ##        ##     ##  ##     ##  ###   ###
+// ##        ##     ##  ##     ##  #### ####
+// ######    ##     ##  ########   ## ### ##
+// ##        ##     ##  ##   ##    ##     ##
+// ##        ##     ##  ##    ##   ##     ##
+// ##         #######   ##     ##  ##     ##
 
 var createFormTemplate = function (schema, crudName) {
     var createInput = function (item, name) {
@@ -457,9 +478,30 @@ var createFormTemplate = function (schema, crudName) {
     '</form>';
 };
 
+// ##        ####   ######   ########      ####  ########  ########  ##     ##
+// ##         ##   ##    ##     ##          ##      ##     ##        ###   ###
+// ##         ##   ##           ##          ##      ##     ##        #### ####
+// ##         ##    ######      ##          ##      ##     ######    ## ### ##
+// ##         ##         ##     ##          ##      ##     ##        ##     ##
+// ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
+// ########  ####   ######      ##         ####     ##     ########  ##     ##
 
+var createListItemTemplate = function (schema, crudName) {
+    return '' +
+    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    reduce(schema, function (acc, item, name) {
+        return (acc || '') +
+        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+    });
+};
 
-
+// ##        ####   ######   ########
+// ##         ##   ##    ##     ##
+// ##         ##   ##           ##
+// ##         ##    ######      ##
+// ##         ##         ##     ##
+// ##         ##   ##    ##     ##
+// ########  ####   ######      ##
 
 var createListTemplate = function (schema, crudName) {
     return '' +
@@ -480,8 +522,13 @@ var createListTemplate = function (schema, crudName) {
     '<button id="crud-delete-selected">Delete Selected</button>';
 };
 
-
-
+// ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
+// ##     ##    ## ##    ##    ##    ##   ###   ##    ## ##       ##     ##     ##  ##     ##
+// ##     ##   ##   ##   ##          ##   ####  ##   ##   ##      ##     ##     ##  ##     ##
+// ########   ##     ##  ##   ####   ##   ## ## ##  ##     ##     ##     ##     ##  ########
+// ##         #########  ##    ##    ##   ##  ####  #########     ##     ##     ##  ##   ##
+// ##         ##     ##  ##    ##    ##   ##   ###  ##     ##     ##     ##     ##  ##    ##
+// ##         ##     ##   ######    ####  ##    ##  ##     ##     ##      #######   ##     ##
 
 var createPaginatorTemplate = function () {
     return '' +
@@ -499,18 +546,13 @@ var createPaginatorTemplate = function () {
     '</div>';
 };
 
-
-
-
-
-var createListItemTemplate = function (schema, crudName) {
-    return '' +
-    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
-    reduce(schema, function (acc, item, name) {
-        return (acc || '') +
-        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
-    });
-};
+//  ######    #######   ##    ##  ########  ########    #######   ##        ##        ########  ########
+// ##    ##  ##     ##  ###   ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
+// ##        ##     ##  ####  ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
+// ##        ##     ##  ## ## ##     ##     ########   ##     ##  ##        ##        ######    ########
+// ##        ##     ##  ##  ####     ##     ##   ##    ##     ##  ##        ##        ##        ##   ##
+// ##    ##  ##     ##  ##   ###     ##     ##    ##   ##     ##  ##        ##        ##        ##    ##
+//  ######    #######   ##    ##     ##     ##     ##   #######   ########  ########  ########  ##     ##
 
 var createController = function (fig) {
     var that = {},
@@ -572,9 +614,13 @@ var createController = function (fig) {
     return that;
 };
 
-
-
-
+// ##        ####   ######   ########      ####  ########  ########  ##     ##
+// ##         ##   ##    ##     ##          ##      ##     ##        ###   ###
+// ##         ##   ##           ##          ##      ##     ##        #### ####
+// ##         ##    ######      ##          ##      ##     ######    ## ### ##
+// ##         ##         ##     ##          ##      ##     ##        ##     ##
+// ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
+// ########  ####   ######      ##         ####     ##     ########  ##     ##
 
 var createListItemController = function (fig) {
     fig = fig || {};
@@ -635,7 +681,101 @@ var createListItemController = function (fig) {
     return that;
 };
 
+// ##        ####   ######   ########
+// ##         ##   ##    ##     ##
+// ##         ##   ##           ##
+// ##         ##    ######      ##
+// ##         ##         ##     ##
+// ##         ##   ##    ##     ##
+// ########  ####   ######      ##
 
+var createListController = function (fig) {
+    fig = fig || {};
+    var that = mixinPubSub(createController(fig)),
+        items = [],
+
+        renderItems = function () {
+            var $container = that.$('#crud-list-item-container');
+            $container.html('');
+            foreach(items, function (item) {
+                var elID = 'crud-list-item-' + item.model.id();
+                $container.append(
+                    '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
+                );
+                item.render();
+            });
+            bind();
+        },
+
+        bind = function () {
+            that.$('#crud-list-select-all').unbind();
+            that.$('#crud-list-select-all').change(function () {
+                that.$('.crud-list-selected').prop(
+                    'checked', $(this).is(':checked')
+                );
+            });
+
+            that.$('#crud-delete-selected').unbind();
+            that.$('#crud-delete-selected').click(function (e) {
+                e.preventDefault();
+                foreach(items, function (listItemController) {
+                    if(listItemController.isSelected()) {
+                        listItemController.model.delete();
+                    }
+                });
+            });
+
+            that.$('.crud-list-selected').unbind();
+            that.$('.crud-list-selected').change(function () {
+                $('#crud-list-select-all').prop('checked', false);
+            });
+        };
+
+    that.setSelected = function (selectedItemController) {
+        foreach(items, function (itemController) {
+            itemController.deselect();
+        });
+        if(selectedItemController) {
+            selectedItemController.select();
+        }
+    };
+
+    that.setSelectAll = function (isSelected) {
+        $('#crud-list-select-all').prop('checked', isSelected);
+    };
+
+    that.add = function (itemController) {
+        items.push(itemController);
+        renderItems();
+    };
+
+    that.getItemControllerByID = function (id) {
+        return filter(items, function (controller) {
+            return controller.model.id() === id;
+        })[0];
+    };
+
+    that.clear = function () {
+        items = [];
+    };
+
+    that.remove = function (id) {
+        items = filter(items, function (controller) {
+            return controller.model.id() != id;
+        });
+        renderItems();
+    };
+
+    return that;
+};
+
+// ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
+// ##     ##    ## ##    ##    ##    ##   ###   ##    ## ##       ##     ##     ##  ##     ##
+// ##     ##   ##   ##   ##          ##   ####  ##   ##   ##      ##     ##     ##  ##     ##
+// ########   ##     ##  ##   ####   ##   ## ## ##  ##     ##     ##     ##     ##  ########
+// ##         #########  ##    ##    ##   ##  ####  #########     ##     ##     ##  ##   ##
+// ##         ##     ##  ##    ##    ##   ##   ###  ##     ##     ##     ##     ##  ##    ##
+// ##         ##     ##   ######    ####  ##    ##  ##     ##     ##      #######   ##     ##
 
 var createPaginatorController = function (fig) {
     fig = fig || {};
@@ -757,89 +897,13 @@ var createPaginatorController = function (fig) {
     return that;
 };
 
-
-
-var createListController = function (fig) {
-    fig = fig || {};
-    var that = mixinPubSub(createController(fig)),
-        items = [],
-        renderItems = function () {
-            var $container = that.$('#crud-list-item-container');
-            $container.html('');
-            foreach(items, function (item) {
-                var elID = 'crud-list-item-' + item.model.id();
-                $container.append(
-                    '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
-                );
-                item.render();
-            });
-            bind();
-        },
-        bind = function () {
-            that.$('#crud-list-select-all').unbind();
-            that.$('#crud-list-select-all').change(function () {
-                that.$('.crud-list-selected').prop(
-                    'checked', $(this).is(':checked')
-                );
-            });
-
-            that.$('#crud-delete-selected').unbind();
-            that.$('#crud-delete-selected').click(function (e) {
-                e.preventDefault();
-                foreach(items, function (listItemController) {
-                    if(listItemController.isSelected()) {
-                        listItemController.model.delete();
-                    }
-                });
-            });
-
-            that.$('.crud-list-selected').unbind();
-            that.$('.crud-list-selected').change(function () {
-                $('#crud-list-select-all').prop('checked', false);
-            });
-        };
-
-    that.setSelected = function (selectedItemController) {
-        foreach(items, function (itemController) {
-            itemController.deselect();
-        });
-        if(selectedItemController) {
-            selectedItemController.select();
-        }
-    };
-
-    that.setSelectAll = function (isSelected) {
-        $('#crud-list-select-all').prop('checked', isSelected);
-    };
-
-    that.add = function (itemController) {
-        items.push(itemController);
-        renderItems();
-    };
-
-    that.getItemControllerByID = function (id) {
-        return filter(items, function (controller) {
-            return controller.model.id() === id;
-        })[0];
-    };
-
-    that.clear = function () {
-        items = [];
-    };
-
-    that.remove = function (id) {
-        items = filter(items, function (controller) {
-            return controller.model.id() != id;
-        });
-        renderItems();
-    };
-
-    return that;
-};
-
-
-
-
+// ########   #######   ########   ##     ##
+// ##        ##     ##  ##     ##  ###   ###
+// ##        ##     ##  ##     ##  #### ####
+// ######    ##     ##  ########   ## ### ##
+// ##        ##     ##  ##   ##    ##     ##
+// ##        ##     ##  ##    ##   ##     ##
+// ##         #######   ##     ##  ##     ##
 
 var createFormController = function (fig) {
     fig = fig || {};
@@ -1052,6 +1116,7 @@ this.createCRUD = function (fig) {
             var id = row.id;
             delete row.id;
             addItem(createDefaultModel(row, id));
+            listController.setSelected();
         });
     };
 

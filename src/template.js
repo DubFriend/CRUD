@@ -1,3 +1,11 @@
+// ########   #######   ########   ##     ##
+// ##        ##     ##  ##     ##  ###   ###
+// ##        ##     ##  ##     ##  #### ####
+// ######    ##     ##  ########   ## ### ##
+// ##        ##     ##  ##   ##    ##     ##
+// ##        ##     ##  ##    ##   ##     ##
+// ##         #######   ##     ##  ##     ##
+
 var createFormTemplate = function (schema, crudName) {
     var createInput = function (item, name) {
         var input = function (checked, value, isInputClass) {
@@ -114,9 +122,30 @@ var createFormTemplate = function (schema, crudName) {
     '</form>';
 };
 
+// ##        ####   ######   ########      ####  ########  ########  ##     ##
+// ##         ##   ##    ##     ##          ##      ##     ##        ###   ###
+// ##         ##   ##           ##          ##      ##     ##        #### ####
+// ##         ##    ######      ##          ##      ##     ######    ## ### ##
+// ##         ##         ##     ##          ##      ##     ##        ##     ##
+// ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
+// ########  ####   ######      ##         ####     ##     ########  ##     ##
 
+var createListItemTemplate = function (schema, crudName) {
+    return '' +
+    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    reduce(schema, function (acc, item, name) {
+        return (acc || '') +
+        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+    });
+};
 
-
+// ##        ####   ######   ########
+// ##         ##   ##    ##     ##
+// ##         ##   ##           ##
+// ##         ##    ######      ##
+// ##         ##         ##     ##
+// ##         ##   ##    ##     ##
+// ########  ####   ######      ##
 
 var createListTemplate = function (schema, crudName) {
     return '' +
@@ -137,8 +166,13 @@ var createListTemplate = function (schema, crudName) {
     '<button id="crud-delete-selected">Delete Selected</button>';
 };
 
-
-
+// ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
+// ##     ##    ## ##    ##    ##    ##   ###   ##    ## ##       ##     ##     ##  ##     ##
+// ##     ##   ##   ##   ##          ##   ####  ##   ##   ##      ##     ##     ##  ##     ##
+// ########   ##     ##  ##   ####   ##   ## ## ##  ##     ##     ##     ##     ##  ########
+// ##         #########  ##    ##    ##   ##  ####  #########     ##     ##     ##  ##   ##
+// ##         ##     ##  ##    ##    ##   ##   ###  ##     ##     ##     ##     ##  ##    ##
+// ##         ##     ##   ######    ####  ##    ##  ##     ##     ##      #######   ##     ##
 
 var createPaginatorTemplate = function () {
     return '' +
@@ -154,17 +188,4 @@ var createPaginatorTemplate = function () {
             '<div class="crud-help"></div>' +
         '</form>' +
     '</div>';
-};
-
-
-
-
-
-var createListItemTemplate = function (schema, crudName) {
-    return '' +
-    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
-    reduce(schema, function (acc, item, name) {
-        return (acc || '') +
-        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
-    });
 };

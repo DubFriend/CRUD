@@ -55,7 +55,11 @@ function getPageNO() {
 
 function limit(array $allRows, $begining, $numberOfResults) {
     $limited = array();
-    for($i = $begining; $i < $begining + $numberOfResults; $i += 1) {
+    for(
+        $i = $begining;
+        $i < $begining + $numberOfResults && $i < count($allRows);
+        $i += 1
+    ) {
         $limited[] = $allRows[$i];
     }
     return $limited;
