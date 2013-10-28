@@ -183,6 +183,8 @@ var createListController = function (fig) {
             });
         };
 
+    that.orderModel = fig.orderModel;
+
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
             itemController.deselect();

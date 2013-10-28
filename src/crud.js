@@ -22,10 +22,19 @@ this.createCRUD = function (fig) {
             });
         };
 
+
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+
+    var orderModel = createOrderModel({
+        url: url,
+        data: {
+            order: map(schema, partial(dot, 'order')),
+            filter: map(schema, partial(dot, 'filter'))
+        }
+    });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
@@ -34,12 +43,11 @@ this.createCRUD = function (fig) {
     });
     paginatorController.render();
 
-
-
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
         model: createDefaultModel(),
+        orderModel: orderModel,
         createModel: createDefaultModel,
         template: that.listTemplate
     });
@@ -112,13 +120,18 @@ this.createCRUD = function (fig) {
         });
     };
 
+    var load = function (response) {
+        console.log('load', response);
+        setCRUDList(response.data);
+        paginatorController.model.set({ numberOfPages: response.pages });
+    };
+
     that.init = function () {
         that.newItem();
-        paginatorController.model.subscribe('load', function (response) {
-            console.log('load', response);
-            setCRUDList(response.data);
-            paginatorController.model.set({ numberOfPages: response.pages });
-        });
+
+        paginatorController.model.subscribe('load', load);
+        listController.orderModel.subscribe('load', load);
+
         paginatorController.setPage(1);
     };
 

@@ -202,6 +202,13 @@
         ok(true, 'initiated without error');
     });
 
+//  ######    ######   ##     ##  ########  ##     ##     ###         ##     ##   #######   ########   ########  ##
+// ##    ##  ##    ##  ##     ##  ##        ###   ###    ## ##        ###   ###  ##     ##  ##     ##  ##        ##
+// ##        ##        ##     ##  ##        #### ####   ##   ##       #### ####  ##     ##  ##     ##  ##        ##
+//  ######   ##        #########  ######    ## ### ##  ##     ##      ## ### ##  ##     ##  ##     ##  ######    ##
+//       ##  ##        ##     ##  ##        ##     ##  #########      ##     ##  ##     ##  ##     ##  ##        ##
+// ##    ##  ##    ##  ##     ##  ##        ##     ##  ##     ##      ##     ##  ##     ##  ##     ##  ##        ##
+//  ######    ######   ##     ##  ########  ##     ##  ##     ##      ##     ##   #######   ########   ########  ########
 
     test('model.isNew', function () {
         strictEqual(true, buildModel().isNew(), 'model without id is new');
@@ -216,14 +223,9 @@
                 equal(fig.method, 'POST', 'ajax post on new save');
                 deepEqual(getDefaultData(), fig.data, 'ajax data set');
                 model.subscribe('saved', function (wasNew) {
-                    //equal(thisModel, model, 'models are the same object');
-                    //setTimeout(function () {
                     strictEqual(wasNew, true, 'passed previous "new" status');
-                    //strictEqual(false, thisModel.isNew(), 'model no longer new');
                     strictEqual(false, model.isNew(), 'model no longer new');
                     start();
-                    //}, 0);
-
                 });
                 fig.success(5);
             }
@@ -303,6 +305,27 @@
         deepEqual(model.get(), {}, 'model cleared');
     });
 
+//  ######   ########     ###     ########    ######   ##     ##      ##     ##   #######   ########   ########  ##
+// ##    ##  ##          ## ##    ##     ##  ##    ##  ##     ##      ###   ###  ##     ##  ##     ##  ##        ##
+// ##        ##         ##   ##   ##     ##  ##        ##     ##      #### ####  ##     ##  ##     ##  ##        ##
+//  ######   ######    ##     ##  ########   ##        #########      ## ### ##  ##     ##  ##     ##  ######    ##
+//       ##  ##        #########  ##   ##    ##        ##     ##      ##     ##  ##     ##  ##     ##  ##        ##
+// ##    ##  ##        ##     ##  ##    ##   ##    ##  ##     ##      ##     ##  ##     ##  ##     ##  ##        ##
+//  ######   ########  ##     ##  ##     ##   ######   ##     ##      ##     ##   #######   ########   ########  ########
+
+
+
+
+
+//  ######    #######   ##    ##  ########  ########    #######   ##        ##        ########  ########
+// ##    ##  ##     ##  ###   ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
+// ##        ##     ##  ####  ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
+// ##        ##     ##  ## ## ##     ##     ########   ##     ##  ##        ##        ######    ########
+// ##        ##     ##  ##  ####     ##     ##   ##    ##     ##  ##        ##        ##        ##   ##
+// ##    ##  ##     ##  ##   ###     ##     ##    ##   ##     ##  ##        ##        ##        ##    ##
+//  ######    #######   ##    ##     ##     ##     ##   #######   ########  ########  ########  ##     ##
+
+
     test('controller.mapModelToView', function () {
         deepEqual(
             buildController().mapModelToView(getDefaultData()),
@@ -324,7 +347,7 @@
 
     test('formController updates view on model change', function () {
         var controller = buildFormController();
-        controller.model.set({ text: 'foo' });
+        controller.model.set({ text: 'foo' }, { validate: false });
         deepEqual(getFormData(), union(getDefaultData(), { text: 'foo' }));
     });
 
@@ -519,6 +542,15 @@
         deepEqual(paginatorModel.get(), {numberOfPages: 3, pageNumber: 2 }, 'data set');
     });
 
+    test('set, passed { silent: true } option.', function () {
+        var isCalled = false;
+        paginatorModel.subscribe('change', function (data) {
+            isCalled = true;
+        });
+        paginatorModel.set({ pageNumber: 2, numberOfPages: 3 }, { silent: true });
+        strictEqual(isCalled, false, 'change not published');
+    });
+
     asyncTest('set error', function () {
         expect(2);
         paginatorModel.subscribe('error', function (errors) {
@@ -582,6 +614,7 @@
         };
         paginatorController.model.set({ numberOfPages: 7 });
     });
+
 
 }());
 

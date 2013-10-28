@@ -190,6 +190,52 @@ var mixinPubSub = function (object) {
     return object;
 };
 
+// ##     ##   #######   ########   ########  ##
+// ###   ###  ##     ##  ##     ##  ##        ##
+// #### ####  ##     ##  ##     ##  ##        ##
+// ## ### ##  ##     ##  ##     ##  ######    ##
+// ##     ##  ##     ##  ##     ##  ##        ##
+// ##     ##  ##     ##  ##     ##  ##        ##
+// ##     ##   #######   ########   ########  ########
+
+var createModel = function (fig, my) {
+    fig = fig || {};
+    var that = mixinPubSub();
+
+    my.url = fig.url;
+    my.data = fig.data;
+
+    that.validate = fig.validate || function (data) {
+        return {};
+    };
+
+    that.get = function (key) {
+        return key ? my.data[key] : copy(my.data);
+    };
+
+    that.set = function (successCallback, newData, options) {
+        options = options || {};
+        var errors = options.validate === false ? {} : that.validate(newData);
+        if(isEmpty(errors)) {
+            my.data = union(my.data, newData);
+            if(options.silent !== true) {
+                that.publish('change', newData);
+                successCallback(newData, options);
+            }
+            return true;
+        }
+        else {
+            if(options.silent !== true) {
+                that.publish('error', errors);
+            }
+            return false;
+        }
+    };
+
+    return that;
+};
+
+
 var ajaxErrorResponse = function (that, jqXHR) {
     if(jqXHR.status === 409) {
         that.publish('error', jqXHR.responseJSON);
@@ -206,16 +252,15 @@ var ajaxErrorResponse = function (that, jqXHR) {
 
 var createSchemaModel = function (fig) {
     fig = fig || {};
-    var that = mixinPubSub(),
-        url = fig.url,
-        data = fig.data || {},
+    var my = {};
+    var that = createModel(fig, my),
         id = fig.id,
         ajax = fig.ajax || function (fig) {
             $.ajax({
-                url: that.isNew() ? url : url + '/' + that.id(),
+                url: that.isNew() ? my.url : my.url + '/' + that.id(),
                 method: fig.method,
                 data: fig.method === 'PUT' || fig.method === 'DELETE' ?
-                        JSON.stringify(data) : data,
+                        JSON.stringify(my.data) : my.data,
                 dataType: 'json',
                 success: fig.success,
                 error: partial(ajaxErrorResponse, that)
@@ -230,34 +275,21 @@ var createSchemaModel = function (fig) {
         return id;
     };
 
-    that.get = function (key) {
-        return key ? data[key] : copy(data);
-    };
-
-    that.set = function (newData) {
-        foreach(newData, function (value, key) {
-            data[key] = value;
-        });
-        that.publish('change', that);
-    };
+    that.set = partial(that.set, function () {});
 
     that.clear = function () {
-        data = {};
+        my.data = {};
         id = undefined;
         that.publish('change', that);
-    };
-
-    that.validate = fig.validate || function () {
-        return {};
     };
 
     that.save = function () {
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
-                url: that.isNew() ? url : url + '/' + id,
+                url: that.isNew() ? my.url : my.url + '/' + id,
                 method: that.isNew() ? 'POST' : 'PUT',
-                data: data,
+                data: my.data,
                 success: function (response) {
                     var wasNew = that.isNew();
                     id = that.isNew() ? response : id;
@@ -272,7 +304,7 @@ var createSchemaModel = function (fig) {
         console.log('delete', that.id());
         if(!that.isNew()) {
             ajax({
-                url: url + '/' + id,
+                url: my.url + '/' + id,
                 method: 'DELETE',
                 success: function (response) {
                     console.log('delete success', response);
@@ -301,19 +333,22 @@ var createSchemaModel = function (fig) {
 
 var createPaginatorModel = function (fig) {
     fig = fig || {};
-    var that = mixinPubSub(), data = {},
-        url = fig.url;
+    var my = {};
+    fig.data = fig.data || {};
+    fig.data.pageNumber = fig.pageNumber || 1;
+    fig.data.numberOfPages = fig.numberOfPages || 1;
 
-    data.pageNumber = fig.pageNumber || 1;
-    data.numberOfPages = fig.numberOfPages || 1;
+    var that = createModel(fig, my);//mixinPubSub(),
+        //data = {},
+        //url = fig.url;
 
     that.validate = function (testData) {
-        testData = testData || data;
+        testData = testData || my.data;
         var errors = {};
         var tempNumberOfPages = testData.numberOfPages !== undefined ?
-            testData.numberOfPages : data.numberOfPages;
+            testData.numberOfPages : my.data.numberOfPages;
         var tempPageNumber = testData.pageNumber !== undefined ?
-            testData.pageNumber : data.pageNumber;
+            testData.pageNumber : my.data.pageNumber;
 
         if(tempPageNumber <= 0) {
             errors.pageNumber = 'Page number must be greater than zero.';
@@ -325,31 +360,54 @@ var createPaginatorModel = function (fig) {
         return errors;
     };
 
-    that.set = function (newData) {
-        var errors = that.validate(newData);
-        if(isEmpty(errors)) {
-            data = union(data, newData);
-            that.publish('change', newData);
-            if(newData.pageNumber) {
-                $.ajax({
-                    url: url + '/page/' + that.get('pageNumber'),
-                    method: 'GET',
-                    dataType: 'json',
-                    success: partial(that.publish, 'load'),
-                    error: partial(ajaxErrorResponse, that)
-                });
-            }
-            return true;
+    that.set = partial(that.set, function (newData) {
+        if(newData.pageNumber) {
+            $.ajax({
+                url: my.url + '/page/' + newData.pageNumber,
+                method: 'GET',
+                dataType: 'json',
+                success: partial(that.publish, 'load'),
+                error: partial(ajaxErrorResponse, that)
+            });
         }
-        else {
-            that.publish('error', errors);
-            return false;
-        }
+    });
+
+    return that;
+};
+
+//  #######   ########   ########   ########  ########
+// ##     ##  ##     ##  ##     ##  ##        ##     ##
+// ##     ##  ##     ##  ##     ##  ##        ##     ##
+// ##     ##  ########   ##     ##  ######    ########
+// ##     ##  ##   ##    ##     ##  ##        ##   ##
+// ##     ##  ##    ##   ##     ##  ##        ##    ##
+//  #######   ##     ##  ########   ########  ##     ##
+
+var createOrderModel = function (fig) {
+    fig = fig || {};
+    var my = {};
+    var that = createModel(fig, my),
+        schemaModel = fig.schemaModel;
+
+    var appendKey = function (appendingString, collection) {
+        collection = collection || {};
+        return map(collection, identity, function (key) {
+            return appendingString + key;
+        });
     };
 
-    that.get = function (key) {
-        return key ? data[key] : copy(data);
-    };
+    that.set = partial(that.set, function (newData) {
+        fig = fig || {};
+        schemaModel.set({ pageNumber: 1 }, { silent: true });
+        $.ajax({
+            url: my.url + '/page/1',
+            method: 'GET',
+            data: appendKey('order_', my.data),
+            dataType: 'json',
+            success: partial(that.publish, 'load'),
+            error: partial(ajaxErrorResponse, that)
+        });
+    });
 
     return that;
 };
@@ -731,6 +789,8 @@ var createListController = function (fig) {
             });
         };
 
+    that.orderModel = fig.orderModel;
+
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
             itemController.deselect();
@@ -1030,10 +1090,19 @@ this.createCRUD = function (fig) {
             });
         };
 
+
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+
+    var orderModel = createOrderModel({
+        url: url,
+        data: {
+            order: map(schema, partial(dot, 'order')),
+            filter: map(schema, partial(dot, 'filter'))
+        }
+    });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
@@ -1042,12 +1111,11 @@ this.createCRUD = function (fig) {
     });
     paginatorController.render();
 
-
-
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
         model: createDefaultModel(),
+        orderModel: orderModel,
         createModel: createDefaultModel,
         template: that.listTemplate
     });
@@ -1120,13 +1188,18 @@ this.createCRUD = function (fig) {
         });
     };
 
+    var load = function (response) {
+        console.log('load', response);
+        setCRUDList(response.data);
+        paginatorController.model.set({ numberOfPages: response.pages });
+    };
+
     that.init = function () {
         that.newItem();
-        paginatorController.model.subscribe('load', function (response) {
-            console.log('load', response);
-            setCRUDList(response.data);
-            paginatorController.model.set({ numberOfPages: response.pages });
-        });
+
+        paginatorController.model.subscribe('load', load);
+        listController.orderModel.subscribe('load', load);
+
         paginatorController.setPage(1);
     };
 
