@@ -32,7 +32,8 @@ this.createCRUD = function (fig) {
         model: createPaginatorModel(),
         template: that.paginatorTemplate
     });
-    paginatorController.render(3);
+    //paginatorController.render([1, 12, 123, 1234, 12345, 123456, 1234567]);
+    paginatorController.render();
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
@@ -111,6 +112,7 @@ this.createCRUD = function (fig) {
                     delete row.id;
                     addItem(createDefaultModel(row, id));
                 });
+                paginatorController.model.set({ numberOfPages: response.pages });
                 listController.setSelected();
             }
         });

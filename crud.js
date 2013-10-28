@@ -5,6 +5,14 @@ var identity = function (x) {
     return x;
 };
 
+var increment = function (x) {
+    return x += 1;
+};
+
+var decrement = function (x) {
+    return x -= 1;
+};
+
 var dot = function (key, object) {
     return object[key];
 };
@@ -65,6 +73,18 @@ var range = function (a, b) {
         array.push(i);
     }
     return array;
+};
+
+var reverse = function (array) {
+    var reversed = [], i;
+    for(i = array.length - 1; i >= 0; i -= 1) {
+        reversed.push(array[i]);
+    }
+    return reversed;
+};
+
+var last = function (array) {
+    return array[array.length - 1];
 };
 
 var mapToArray = function (collection, callback) {
@@ -453,11 +473,18 @@ var createListTemplate = function (schema, crudName) {
 
 var createPaginatorTemplate = function () {
     return '' +
-    '<ol class="crud-pages">' +
-        '{{#pages}}' +
-            '<li>{{.}}</li>' +
-        '{{/pages}}' +
-    '</ol>';
+    '<div class="crud-paginator">' +
+        '<ol class="crud-pages">' +
+            '{{#pages}}' +
+                '<li><a href="#/page/{{.}}">{{.}}</a></li>' +
+            '{{/pages}}' +
+        '</ol>' +
+        '<form class="crud-goto-page-form">' +
+            '<input type="text" name="goto-page" id="crud-goto-page" placeholder="page #"/>' +
+            '<input type="submit" value="Go"/>' +
+            '<div class="crud-help"></div>' +
+        '</form>' +
+    '</div>';
 };
 
 
@@ -602,42 +629,100 @@ var createPaginatorController = function (fig) {
     fig = fig || {};
     var that = createController(fig);
 
-    that.render = function (numberOfPages) {
-        //numberOfPages = numberOfPages || that.calculateNumberOfPagesToDisplay();
+    that.render = function (pages) {
+        pages = pages || that.calculatePageRange();
         var error = that.model.validate();
-        alert('render paginator');
-        console.log(that.template);
         that.$().html(Mustache.render(that.template, {
-            pages: range(1, numberOfPages),
+            pages: pages,
             error: error
         }));
     };
 
     //determines how many page list items to render based on width of the list
     //template by default.
-    // that.calculateNumberOfPagesToDisplay = (function () {
-    //     var lastCalculation = 1;
-    //     return function () {
-    //         if(fig.maxPageNavIcons) {
-    //             return fig.maxPageNavIcons;
-    //         }
-    //         else {
-    //             that.$().css({ visibility: "hidden" });
-    //             that.render(1);
-    //             var maxWidth = $('#thing-crud-list-container').width();
-    //             var navIconWidth = that.$('li').width();
-    //             var paddingWidth = that.$('.crud-pages').width() - navIconWidth;
-    //             that.render(lastCalculation);
-    //             that.$().removeAttr('style');
+    that.calculatePageRange = (function () {
+        var lastCalculation = 1;
+        var testPageNumbers = [1, 12, 123, 1234, 12345, 123456, 1234567];
+        var widths;
 
-    //             console.log(maxWidth, paddingWidth, navIconWidth);
+        var initHTMLWidths = function () {
+            that.$().css({ visibility: 'hidden' });
 
-    //             var maximumIcons = Math.floor((maxWidth - paddingWidth) / navIconWidth);
-    //             lastCalculation = maximumIcons;
-    //             return maximumIcons;
-    //         }
-    //     };
-    // }());
+            that.render(testPageNumbers);
+            var $listItems = that.$('li');
+
+            var gotoWidth = that.$('.crud-goto-page-form').width();
+
+            widths = {
+                digits: map(testPageNumbers, function (number, index) {
+                    return $listItems.eq(index).width();
+                }),
+                container: that.$('.crud-pages').width() - gotoWidth - 5,
+                goto: gotoWidth
+            };
+
+            that.render(lastCalculation);
+            that.$().removeAttr('style');
+        };
+
+        var widthOfNumber = function (number) {
+            return widths.digits[number.toString().length - 1];
+        };
+
+        var getPageNumbers = function (startingNumber, buffer, isAscending) {
+            var pageNumber = startingNumber,
+                accumulatedWidth = 0,
+                numbers = [],
+                advance = isAscending ? increment : decrement;
+
+            while(accumulatedWidth < buffer) {
+                pageNumber = advance(pageNumber);
+                accumulatedWidth += widthOfNumber(pageNumber);
+                numbers.push(pageNumber);
+            }
+            numbers.pop();
+            return numbers;
+        };
+
+        // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
+        var shiftNonPositiveValues = function (array) {
+            var shifted = [];
+
+            foreach(reverse(array), function (number) {
+                if(number <= 0) {
+                    shifted.push(last(shifted) + 1);
+                }
+                else {
+                    shifted.unshift(number);
+                }
+            });
+
+            return shifted;
+        };
+
+        return function () {
+            if(fig.maxPageNavIcons) {
+                return fig.maxPageNavIcons;
+            }
+            else {
+                initHTMLWidths();
+                //TODO: move logic into model?
+                console.log(widths);
+                var currentPage = that.model.get('pageNumber');
+                var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
+
+                return shiftNonPositiveValues(
+                    reverse(getPageNumbers(currentPage, bufferWidth, false))
+                        .concat([currentPage])
+                        .concat(getPageNumbers(currentPage, bufferWidth, true))
+                );
+            }
+        };
+    }());
+
+    that.model.subscribe('change', function (data) {
+        that.render();
+    });
 
     return that;
 };
@@ -652,7 +737,7 @@ var createListController = function (fig) {
             var $container = that.$('#crud-list-item-container');
             $container.html('');
             foreach(items, function (item) {
-                console.log(item.model.id());
+                //console.log(item.model.id());
                 var elID = 'crud-list-item-' + item.model.id();
                 $container.append(
                     '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
@@ -853,18 +938,13 @@ this.createCRUD = function (fig) {
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
 
-
-
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
         model: createPaginatorModel(),
         template: that.paginatorTemplate
     });
-    paginatorController.render(3);
-
-
-
-
+    //paginatorController.render([1, 12, 123, 1234, 12345, 123456, 1234567]);
+    paginatorController.render();
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
@@ -874,7 +954,6 @@ this.createCRUD = function (fig) {
         template: that.listTemplate
     });
     listController.renderNoError();
-
 
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
@@ -944,6 +1023,7 @@ this.createCRUD = function (fig) {
                     delete row.id;
                     addItem(createDefaultModel(row, id));
                 });
+                paginatorController.model.set({ numberOfPages: response.pages });
                 listController.setSelected();
             }
         });

@@ -1,15 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_STRICT|E_ALL);
-
-require 'jsonStore.php';
-$file = new jsonStore('data');
-
-function getID() {
-    return explode('/', $_SERVER['PATH_INFO'])[1];
-}
-
-
 //----------------------------------------------------------
 // GET
 
@@ -50,8 +39,14 @@ function getID() {
 
 // same schema as for PUT.
 
-function isPage() {
-    return explode('/', $_SERVER['PATH_INFO'])[1] === 'page';
+ini_set('display_errors', 1);
+error_reporting(E_STRICT|E_ALL);
+
+require 'jsonStore.php';
+$file = new jsonStore('data');
+
+function getID() {
+    return explode('/', $_SERVER['PATH_INFO'])[1];
 }
 
 function getPageNO() {
@@ -59,10 +54,11 @@ function getPageNO() {
 }
 
 $requestData = json_decode(file_get_contents('php://input'), true);
+
 $response = null;
 switch($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        $response = array('pages' => 1, 'data' => $file->select());
+        $response = array('pages' => 150, 'data' => $file->select());
         break;
     case 'PUT':
         $file->update($requestData, array('id' => getID()));
@@ -87,5 +83,6 @@ switch($_SERVER['REQUEST_METHOD']) {
     default:
         throw new Exception("Invalid Request Method");
 }
+
 echo json_encode($response);
 ?>

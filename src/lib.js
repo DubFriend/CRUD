@@ -2,6 +2,14 @@ var identity = function (x) {
     return x;
 };
 
+var increment = function (x) {
+    return x += 1;
+};
+
+var decrement = function (x) {
+    return x -= 1;
+};
+
 var dot = function (key, object) {
     return object[key];
 };
@@ -62,6 +70,18 @@ var range = function (a, b) {
         array.push(i);
     }
     return array;
+};
+
+var reverse = function (array) {
+    var reversed = [], i;
+    for(i = array.length - 1; i >= 0; i -= 1) {
+        reversed.push(array[i]);
+    }
+    return reversed;
+};
+
+var last = function (array) {
+    return array[array.length - 1];
 };
 
 var mapToArray = function (collection, callback) {

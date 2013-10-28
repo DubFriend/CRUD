@@ -142,11 +142,18 @@ var createListTemplate = function (schema, crudName) {
 
 var createPaginatorTemplate = function () {
     return '' +
-    '<ol class="crud-pages">' +
-        '{{#pages}}' +
-            '<li>{{.}}</li>' +
-        '{{/pages}}' +
-    '</ol>';
+    '<div class="crud-paginator">' +
+        '<ol class="crud-pages">' +
+            '{{#pages}}' +
+                '<li><a href="#/page/{{.}}">{{.}}</a></li>' +
+            '{{/pages}}' +
+        '</ol>' +
+        '<form class="crud-goto-page-form">' +
+            '<input type="text" name="goto-page" id="crud-goto-page" placeholder="page #"/>' +
+            '<input type="submit" value="Go"/>' +
+            '<div class="crud-help"></div>' +
+        '</form>' +
+    '</div>';
 };
 
 

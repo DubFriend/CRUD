@@ -542,11 +542,18 @@
         }
     });
 
-    test('calculateNumberOfPagesToDisplay', function () {
-        strictEqual(
-            paginatorController.calculateNumberOfPagesToDisplay(), 2,
-            'accounts for padding'
-        );
+    // test('calculatePageRange', function () {
+    //     paginatorController.render();
+    //     deepEqual(paginatorController.calculatePageRange(), range(1,2));
+    // });
+
+    asyncTest('responds to model change', function () {
+        expect(1);
+        paginatorController.render = function (data) {
+            strictEqual(data, undefined, 'render not passed any data');
+            start();
+        };
+        paginatorController.model.set({ numberOfPages: 7 });
     });
 
 }());

@@ -70,23 +70,60 @@
             margin-right: 4px;
         }
 
-        #thing-crud-container {
-            width:50%;
+        .crud-pages {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            text-align: center;
+        }
+
+        .crud-pages li {
             float: left;
         }
 
-        #thing-crud-list-container {
+        .crud-pages li a {
+            padding: 0.5em;
+        }
+
+        .crud-pages li a:hover {
+            background-color: pink;
+        }
+
+        #thing-crud-container {
             width: 50%;
             float: left;
         }
+
+        .table-column {
+            width: 50%;
+            float: left;
+        }
+
+        .crud-goto-page-form {
+            width: 100px;
+            float: right;
+        }
+
+        .crud-goto-page-form input[type="text"] {
+            width: 58px;
+        }
+
+        .crud-goto-page-form input[type="submit"] {
+            width: 40px;
+            padding: 1px;
+            margin: 0;
+        }
+
     </style>
 </head>
 <body>
     <h1>CRUD</h1>
 
     <div id="thing-crud-container"></div>
-    <div id="thing-crud-list-container"></div>
-    <div id="thing-crud-paginator-nav"></div>
+    <div class="table-column">
+        <div id="thing-crud-paginator-nav"></div>
+        <div id="thing-crud-list-container"></div>
+    </div>
 
     <script src="lib/jquery-1.10.2.js"></script>
     <script src="lib/mustache.js"></script>
