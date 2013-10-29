@@ -151,6 +151,11 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
         items = [],
+        orderIcon = {
+            ascending: '&#8679;',
+            descending: '&#8681;',
+            neutral: '&#8691;'
+        },
 
         renderItems = function () {
             var $container = that.$('#crud-list-item-container');
@@ -187,6 +192,12 @@ var createListController = function (fig) {
             that.$('.crud-list-selected').change(function () {
                 $('#crud-list-select-all').prop('checked', false);
             });
+
+            that.$('.crud-order').unbind();
+            that.$('.crud-order').click(function () {
+                that.orderModel.toggle($(this).data('name'));
+                console.log(that.orderModel.get($(this).data('name')));
+            });
         };
 
     that.orderModel = fig.orderModel;
@@ -194,15 +205,21 @@ var createListController = function (fig) {
     var parentRender = that.renderNoError;
     that.renderNoError = function () {
         that.$().html(Mustache.render(that.template, {
-            orderable: map(that.schema, partial(dot, 'orderable')),
-            order: map(that.schema, partial(dot, 'order'))
+            orderable: map(that.schema, partial(dot, 'orderable')),//that.orderModel.get('orderable'),
+            order: map(that.orderModel.get(), function (order, name) {
+                if(order === 'ascending') {
+                    return { ascending: true };
+                }
+                else if(order === 'descending') {
+                    return { descending: true };
+                }
+                else {
+                    return { neutral: true };
+                }
+            }),
+            orderIcon: orderIcon
         }));
     };
-
-    // that.render = partial(that.render, {
-    //     orderable: map(that.schema, partial(dot, 'orderable')),
-    //     order: map(that.schema, partial(dot, 'order'))
-    // });
 
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
@@ -238,6 +255,16 @@ var createListController = function (fig) {
         });
         renderItems();
     };
+
+    //rerendering the whole template was a glitchy
+    that.orderModel.subscribe('change', function (newData) {
+        console.log('orderModel change', newData);
+        that.$('[data-name="' + keys(newData)[0] + '"]').html(
+            '<span  crud-order-' + values(newData)[0] + '">' +
+                orderIcon[values(newData)[0]] +
+            '</span>'
+        );
+    });
 
     return that;
 };

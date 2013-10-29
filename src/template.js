@@ -160,16 +160,29 @@ var createListTemplate = function (schema, crudName) {
                     return (acc || '') +
                     '<th>' +
                         '{{#orderable.' + name + '}}' +
-                            '{{#order.' + name + '}}' +
-                                '<span class="crud-order crud-order-{{order.' + name + '}}"></span>' +
-                            '{{/order.' + name + '}}' +
-                            '{{^order.' + name + '}}' +
-                                '<span class="crud-order crud-order-neutral"></span>' +
-                            '{{/order.' + name + '}}' +
+                            '<a href="#" data-name="' + name + '" class="crud-order">' +
+                                '{{#order.' + name + '.ascending}}' +
+                                    '<span  crud-order-ascending">' +
+                                        '{{{orderIcon.ascending}}}' +
+                                    '</span>' +
+                                '{{/order.' + name + '.ascending}}' +
+
+                                '{{#order.' + name + '.descending}}' +
+                                    '<span class="crud-order-descending">' +
+                                        '{{{orderIcon.descending}}}' +
+                                    '</span>' +
+                                '{{/order.' + name + '.descending}}' +
+
+                                '{{#order.' + name + '.neutral}}' +
+                                    '<span class="crud-order-neutral">' +
+                                        '{{{orderIcon.neutral}}}' +
+                                    '</span>' +
+                                '{{/order.' + name + '.neutral}}' +
+                            '</a>' +
                         '{{/orderable.' + name + '}}' +
-                        '<div class="crud-th-content">' +
+                        '<span class="crud-th-content">' +
                             name +
-                        '</div>' +
+                        '</span>' +
                     '</th>';
                 }) +
             '</tr>' +

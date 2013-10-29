@@ -57,7 +57,7 @@
         }
 
         .hover {
-            background-color: yellow;
+            background-color: rgb(226, 236, 235);
             cursor: pointer;
         }
 
@@ -114,32 +114,16 @@
             margin: 0;
         }
 
-        .crud-order {
-            display: block;
-            float: left;
-            width: 16px;
-            height:16px;
-            margin:0;
-            padding: 0;
+        th a {
+            text-decoration: none;
+            padding: 0.2em 0.4em 0.2em 0.4em;
+            margin-right: 0.5em;
+            color: green;
         }
 
-        .crud-order-ascending {
-            background-image: url('img/up.png');
-        }
-
-        .crud-order-descending {
-            background-image: url('img/down.png');
-        }
-
-        .crud-order-neutral {
-            background-image: url('img/plus.png');
-        }
-
-        .crud-th-content {
-            float: right;
-            position:relative;
-            padding-right: 17px;
-            left: 17px;
+        th a:hover {
+            background-color: rgb(150, 150, 150);
+            color: lightgreen;
         }
     </style>
 </head>
@@ -169,13 +153,8 @@
             schema: {
                 text: {
                     type: 'text',
-                    value: 'default'
-                },
-                password: {
-                    type: 'password',
-                    value: 'pass',
-                    orderable: true,
-                    order: 'ascending'
+                    value: 'default',
+                    orderable: true
                 },
                 textarea: {
                     type: 'textarea'
@@ -190,13 +169,6 @@
                     values: ['a', 'b', 'c', 'd'],
                     value: 'c',
                     orderable: true
-                },
-                awesome: {
-                    type: 'select',
-                    values: ['1','2','3','4'],
-                    value: '4',
-                    orderable: true,
-                    order: 'descending'
                 }
             }
         });

@@ -384,7 +384,7 @@ var createOrderModel = function (fig) {
     fig = fig || {};
     var my = {};
     var that = createModel(fig, my),
-        schemaModel = fig.schemaModel;
+        paginatorModel = fig.paginatorModel;
 
     var appendKey = function (appendingString, collection) {
         collection = collection || {};
@@ -395,7 +395,7 @@ var createOrderModel = function (fig) {
 
     that.set = partial(that.set, function (newData) {
         fig = fig || {};
-        schemaModel.set({ pageNumber: 1 }, { silent: true });
+        paginatorModel.set({ pageNumber: 1 }, { silent: true });
         $.ajax({
             url: my.url + '/page/1',
             method: 'GET',
@@ -405,6 +405,17 @@ var createOrderModel = function (fig) {
             error: partial(ajaxErrorResponse, that)
         });
     });
+
+    that.toggle = (function () {
+        var toggleOrder = ['neutral', 'ascending', 'descending'];
+        return function (name) {
+            var currentIndex = toggleOrder.indexOf(my.data[name]);
+            var newIndex = (currentIndex + 1) % toggleOrder.length;
+            var newData = {};
+            newData[name] = toggleOrder[newIndex];
+            that.set(newData);
+        };
+    }());
 
     return that;
 };
@@ -571,16 +582,29 @@ var createListTemplate = function (schema, crudName) {
                     return (acc || '') +
                     '<th>' +
                         '{{#orderable.' + name + '}}' +
-                            '{{#order.' + name + '}}' +
-                                '<span class="crud-order crud-order-{{order.' + name + '}}"></span>' +
-                            '{{/order.' + name + '}}' +
-                            '{{^order.' + name + '}}' +
-                                '<span class="crud-order crud-order-neutral"></span>' +
-                            '{{/order.' + name + '}}' +
+                            '<a href="#" data-name="' + name + '" class="crud-order">' +
+                                '{{#order.' + name + '.ascending}}' +
+                                    '<span  crud-order-ascending">' +
+                                        '{{{orderIcon.ascending}}}' +
+                                    '</span>' +
+                                '{{/order.' + name + '.ascending}}' +
+
+                                '{{#order.' + name + '.descending}}' +
+                                    '<span class="crud-order-descending">' +
+                                        '{{{orderIcon.descending}}}' +
+                                    '</span>' +
+                                '{{/order.' + name + '.descending}}' +
+
+                                '{{#order.' + name + '.neutral}}' +
+                                    '<span class="crud-order-neutral">' +
+                                        '{{{orderIcon.neutral}}}' +
+                                    '</span>' +
+                                '{{/order.' + name + '.neutral}}' +
+                            '</a>' +
                         '{{/orderable.' + name + '}}' +
-                        '<div class="crud-th-content">' +
+                        '<span class="crud-th-content">' +
                             name +
-                        '</div>' +
+                        '</span>' +
                     '</th>';
                 }) +
             '</tr>' +
@@ -767,6 +791,11 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
         items = [],
+        orderIcon = {
+            ascending: '&#8679;',
+            descending: '&#8681;',
+            neutral: '&#8691;'
+        },
 
         renderItems = function () {
             var $container = that.$('#crud-list-item-container');
@@ -803,6 +832,12 @@ var createListController = function (fig) {
             that.$('.crud-list-selected').change(function () {
                 $('#crud-list-select-all').prop('checked', false);
             });
+
+            that.$('.crud-order').unbind();
+            that.$('.crud-order').click(function () {
+                that.orderModel.toggle($(this).data('name'));
+                console.log(that.orderModel.get($(this).data('name')));
+            });
         };
 
     that.orderModel = fig.orderModel;
@@ -810,15 +845,21 @@ var createListController = function (fig) {
     var parentRender = that.renderNoError;
     that.renderNoError = function () {
         that.$().html(Mustache.render(that.template, {
-            orderable: map(that.schema, partial(dot, 'orderable')),
-            order: map(that.schema, partial(dot, 'order'))
+            orderable: map(that.schema, partial(dot, 'orderable')),//that.orderModel.get('orderable'),
+            order: map(that.orderModel.get(), function (order, name) {
+                if(order === 'ascending') {
+                    return { ascending: true };
+                }
+                else if(order === 'descending') {
+                    return { descending: true };
+                }
+                else {
+                    return { neutral: true };
+                }
+            }),
+            orderIcon: orderIcon
         }));
     };
-
-    // that.render = partial(that.render, {
-    //     orderable: map(that.schema, partial(dot, 'orderable')),
-    //     order: map(that.schema, partial(dot, 'order'))
-    // });
 
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
@@ -854,6 +895,16 @@ var createListController = function (fig) {
         });
         renderItems();
     };
+
+    //rerendering the whole template was a glitchy
+    that.orderModel.subscribe('change', function (newData) {
+        console.log('orderModel change', newData);
+        that.$('[data-name="' + keys(newData)[0] + '"]').html(
+            '<span  crud-order-' + values(newData)[0] + '">' +
+                orderIcon[values(newData)[0]] +
+            '</span>'
+        );
+    });
 
     return that;
 };
@@ -1124,20 +1175,22 @@ this.createCRUD = function (fig) {
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
 
-    var orderModel = createOrderModel({
-        url: url,
-        data: {
-            order: map(schema, partial(dot, 'order')),
-            orderable: map(schema, partial(dot, 'orderable'))
-        }
-    });
+    var paginatorModel = createPaginatorModel({ url: url });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
-        model: createPaginatorModel({ url: url }),
+        model: paginatorModel,
         template: that.paginatorTemplate
     });
     paginatorController.render();
+
+    var orderModel = createOrderModel({
+        url: url,
+        data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
+            return item.order || 'neutral';
+        }),
+        paginatorModel: paginatorModel
+    });
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',

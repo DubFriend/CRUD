@@ -27,20 +27,22 @@ this.createCRUD = function (fig) {
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
 
-    var orderModel = createOrderModel({
-        url: url,
-        data: {
-            order: map(schema, partial(dot, 'order')),
-            orderable: map(schema, partial(dot, 'orderable'))
-        }
-    });
+    var paginatorModel = createPaginatorModel({ url: url });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
-        model: createPaginatorModel({ url: url }),
+        model: paginatorModel,
         template: that.paginatorTemplate
     });
     paginatorController.render();
+
+    var orderModel = createOrderModel({
+        url: url,
+        data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
+            return item.order || 'neutral';
+        }),
+        paginatorModel: paginatorModel
+    });
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',

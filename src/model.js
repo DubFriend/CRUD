@@ -192,7 +192,7 @@ var createOrderModel = function (fig) {
     fig = fig || {};
     var my = {};
     var that = createModel(fig, my),
-        schemaModel = fig.schemaModel;
+        paginatorModel = fig.paginatorModel;
 
     var appendKey = function (appendingString, collection) {
         collection = collection || {};
@@ -203,7 +203,7 @@ var createOrderModel = function (fig) {
 
     that.set = partial(that.set, function (newData) {
         fig = fig || {};
-        schemaModel.set({ pageNumber: 1 }, { silent: true });
+        paginatorModel.set({ pageNumber: 1 }, { silent: true });
         $.ajax({
             url: my.url + '/page/1',
             method: 'GET',
@@ -213,6 +213,17 @@ var createOrderModel = function (fig) {
             error: partial(ajaxErrorResponse, that)
         });
     });
+
+    that.toggle = (function () {
+        var toggleOrder = ['neutral', 'ascending', 'descending'];
+        return function (name) {
+            var currentIndex = toggleOrder.indexOf(my.data[name]);
+            var newIndex = (currentIndex + 1) % toggleOrder.length;
+            var newData = {};
+            newData[name] = toggleOrder[newIndex];
+            that.set(newData);
+        };
+    }());
 
     return that;
 };
