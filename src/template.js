@@ -157,7 +157,20 @@ var createListTemplate = function (schema, crudName) {
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
                 reduce(schema, function (acc, item, name) {
-                    return (acc || '') + '<th>' + name + '</th>';
+                    return (acc || '') +
+                    '<th>' +
+                        '{{#orderable.' + name + '}}' +
+                            '{{#order.' + name + '}}' +
+                                '<span class="crud-order crud-order-{{order.' + name + '}}"></span>' +
+                            '{{/order.' + name + '}}' +
+                            '{{^order.' + name + '}}' +
+                                '<span class="crud-order crud-order-neutral"></span>' +
+                            '{{/order.' + name + '}}' +
+                        '{{/orderable.' + name + '}}' +
+                        '<div class="crud-th-content">' +
+                            name +
+                        '</div>' +
+                    '</th>';
                 }) +
             '</tr>' +
         '</thead>' +

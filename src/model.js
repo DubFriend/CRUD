@@ -141,14 +141,11 @@ var createSchemaModel = function (fig) {
 
 var createPaginatorModel = function (fig) {
     fig = fig || {};
-    var my = {};
     fig.data = fig.data || {};
     fig.data.pageNumber = fig.pageNumber || 1;
     fig.data.numberOfPages = fig.numberOfPages || 1;
-
-    var that = createModel(fig, my);//mixinPubSub(),
-        //data = {},
-        //url = fig.url;
+    var my = {};
+    var that = createModel(fig, my);
 
     that.validate = function (testData) {
         testData = testData || my.data;

@@ -333,14 +333,11 @@ var createSchemaModel = function (fig) {
 
 var createPaginatorModel = function (fig) {
     fig = fig || {};
-    var my = {};
     fig.data = fig.data || {};
     fig.data.pageNumber = fig.pageNumber || 1;
     fig.data.numberOfPages = fig.numberOfPages || 1;
-
-    var that = createModel(fig, my);//mixinPubSub(),
-        //data = {},
-        //url = fig.url;
+    var my = {};
+    var that = createModel(fig, my);
 
     that.validate = function (testData) {
         testData = testData || my.data;
@@ -571,7 +568,20 @@ var createListTemplate = function (schema, crudName) {
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
                 reduce(schema, function (acc, item, name) {
-                    return (acc || '') + '<th>' + name + '</th>';
+                    return (acc || '') +
+                    '<th>' +
+                        '{{#orderable.' + name + '}}' +
+                            '{{#order.' + name + '}}' +
+                                '<span class="crud-order crud-order-{{order.' + name + '}}"></span>' +
+                            '{{/order.' + name + '}}' +
+                            '{{^order.' + name + '}}' +
+                                '<span class="crud-order crud-order-neutral"></span>' +
+                            '{{/order.' + name + '}}' +
+                        '{{/orderable.' + name + '}}' +
+                        '<div class="crud-th-content">' +
+                            name +
+                        '</div>' +
+                    '</th>';
                 }) +
             '</tr>' +
         '</thead>' +
@@ -649,7 +659,9 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        return map(modelData, function (value, name) {
+        //console.log('modelData', modelData);
+
+        var viewData = map(modelData, function (value, name) {
             var type = that.schema[name].type;
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
@@ -664,6 +676,10 @@ var createController = function (fig) {
                 return value;
             }
         });
+
+        //console.log('viewData', viewData);
+
+        return viewData;
     };
 
     that.render = partial(render, true);
@@ -790,6 +806,19 @@ var createListController = function (fig) {
         };
 
     that.orderModel = fig.orderModel;
+
+    var parentRender = that.renderNoError;
+    that.renderNoError = function () {
+        that.$().html(Mustache.render(that.template, {
+            orderable: map(that.schema, partial(dot, 'orderable')),
+            order: map(that.schema, partial(dot, 'order'))
+        }));
+    };
+
+    // that.render = partial(that.render, {
+    //     orderable: map(that.schema, partial(dot, 'orderable')),
+    //     order: map(that.schema, partial(dot, 'order'))
+    // });
 
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
@@ -1090,7 +1119,6 @@ this.createCRUD = function (fig) {
             });
         };
 
-
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
@@ -1100,7 +1128,7 @@ this.createCRUD = function (fig) {
         url: url,
         data: {
             order: map(schema, partial(dot, 'order')),
-            filter: map(schema, partial(dot, 'filter'))
+            orderable: map(schema, partial(dot, 'orderable'))
         }
     });
 

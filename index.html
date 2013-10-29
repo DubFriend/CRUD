@@ -114,6 +114,33 @@
             margin: 0;
         }
 
+        .crud-order {
+            display: block;
+            float: left;
+            width: 16px;
+            height:16px;
+            margin:0;
+            padding: 0;
+        }
+
+        .crud-order-ascending {
+            background-image: url('img/up.png');
+        }
+
+        .crud-order-descending {
+            background-image: url('img/down.png');
+        }
+
+        .crud-order-neutral {
+            background-image: url('img/plus.png');
+        }
+
+        .crud-th-content {
+            float: right;
+            position:relative;
+            padding-right: 17px;
+            left: 17px;
+        }
     </style>
 </head>
 <body>
@@ -146,7 +173,9 @@
                 },
                 password: {
                     type: 'password',
-                    value: 'pass'
+                    value: 'pass',
+                    orderable: true,
+                    order: 'ascending'
                 },
                 textarea: {
                     type: 'textarea'
@@ -159,12 +188,15 @@
                 letter: {
                     type: 'radio',
                     values: ['a', 'b', 'c', 'd'],
-                    value: 'c'
+                    value: 'c',
+                    orderable: true
                 },
                 awesome: {
                     type: 'select',
                     values: ['1','2','3','4'],
-                    value: '4'
+                    value: '4',
+                    orderable: true,
+                    order: 'descending'
                 }
             }
         });

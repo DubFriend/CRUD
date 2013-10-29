@@ -22,7 +22,6 @@ this.createCRUD = function (fig) {
             });
         };
 
-
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
@@ -32,7 +31,7 @@ this.createCRUD = function (fig) {
         url: url,
         data: {
             order: map(schema, partial(dot, 'order')),
-            filter: map(schema, partial(dot, 'filter'))
+            orderable: map(schema, partial(dot, 'orderable'))
         }
     });
 

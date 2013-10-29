@@ -43,7 +43,9 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        return map(modelData, function (value, name) {
+        //console.log('modelData', modelData);
+
+        var viewData = map(modelData, function (value, name) {
             var type = that.schema[name].type;
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
@@ -58,6 +60,10 @@ var createController = function (fig) {
                 return value;
             }
         });
+
+        //console.log('viewData', viewData);
+
+        return viewData;
     };
 
     that.render = partial(render, true);
@@ -184,6 +190,19 @@ var createListController = function (fig) {
         };
 
     that.orderModel = fig.orderModel;
+
+    var parentRender = that.renderNoError;
+    that.renderNoError = function () {
+        that.$().html(Mustache.render(that.template, {
+            orderable: map(that.schema, partial(dot, 'orderable')),
+            order: map(that.schema, partial(dot, 'order'))
+        }));
+    };
+
+    // that.render = partial(that.render, {
+    //     orderable: map(that.schema, partial(dot, 'orderable')),
+    //     order: map(that.schema, partial(dot, 'order'))
+    // });
 
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
