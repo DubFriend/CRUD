@@ -101,6 +101,13 @@ var mapToObject = function (collection, callback, keyCallback) {
     return mapped;
 };
 
+var appendKey = function (appendingString, collection) {
+    collection = collection || {};
+    return map(collection, identity, function (key) {
+        return appendingString + key;
+    });
+};
+
 var map = function (collection, callback, keyCallback) {
     return isArray(collection) ?
         mapToArray(collection, callback) :

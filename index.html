@@ -67,6 +67,7 @@
 
         .crud-list-selected {
             float: right;
+            clear: left;
             margin-right: 4px;
         }
 
@@ -79,6 +80,7 @@
 
         .crud-pages li {
             float: left;
+            margin: 0.2em;
         }
 
         .crud-pages li a {
@@ -93,7 +95,7 @@
             width: 50%;
             float: left;
         }
-
+`
         .table-column {
             width: 50%;
             float: left;
@@ -153,11 +155,11 @@
             schema: {
                 text: {
                     type: 'text',
-                    value: 'default',
-                    orderable: true
+                    value: 'default'
                 },
                 textarea: {
-                    type: 'textarea'
+                    type: 'textarea',
+                    orderable: true
                 },
                 fruit: {
                     type: 'checkbox',

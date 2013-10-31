@@ -145,7 +145,9 @@ var createPaginatorModel = function (fig) {
     fig.data.pageNumber = fig.pageNumber || 1;
     fig.data.numberOfPages = fig.numberOfPages || 1;
     var my = {};
-    var that = createModel(fig, my);
+    var that = createModel(fig, my),
+
+        requestModel = fig.requestModel;
 
     that.validate = function (testData) {
         testData = testData || my.data;
@@ -167,13 +169,14 @@ var createPaginatorModel = function (fig) {
 
     that.set = partial(that.set, function (newData) {
         if(newData.pageNumber) {
-            $.ajax({
-                url: my.url + '/page/' + newData.pageNumber,
-                method: 'GET',
-                dataType: 'json',
-                success: partial(that.publish, 'load'),
-                error: partial(ajaxErrorResponse, that)
-            });
+            requestModel.changePage(newData.pageNumber);
+            // $.ajax({
+            //     url: my.url + '/page/' + newData.pageNumber,
+            //     method: 'GET',
+            //     dataType: 'json',
+            //     success: partial(that.publish, 'load'),
+            //     error: partial(ajaxErrorResponse, that)
+            // });
         }
     });
 
@@ -192,27 +195,9 @@ var createOrderModel = function (fig) {
     fig = fig || {};
     var my = {};
     var that = createModel(fig, my),
-        paginatorModel = fig.paginatorModel;
+        requestModel = fig.requestModel;
 
-    var appendKey = function (appendingString, collection) {
-        collection = collection || {};
-        return map(collection, identity, function (key) {
-            return appendingString + key;
-        });
-    };
-
-    that.set = partial(that.set, function (newData) {
-        fig = fig || {};
-        paginatorModel.set({ pageNumber: 1 }, { silent: true });
-        $.ajax({
-            url: my.url + '/page/1',
-            method: 'GET',
-            data: appendKey('order_', my.data),
-            dataType: 'json',
-            success: partial(that.publish, 'load'),
-            error: partial(ajaxErrorResponse, that)
-        });
-    });
+    that.set = partial(that.set, requestModel.search);
 
     that.toggle = (function () {
         var toggleOrder = ['neutral', 'ascending', 'descending'];
@@ -224,6 +209,72 @@ var createOrderModel = function (fig) {
             that.set(newData);
         };
     }());
+
+    return that;
+};
+
+// ########  ####  ##        ########  ########  ########
+// ##         ##   ##           ##     ##        ##     ##
+// ##         ##   ##           ##     ##        ##     ##
+// ######     ##   ##           ##     ######    ########
+// ##         ##   ##           ##     ##        ##   ##
+// ##         ##   ##           ##     ##        ##    ##
+// ##        ####  ########     ##     ########  ##     ##
+
+var createFilterModel = function (fig) {
+    fig = fig || {};
+    var my = {},
+        that = createModel(fig, my),
+        requestModel = fig.requestModel,
+        filterSchema = fig.filterSchema;
+
+    that.set = partial(that.set, requestModel.search);
+
+    return that;
+};
+
+// ########   ########   #######   ##     ##  ########   ######   ########
+// ##     ##  ##        ##     ##  ##     ##  ##        ##    ##     ##
+// ##     ##  ##        ##     ##  ##     ##  ##        ##           ##
+// ########   ######    ##     ##  ##     ##  ######     ######      ##
+// ##   ##    ##        ##  ## ##  ##     ##  ##              ##     ##
+// ##    ##   ##        ##    ##   ##     ##  ##        ##    ##     ##
+// ##     ##  ########   ##### ##   #######   ########   ######      ##
+
+var createRequestModel = function () {
+    var that = mixinPubSub(),
+        url,
+        paginatorModel,
+        orderModel,
+        ajax = function (fig) {
+            fig = fig || {};
+            $.ajax({
+                url: url + '/page/' + (fig.page || 1),
+                method: 'GET',
+                data: union(
+                    //appendKey('filter_', filterModel.get()),
+                    appendKey('order_', orderModel.get())
+                ),
+                dataType: 'json',
+                success: partial(that.publish, 'load'),
+                error: partial(ajaxErrorResponse, that)
+            });
+        };
+
+    that.init = function (fig) {
+        url = fig.url;
+        paginatorModel = fig.paginatorModel;
+        orderModel = fig.orderModel;
+    };
+
+    that.changePage = function (pageNumber) {
+        ajax({ page: pageNumber });
+    };
+
+    that.search = function () {
+        paginatorModel.set({ pageNumber: 1 }, { silent: true });
+        ajax();
+    };
 
     return that;
 };

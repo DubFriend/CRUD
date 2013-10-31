@@ -104,6 +104,13 @@ var mapToObject = function (collection, callback, keyCallback) {
     return mapped;
 };
 
+var appendKey = function (appendingString, collection) {
+    collection = collection || {};
+    return map(collection, identity, function (key) {
+        return appendingString + key;
+    });
+};
+
 var map = function (collection, callback, keyCallback) {
     return isArray(collection) ?
         mapToArray(collection, callback) :
@@ -337,7 +344,9 @@ var createPaginatorModel = function (fig) {
     fig.data.pageNumber = fig.pageNumber || 1;
     fig.data.numberOfPages = fig.numberOfPages || 1;
     var my = {};
-    var that = createModel(fig, my);
+    var that = createModel(fig, my),
+
+        requestModel = fig.requestModel;
 
     that.validate = function (testData) {
         testData = testData || my.data;
@@ -359,13 +368,14 @@ var createPaginatorModel = function (fig) {
 
     that.set = partial(that.set, function (newData) {
         if(newData.pageNumber) {
-            $.ajax({
-                url: my.url + '/page/' + newData.pageNumber,
-                method: 'GET',
-                dataType: 'json',
-                success: partial(that.publish, 'load'),
-                error: partial(ajaxErrorResponse, that)
-            });
+            requestModel.changePage(newData.pageNumber);
+            // $.ajax({
+            //     url: my.url + '/page/' + newData.pageNumber,
+            //     method: 'GET',
+            //     dataType: 'json',
+            //     success: partial(that.publish, 'load'),
+            //     error: partial(ajaxErrorResponse, that)
+            // });
         }
     });
 
@@ -384,27 +394,9 @@ var createOrderModel = function (fig) {
     fig = fig || {};
     var my = {};
     var that = createModel(fig, my),
-        paginatorModel = fig.paginatorModel;
+        requestModel = fig.requestModel;
 
-    var appendKey = function (appendingString, collection) {
-        collection = collection || {};
-        return map(collection, identity, function (key) {
-            return appendingString + key;
-        });
-    };
-
-    that.set = partial(that.set, function (newData) {
-        fig = fig || {};
-        paginatorModel.set({ pageNumber: 1 }, { silent: true });
-        $.ajax({
-            url: my.url + '/page/1',
-            method: 'GET',
-            data: appendKey('order_', my.data),
-            dataType: 'json',
-            success: partial(that.publish, 'load'),
-            error: partial(ajaxErrorResponse, that)
-        });
-    });
+    that.set = partial(that.set, requestModel.search);
 
     that.toggle = (function () {
         var toggleOrder = ['neutral', 'ascending', 'descending'];
@@ -420,6 +412,71 @@ var createOrderModel = function (fig) {
     return that;
 };
 
+// ########  ####  ##        ########  ########  ########
+// ##         ##   ##           ##     ##        ##     ##
+// ##         ##   ##           ##     ##        ##     ##
+// ######     ##   ##           ##     ######    ########
+// ##         ##   ##           ##     ##        ##   ##
+// ##         ##   ##           ##     ##        ##    ##
+// ##        ####  ########     ##     ########  ##     ##
+
+var createFilterModel = function (fig) {
+    fig = fig || {};
+    var my = {},
+        that = createModel(fig, my),
+        requestModel = fig.requestModel,
+        filterSchema = fig.filterSchema;
+
+    that.set = partial(that.set, requestModel.search);
+
+    return that;
+};
+
+// ########   ########   #######   ##     ##  ########   ######   ########
+// ##     ##  ##        ##     ##  ##     ##  ##        ##    ##     ##
+// ##     ##  ##        ##     ##  ##     ##  ##        ##           ##
+// ########   ######    ##     ##  ##     ##  ######     ######      ##
+// ##   ##    ##        ##  ## ##  ##     ##  ##              ##     ##
+// ##    ##   ##        ##    ##   ##     ##  ##        ##    ##     ##
+// ##     ##  ########   ##### ##   #######   ########   ######      ##
+
+var createRequestModel = function () {
+    var that = mixinPubSub(),
+        url,
+        paginatorModel,
+        orderModel,
+        ajax = function (fig) {
+            fig = fig || {};
+            $.ajax({
+                url: url + '/page/' + (fig.page || 1),
+                method: 'GET',
+                data: union(
+                    //appendKey('filter_', filterModel.get()),
+                    appendKey('order_', orderModel.get())
+                ),
+                dataType: 'json',
+                success: partial(that.publish, 'load'),
+                error: partial(ajaxErrorResponse, that)
+            });
+        };
+
+    that.init = function (fig) {
+        url = fig.url;
+        paginatorModel = fig.paginatorModel;
+        orderModel = fig.orderModel;
+    };
+
+    that.changePage = function (pageNumber) {
+        ajax({ page: pageNumber });
+    };
+
+    that.search = function () {
+        paginatorModel.set({ pageNumber: 1 }, { silent: true });
+        ajax();
+    };
+
+    return that;
+};
 // ########   #######   ########   ##     ##
 // ##        ##     ##  ##     ##  ###   ###
 // ##        ##     ##  ##     ##  #### ####
@@ -683,7 +740,6 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        //console.log('modelData', modelData);
 
         var viewData = map(modelData, function (value, name) {
             var type = that.schema[name].type;
@@ -700,8 +756,6 @@ var createController = function (fig) {
                 return value;
             }
         });
-
-        //console.log('viewData', viewData);
 
         return viewData;
     };
@@ -836,7 +890,6 @@ var createListController = function (fig) {
             that.$('.crud-order').unbind();
             that.$('.crud-order').click(function () {
                 that.orderModel.toggle($(this).data('name'));
-                console.log(that.orderModel.get($(this).data('name')));
             });
         };
 
@@ -898,7 +951,6 @@ var createListController = function (fig) {
 
     //rerendering the whole template was a glitchy
     that.orderModel.subscribe('change', function (newData) {
-        console.log('orderModel change', newData);
         that.$('[data-name="' + keys(newData)[0] + '"]').html(
             '<span  crud-order-' + values(newData)[0] + '">' +
                 orderIcon[values(newData)[0]] +
@@ -926,16 +978,13 @@ var createPaginatorController = function (fig) {
         that.$('li a').click(function () {
             var pageNumber = Number($(this).data('page-number'));
             that.model.set({ pageNumber: pageNumber });
-            that.setSelected(pageNumber);
         });
     };
 
     that.setSelected = function (pageNumber) {
-        console.log('setSelected', pageNumber);
         that.$('li a').removeClass('selected');
         that.$('li a').each(function () {
             if(Number($(this).data('page-number')) === pageNumber) {
-                console.log('set selected match', this);
                 $(this).addClass('selected');
             }
         });
@@ -948,6 +997,7 @@ var createPaginatorController = function (fig) {
             pages: pages,
             error: error
         }));
+        that.setSelected(that.model.get('pageNumber'));
         bind();
     };
 
@@ -1002,7 +1052,7 @@ var createPaginatorController = function (fig) {
         };
 
         // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
-        var shiftNonPositiveValues = function (array) {
+        var rolloverNonPositives = function (array) {
             var shifted = [];
             foreach(reverse(array), function (number) {
                 if(number <= 0) {
@@ -1019,19 +1069,22 @@ var createPaginatorController = function (fig) {
             initHTMLWidths();
             var currentPage = that.model.get('pageNumber');
             var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
-            return filter(shiftNonPositiveValues(
-                reverse(getPageNumbers(currentPage, bufferWidth, false))
-                .concat([currentPage])
-                .concat(getPageNumbers(currentPage, bufferWidth, true))
-            ), function (pageNumber) {
-                return pageNumber <= that.model.get('numberOfPages');
-            });
+            var pagesToRender = filter(rolloverNonPositives(
+                    reverse(getPageNumbers(currentPage, bufferWidth, false))
+                    .concat([currentPage])
+                    .concat(getPageNumbers(currentPage, bufferWidth, true))
+                ),
+                function (pageNumber) {
+                    return pageNumber <= that.model.get('numberOfPages');
+                }
+            );
+            return pagesToRender;
         };
     }());
 
     that.model.subscribe('change', function (data) {
-        console.log(that.model.get());
         that.render();
+
     });
 
     return that;
@@ -1175,7 +1228,12 @@ this.createCRUD = function (fig) {
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
 
-    var paginatorModel = createPaginatorModel({ url: url });
+    var requestModel = createRequestModel();
+
+    var paginatorModel = createPaginatorModel({
+        url: url,
+        requestModel: requestModel
+    });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
@@ -1189,7 +1247,14 @@ this.createCRUD = function (fig) {
         data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
             return item.order || 'neutral';
         }),
-        paginatorModel: paginatorModel
+        requestModel: requestModel
+        //paginatorModel: paginatorModel
+    });
+
+    requestModel.init({
+        url: url,
+        paginatorModel: paginatorModel,
+        orderModel: orderModel
     });
 
     var listController = createListController({
@@ -1279,7 +1344,8 @@ this.createCRUD = function (fig) {
         that.newItem();
 
         paginatorController.model.subscribe('load', load);
-        listController.orderModel.subscribe('load', load);
+        requestModel.subscribe('load', load);
+        //listController.orderModel.subscribe('load', load);
 
         paginatorController.setPage(1);
     };

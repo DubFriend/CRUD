@@ -431,6 +431,7 @@
             el: '#' + name + '-crud-list-container',
             schema: buildSchema(),
             model: buildModel(),
+            orderModel: buildModel(),
             template: createListTemplate(buildSchema(), name)
         });
     };
@@ -454,7 +455,14 @@
 
     test('renders head', function () {
         listController.render();
-        deepEqual(getListHeaderData(), keys(getDefaultData()));
+        deepEqual(getListHeaderData(), [
+            "<span class=\"crud-th-content\">text</span>",
+            "<span class=\"crud-th-content\">password</span>",
+            "<span class=\"crud-th-content\">textarea</span>",
+            "<span class=\"crud-th-content\">checkbox</span>",
+            "<span class=\"crud-th-content\">radio</span>",
+            "<span class=\"crud-th-content\">select</span>"
+        ]);
     });
 
     test('add', function () {

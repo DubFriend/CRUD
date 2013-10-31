@@ -43,7 +43,6 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        //console.log('modelData', modelData);
 
         var viewData = map(modelData, function (value, name) {
             var type = that.schema[name].type;
@@ -60,8 +59,6 @@ var createController = function (fig) {
                 return value;
             }
         });
-
-        //console.log('viewData', viewData);
 
         return viewData;
     };
@@ -196,7 +193,6 @@ var createListController = function (fig) {
             that.$('.crud-order').unbind();
             that.$('.crud-order').click(function () {
                 that.orderModel.toggle($(this).data('name'));
-                console.log(that.orderModel.get($(this).data('name')));
             });
         };
 
@@ -258,7 +254,6 @@ var createListController = function (fig) {
 
     //rerendering the whole template was a glitchy
     that.orderModel.subscribe('change', function (newData) {
-        console.log('orderModel change', newData);
         that.$('[data-name="' + keys(newData)[0] + '"]').html(
             '<span  crud-order-' + values(newData)[0] + '">' +
                 orderIcon[values(newData)[0]] +
@@ -286,16 +281,13 @@ var createPaginatorController = function (fig) {
         that.$('li a').click(function () {
             var pageNumber = Number($(this).data('page-number'));
             that.model.set({ pageNumber: pageNumber });
-            that.setSelected(pageNumber);
         });
     };
 
     that.setSelected = function (pageNumber) {
-        console.log('setSelected', pageNumber);
         that.$('li a').removeClass('selected');
         that.$('li a').each(function () {
             if(Number($(this).data('page-number')) === pageNumber) {
-                console.log('set selected match', this);
                 $(this).addClass('selected');
             }
         });
@@ -308,6 +300,7 @@ var createPaginatorController = function (fig) {
             pages: pages,
             error: error
         }));
+        that.setSelected(that.model.get('pageNumber'));
         bind();
     };
 
@@ -362,7 +355,7 @@ var createPaginatorController = function (fig) {
         };
 
         // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
-        var shiftNonPositiveValues = function (array) {
+        var rolloverNonPositives = function (array) {
             var shifted = [];
             foreach(reverse(array), function (number) {
                 if(number <= 0) {
@@ -379,19 +372,22 @@ var createPaginatorController = function (fig) {
             initHTMLWidths();
             var currentPage = that.model.get('pageNumber');
             var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
-            return filter(shiftNonPositiveValues(
-                reverse(getPageNumbers(currentPage, bufferWidth, false))
-                .concat([currentPage])
-                .concat(getPageNumbers(currentPage, bufferWidth, true))
-            ), function (pageNumber) {
-                return pageNumber <= that.model.get('numberOfPages');
-            });
+            var pagesToRender = filter(rolloverNonPositives(
+                    reverse(getPageNumbers(currentPage, bufferWidth, false))
+                    .concat([currentPage])
+                    .concat(getPageNumbers(currentPage, bufferWidth, true))
+                ),
+                function (pageNumber) {
+                    return pageNumber <= that.model.get('numberOfPages');
+                }
+            );
+            return pagesToRender;
         };
     }());
 
     that.model.subscribe('change', function (data) {
-        console.log(that.model.get());
         that.render();
+
     });
 
     return that;
