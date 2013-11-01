@@ -179,8 +179,21 @@
                 }
             },
             filterSchema: {
-
-            }
+                maxAwesome: {
+                    type: 'select',
+                    values: ['1', '2', '3'],
+                    value: '3'
+                },
+                "Search Textarea": {
+                    type: 'text'
+                },
+                fruit: {
+                    type: 'checkbox',
+                    values: ['apple', 'orange'],
+                    value: ['apple', 'orange']
+                }
+            },
+            instantFilter: true
         });
         crud.init();
     </script>

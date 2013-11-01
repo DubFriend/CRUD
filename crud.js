@@ -471,6 +471,107 @@ var createRequestModel = function () {
 
     return that;
 };
+var createInput = function (item, name, crudName) {
+    var input = function (checked, value, isInputClass) {
+        isInputClass = isInputClass === undefined ? true : isInputClass;
+        var valueHTML = function () {
+            return item.type === 'checkbox' || item.type === 'radio' ?
+                'value="' + value + '" ' : 'value="{{' + name + '}}" ';
+        };
+
+        var id = function () {
+            return item.type === 'checkbox' || item.type === 'radio' ?
+                'id="' + name + '-' + value + '" ' :
+                'id="' + crudName + '-' + name + '" ';
+        };
+
+        return '' +
+        (isInputClass ? '<div class="input">' : '') +
+            '<input type="' + item.type + '" ' + id() +
+                    'name="' + name + '" ' + valueHTML() +
+                    (checked ? 'checked' : '') + '/>' +
+        (isInputClass ? '</div>' : '');
+    };
+
+    var inputGroup = function () {
+        return '' +
+        '<div class="input">' +
+            reduce(item.values, function (acc, value) {
+                return (acc || '') +
+                '<label for="' + name + '-' + value + '">' +
+                    value +
+                '</label>' +
+                '{{#' + name + '.' + value + '}}' +
+                    input(true, value, false) +
+                '{{/' + name + '.' + value + '}}' +
+                '{{^' + name + '.' + value + '}}' +
+                    input(false, value, false) +
+                '{{/' + name + '.' + value + '}}';
+            }) +
+        '</div>';
+    };
+
+    switch(item.type) {
+        case 'text':
+            return input();
+
+        case 'password':
+            return input();
+
+        case 'textarea':
+            return '' +
+            '<div class="input">' +
+                '<textarea id="' + crudName + '-' + name + '" ' +
+                          'name="' + name + '">' +
+                    '{{' + name + '}}' +
+                '</textarea>' +
+            '</div>';
+
+        case 'checkbox':
+            return inputGroup();
+
+        case 'radio':
+            return inputGroup();
+
+        case 'select':
+            return '' +
+            '<div class="input">' +
+                '<select name="' + name + '">' +
+                    reduce(item.values, function (acc, value) {
+                        acc = acc || '';
+                        return acc +
+                        '{{#' + name + '.' + value + '}}' +
+                            '<option value="' + value + '" selected>' +
+                                value +
+                            '</option>' +
+                        '{{/' + name + '.' + value + '}}' +
+                        '{{^' + name + '.' + value + '}}' +
+                            '<option value="' + value + '">' +
+                                value +
+                            '</option>' +
+                        '{{/' + name + '.' + value + '}}';
+                    }) +
+                '</select>' +
+            '</div>';
+
+        default:
+            throw 'Invalid input type: ' + item.type;
+    }
+};
+
+var reduceFormSchema = function (schema, crudName) {
+    return reduce(schema, function (acc, item, name) {
+        return (acc || '') +
+        '<div class="control-set">' +
+            '<label for="' + crudName + '-' + name + '" class="label">' +
+                name +
+            '</label>' +
+            createInput(item, name, crudName) +
+            '<div class="crud-help">{{' + name + 'Help}}</div>' +
+        '</div>';
+    });
+};
+
 // ########   #######   ########   ##     ##
 // ##        ##     ##  ##     ##  ###   ###
 // ##        ##     ##  ##     ##  #### ####
@@ -480,115 +581,42 @@ var createRequestModel = function () {
 // ##         #######   ##     ##  ##     ##
 
 var createFormTemplate = function (schema, crudName) {
-    var createInput = function (item, name) {
-        var input = function (checked, value, isInputClass) {
-            isInputClass = isInputClass === undefined ? true : isInputClass;
-            var valueHTML = function () {
-                return item.type === 'checkbox' || item.type === 'radio' ?
-                    'value="' + value + '" ' : 'value="{{' + name + '}}" ';
-            };
-
-            var id = function () {
-                return item.type === 'checkbox' || item.type === 'radio' ?
-                    'id="' + name + '-' + value + '" ' :
-                    'id="' + crudName + '-' + name + '" ';
-            };
-
-            return '' +
-            (isInputClass ? '<div class="input">' : '') +
-                '<input type="' + item.type + '" ' + id() +
-                        'name="' + name + '" ' + valueHTML() +
-                        (checked ? 'checked' : '') + '/>' +
-            (isInputClass ? '</div>' : '');
-        };
-
-        var inputGroup = function () {
-            return '' +
-            '<div class="input">' +
-                reduce(item.values, function (acc, value) {
-                    return (acc || '') +
-                    '<label for="' + name + '-' + value + '">' +
-                        value +
-                    '</label>' +
-                    '{{#' + name + '.' + value + '}}' +
-                        input(true, value, false) +
-                    '{{/' + name + '.' + value + '}}' +
-                    '{{^' + name + '.' + value + '}}' +
-                        input(false, value, false) +
-                    '{{/' + name + '.' + value + '}}';
-                }) +
-            '</div>';
-        };
-
-        switch(item.type) {
-            case 'text':
-                return input();
-
-            case 'password':
-                return input();
-
-            case 'textarea':
-                return '' +
-                '<div class="input">' +
-                    '<textarea id="' + crudName + '-' + name + '" ' +
-                              'name="' + name + '">' +
-                        '{{' + name + '}}' +
-                    '</textarea>' +
-                '</div>';
-
-            case 'checkbox':
-                return inputGroup();
-
-            case 'radio':
-                return inputGroup();
-
-            case 'select':
-                return '' +
-                '<div class="input">' +
-                    '<select name="' + name + '">' +
-                        reduce(item.values, function (acc, value) {
-                            acc = acc || '';
-                            return acc +
-                            '{{#' + name + '.' + value + '}}' +
-                                '<option value="' + value + '" selected>' +
-                                    value +
-                                '</option>' +
-                            '{{/' + name + '.' + value + '}}' +
-                            '{{^' + name + '.' + value + '}}' +
-                                '<option value="' + value + '">' +
-                                    value +
-                                '</option>' +
-                            '{{/' + name + '.' + value + '}}';
-                        }) +
-                    '</select>' +
-                '</div>';
-
-            default:
-                throw 'Invalid input type: ' + item.type;
-        }
-    };
-
     return '' +
     '<form>' +
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
-            reduce(schema, function (acc, item, name) {
-                return (acc || '') +
-                '<div class="control-set">' +
-                    '<label for="' + crudName + '-' + name + '" class="label">' +
-                        name +
-                    '</label>' +
-                    createInput(item, name) +
-                    '<div class="crud-help">{{' + name + 'Help}}</div>' +
-                '</div>';
-            }) +
+            reduceFormSchema(schema, crudName) +
             '<div class="control-set">' +
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
-                    '<button id="crud-new-item" type="button">New ' +
-                        crudName +
+                    '<button id="crud-new-item" type="button">' +
+                        'New ' + crudName +
                     '</button>' +
+                '</div>' +
+            '</div>' +
+        '</fieldset>' +
+    '</form>';
+};
+
+// ########  ####  ##        ########  ########  ########
+// ##         ##   ##           ##     ##        ##     ##
+// ##         ##   ##           ##     ##        ##     ##
+// ######     ##   ##           ##     ######    ########
+// ##         ##   ##           ##     ##        ##   ##
+// ##         ##   ##           ##     ##        ##    ##
+// ##        ####  ########     ##     ########  ##     ##
+
+var createFilterTemplate = function (schema, crudName) {
+    return '' +
+    '<form>' +
+        '<fieldset>' +
+            '<legend>Search ' + crudName + '</legend>' +
+            reduceFormSchema(schema, crudName) +
+            '<div class="control-set">' +
+                '<div class="label">&nbsp;</div>' +
+                '<div class="input">' +
+                    '<input type="submit" class="js-crud-filter" value="Search"/>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -727,19 +755,23 @@ var createController = function (fig) {
         return selector ? $(el).find(selector) : $(el);
     };
 
-    that.mapModelToView = function (modelData) {
+    that.mapModelToView = function (modelData, schema) {
+        schema = schema || that.schema;
         var isSelected = function (choice, value, name) {
-            var type = that.schema[name].type;
+            //var type = that.schema[name].type;
+            var type = schema[name].type;
             return type === 'radio' || type === 'select' ?
                 choice === value : value.indexOf(choice) !== -1;
         };
 
 
         var viewData = map(modelData, function (value, name) {
-            var type = that.schema[name].type;
+            //var type = that.schema[name].type;
+            var type = schema[name].type;
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
-                foreach(that.schema[name].values, function (choice) {
+                //foreach(that.schema[name].values, function (choice) {
+                foreach(schema[name].values, function (choice) {
                     if(isSelected(choice, value, name)) {
                         mappedValue[choice] = true;
                     }
@@ -1093,7 +1125,15 @@ var createPaginatorController = function (fig) {
 // ##        ####  ########     ##     ########  ##     ##
 
 var createFilterController = function (fig) {
+    fig = fig || {};
+    var that = mixinPubSub(createController(fig)),
+        filterSchema = fig.filterSchema;
 
+    var parentMapModelToView = that.mapModelToView;
+    that.mapModelToView = function (modelData) {
+        return parentMapModelToView(modelData, filterSchema);
+    };
+    return that;
 };
 
 
@@ -1211,12 +1251,14 @@ this.createCRUD = function (fig) {
     var that = {},
         url = fig.url,
         name = fig.name,
-        schema = map(fig.schema, function (item, name) {
+        setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
             }
             return item;
-        }),
+        },
+        schema = map(fig.schema, setEmptyCheckboxes),
+        filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
 
         createDefaultModel = function (data, id) {
@@ -1234,17 +1276,29 @@ this.createCRUD = function (fig) {
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);
 
     var requestModel = createRequestModel();
 
     var paginatorModel = createPaginatorModel({
-        url: url,
         requestModel: requestModel
     });
 
     var filterModel = createFilterModel({
         requestModel: requestModel,
-        data: {}
+        data: map(filterSchema, function (item, name) {
+            if(item.type === 'checkbox') {
+                item.value = item.value || [];
+            }
+            return item.value === undefined ? null : item.value;
+        })
+    });
+
+    var filterController = createFilterController({
+        el: '#' + name + '-crud-filter-container',
+        model: filterModel,
+        filterSchema: filterSchema,
+        template: that.filterTemplate
     });
 
     var paginatorController = createPaginatorController({
@@ -1255,7 +1309,6 @@ this.createCRUD = function (fig) {
     paginatorController.render();
 
     var orderModel = createOrderModel({
-        url: url,
         data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
             return item.order || 'neutral';
         }),
@@ -1356,6 +1409,7 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
+        filterController.render();
     };
 
     return that;

@@ -36,19 +36,23 @@ var createController = function (fig) {
         return selector ? $(el).find(selector) : $(el);
     };
 
-    that.mapModelToView = function (modelData) {
+    that.mapModelToView = function (modelData, schema) {
+        schema = schema || that.schema;
         var isSelected = function (choice, value, name) {
-            var type = that.schema[name].type;
+            //var type = that.schema[name].type;
+            var type = schema[name].type;
             return type === 'radio' || type === 'select' ?
                 choice === value : value.indexOf(choice) !== -1;
         };
 
 
         var viewData = map(modelData, function (value, name) {
-            var type = that.schema[name].type;
+            //var type = that.schema[name].type;
+            var type = schema[name].type;
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
-                foreach(that.schema[name].values, function (choice) {
+                //foreach(that.schema[name].values, function (choice) {
+                foreach(schema[name].values, function (choice) {
                     if(isSelected(choice, value, name)) {
                         mappedValue[choice] = true;
                     }
@@ -402,7 +406,15 @@ var createPaginatorController = function (fig) {
 // ##        ####  ########     ##     ########  ##     ##
 
 var createFilterController = function (fig) {
+    fig = fig || {};
+    var that = mixinPubSub(createController(fig)),
+        filterSchema = fig.filterSchema;
 
+    var parentMapModelToView = that.mapModelToView;
+    that.mapModelToView = function (modelData) {
+        return parentMapModelToView(modelData, filterSchema);
+    };
+    return that;
 };
 
 

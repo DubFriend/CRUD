@@ -3,12 +3,14 @@ this.createCRUD = function (fig) {
     var that = {},
         url = fig.url,
         name = fig.name,
-        schema = map(fig.schema, function (item, name) {
+        setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
             }
             return item;
-        }),
+        },
+        schema = map(fig.schema, setEmptyCheckboxes),
+        filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
 
         createDefaultModel = function (data, id) {
@@ -26,17 +28,29 @@ this.createCRUD = function (fig) {
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);
 
     var requestModel = createRequestModel();
 
     var paginatorModel = createPaginatorModel({
-        url: url,
         requestModel: requestModel
     });
 
     var filterModel = createFilterModel({
         requestModel: requestModel,
-        data: {}
+        data: map(filterSchema, function (item, name) {
+            if(item.type === 'checkbox') {
+                item.value = item.value || [];
+            }
+            return item.value === undefined ? null : item.value;
+        })
+    });
+
+    var filterController = createFilterController({
+        el: '#' + name + '-crud-filter-container',
+        model: filterModel,
+        filterSchema: filterSchema,
+        template: that.filterTemplate
     });
 
     var paginatorController = createPaginatorController({
@@ -47,7 +61,6 @@ this.createCRUD = function (fig) {
     paginatorController.render();
 
     var orderModel = createOrderModel({
-        url: url,
         data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
             return item.order || 'neutral';
         }),
@@ -148,6 +161,7 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
+        filterController.render();
     };
 
     return that;
