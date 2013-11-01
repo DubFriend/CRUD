@@ -369,13 +369,6 @@ var createPaginatorModel = function (fig) {
     that.set = partial(that.set, function (newData) {
         if(newData.pageNumber) {
             requestModel.changePage(newData.pageNumber);
-            // $.ajax({
-            //     url: my.url + '/page/' + newData.pageNumber,
-            //     method: 'GET',
-            //     dataType: 'json',
-            //     success: partial(that.publish, 'load'),
-            //     error: partial(ajaxErrorResponse, that)
-            // });
         }
     });
 
@@ -424,8 +417,7 @@ var createFilterModel = function (fig) {
     fig = fig || {};
     var my = {},
         that = createModel(fig, my),
-        requestModel = fig.requestModel,
-        filterSchema = fig.filterSchema;
+        requestModel = fig.requestModel;
 
     that.set = partial(that.set, requestModel.search);
 
@@ -445,13 +437,14 @@ var createRequestModel = function () {
         url,
         paginatorModel,
         orderModel,
+        filterModel,
         ajax = function (fig) {
             fig = fig || {};
             $.ajax({
                 url: url + '/page/' + (fig.page || 1),
                 method: 'GET',
                 data: union(
-                    //appendKey('filter_', filterModel.get()),
+                    appendKey('filter_', filterModel.get()),
                     appendKey('order_', orderModel.get())
                 ),
                 dataType: 'json',
@@ -463,6 +456,7 @@ var createRequestModel = function () {
     that.init = function (fig) {
         url = fig.url;
         paginatorModel = fig.paginatorModel;
+        filterModel = fig.filterModel;
         orderModel = fig.orderModel;
     };
 
@@ -1090,6 +1084,19 @@ var createPaginatorController = function (fig) {
     return that;
 };
 
+// ########  ####  ##        ########  ########  ########
+// ##         ##   ##           ##     ##        ##     ##
+// ##         ##   ##           ##     ##        ##     ##
+// ######     ##   ##           ##     ######    ########
+// ##         ##   ##           ##     ##        ##   ##
+// ##         ##   ##           ##     ##        ##    ##
+// ##        ####  ########     ##     ########  ##     ##
+
+var createFilterController = function (fig) {
+
+};
+
+
 // ########   #######   ########   ##     ##
 // ##        ##     ##  ##     ##  ###   ###
 // ##        ##     ##  ##     ##  #### ####
@@ -1235,6 +1242,11 @@ this.createCRUD = function (fig) {
         requestModel: requestModel
     });
 
+    var filterModel = createFilterModel({
+        requestModel: requestModel,
+        data: {}
+    });
+
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
         model: paginatorModel,
@@ -1248,12 +1260,12 @@ this.createCRUD = function (fig) {
             return item.order || 'neutral';
         }),
         requestModel: requestModel
-        //paginatorModel: paginatorModel
     });
 
     requestModel.init({
         url: url,
         paginatorModel: paginatorModel,
+        filterModel: filterModel,
         orderModel: orderModel
     });
 
@@ -1342,11 +1354,7 @@ this.createCRUD = function (fig) {
 
     that.init = function () {
         that.newItem();
-
-        paginatorController.model.subscribe('load', load);
         requestModel.subscribe('load', load);
-        //listController.orderModel.subscribe('load', load);
-
         paginatorController.setPage(1);
     };
 

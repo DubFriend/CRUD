@@ -493,7 +493,11 @@
     var paginatorModel;
     module('paginator model', {
         setup: function () {
-            paginatorModel = createPaginatorModel();
+            paginatorModel = createPaginatorModel({
+                requestModel: {
+                    changePage: function () {}
+                }
+            });
         }
     });
 
@@ -592,7 +596,11 @@
             $fixture.find('#thing-crud-list-container').width(31);
             paginatorController = createPaginatorController({
                 el: '#thing-crud-paginator-nav',
-                model: createPaginatorModel(),
+                model: createPaginatorModel({
+                    requestModel: {
+                        changePage: function () {}
+                    }
+                }),
                 template: createPaginatorTemplate()
             });
         }

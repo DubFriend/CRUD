@@ -132,6 +132,7 @@
 <body>
     <h1>CRUD</h1>
 
+    <div id="thing-crud-filter-container"></div>
     <div id="thing-crud-container"></div>
     <div class="table-column">
         <div id="thing-crud-paginator-nav"></div>
@@ -171,7 +172,14 @@
                     values: ['a', 'b', 'c', 'd'],
                     value: 'c',
                     orderable: true
+                },
+                awesome: {
+                    type: 'select',
+                    values: ['1', '2', '3']
                 }
+            },
+            filterSchema: {
+
             }
         });
         crud.init();

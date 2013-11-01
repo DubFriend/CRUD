@@ -34,6 +34,11 @@ this.createCRUD = function (fig) {
         requestModel: requestModel
     });
 
+    var filterModel = createFilterModel({
+        requestModel: requestModel,
+        data: {}
+    });
+
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
         model: paginatorModel,
@@ -47,12 +52,12 @@ this.createCRUD = function (fig) {
             return item.order || 'neutral';
         }),
         requestModel: requestModel
-        //paginatorModel: paginatorModel
     });
 
     requestModel.init({
         url: url,
         paginatorModel: paginatorModel,
+        filterModel: filterModel,
         orderModel: orderModel
     });
 
@@ -141,11 +146,7 @@ this.createCRUD = function (fig) {
 
     that.init = function () {
         that.newItem();
-
-        paginatorController.model.subscribe('load', load);
         requestModel.subscribe('load', load);
-        //listController.orderModel.subscribe('load', load);
-
         paginatorController.setPage(1);
     };
 
