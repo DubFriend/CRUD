@@ -12,7 +12,6 @@ this.createCRUD = function (fig) {
         schema = map(fig.schema, setEmptyCheckboxes),
         filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
-
         createDefaultModel = function (data, id) {
             return createSchemaModel({
                 id: id,
@@ -89,6 +88,7 @@ this.createCRUD = function (fig) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
                 addItem(model);
+                listController.renderItems();
             }
         });
 
@@ -96,6 +96,7 @@ this.createCRUD = function (fig) {
             console.log('destroyed', id);
             listController.remove(id);
             listController.setSelectAll(false);
+            listController.renderItems();
         });
 
         return model;
@@ -150,6 +151,7 @@ this.createCRUD = function (fig) {
             addItem(createDefaultModel(row, id));
             listController.setSelected();
         });
+        listController.renderItems();
     };
 
     var load = function (response) {
@@ -162,7 +164,6 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
-        //filterController.render();
     };
 
     return that;

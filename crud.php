@@ -120,11 +120,11 @@ function buildWhereSQL(array $request) {
                 $filtersSQL[] = 'awesome <= ' . $value;
                 break;
             case 'Search_Textarea':
-                $filtersSQL[] = 'textarea LIKE %' . $value . '%';
+                $filtersSQL[] = 'textarea LIKE "%' . $value . '%"';
                 break;
             case 'fruit':
                 if(is_array($value)) {
-                    $filterSQL[] = implode(',', $value);
+                    $filtersSQL[] = 'fruit = "' . implode(',', $value) . '"';
                 }
                 else {
                     throw new Exception('Checkboxes should return an array.');

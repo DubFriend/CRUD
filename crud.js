@@ -908,19 +908,6 @@ var createListController = function (fig) {
             neutral: '&#8691;'
         },
 
-        renderItems = function () {
-            var $container = that.$('#crud-list-item-container');
-            $container.html('');
-            foreach(items, function (item) {
-                var elID = 'crud-list-item-' + item.model.id();
-                $container.append(
-                    '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
-                );
-                item.render();
-            });
-            bind();
-        },
-
         bind = function () {
             that.$('#crud-list-select-all').unbind();
             that.$('#crud-list-select-all').change(function () {
@@ -971,6 +958,19 @@ var createListController = function (fig) {
         }));
     };
 
+    that.renderItems = function () {
+        var $container = that.$('#crud-list-item-container');
+        $container.html('');
+        foreach(items, function (item) {
+            var elID = 'crud-list-item-' + item.model.id();
+            $container.append(
+                '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
+            );
+            item.render();
+        });
+        bind();
+    };
+
     that.setSelected = function (selectedItemController) {
         foreach(items, function (itemController) {
             itemController.deselect();
@@ -986,7 +986,7 @@ var createListController = function (fig) {
 
     that.add = function (itemController) {
         items.push(itemController);
-        renderItems();
+        //that.renderItems();
     };
 
     that.getItemControllerByID = function (id) {
@@ -1003,7 +1003,7 @@ var createListController = function (fig) {
         items = filter(items, function (controller) {
             return controller.model.id() != id;
         });
-        renderItems();
+        //that.renderItems();
     };
 
     //rerendering the whole template was a glitchy
@@ -1283,7 +1283,6 @@ this.createCRUD = function (fig) {
         schema = map(fig.schema, setEmptyCheckboxes),
         filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
-
         createDefaultModel = function (data, id) {
             return createSchemaModel({
                 id: id,
@@ -1360,6 +1359,7 @@ this.createCRUD = function (fig) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
                 addItem(model);
+                listController.renderItems();
             }
         });
 
@@ -1367,6 +1367,7 @@ this.createCRUD = function (fig) {
             console.log('destroyed', id);
             listController.remove(id);
             listController.setSelectAll(false);
+            listController.renderItems();
         });
 
         return model;
@@ -1421,6 +1422,7 @@ this.createCRUD = function (fig) {
             addItem(createDefaultModel(row, id));
             listController.setSelected();
         });
+        listController.renderItems();
     };
 
     var load = function (response) {
@@ -1433,7 +1435,6 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
-        //filterController.render();
     };
 
     return that;

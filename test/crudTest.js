@@ -465,15 +465,15 @@
         ]);
     });
 
-    test('add', function () {
-        listController.render();
-        listController.add(buildListItemController('#crud-list-item-5'));
-        deepEqual(
-            getListItemData('#crud-list-item-5'),
-            union(getDefaultData(), { checkbox: 'a, b' }),
-            'item gets rendered'
-        );
-    });
+    // test('add', function () {
+    //     listController.render();
+    //     listController.add(buildListItemController('#crud-list-item-5'));
+    //     deepEqual(
+    //         getListItemData('#crud-list-item-5'),
+    //         union(getDefaultData(), { checkbox: 'a, b' }),
+    //         'item gets rendered'
+    //     );
+    // });
 
     test('remove', function () {
         listController.render();
