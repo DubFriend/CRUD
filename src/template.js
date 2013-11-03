@@ -1,4 +1,7 @@
 var createInput = function (item, name, crudName) {
+
+    var ID = generateUniqueID() + '-';
+
     var input = function (checked, value, isInputClass) {
         isInputClass = isInputClass === undefined ? true : isInputClass;
         var valueHTML = function () {
@@ -8,8 +11,8 @@ var createInput = function (item, name, crudName) {
 
         var id = function () {
             return item.type === 'checkbox' || item.type === 'radio' ?
-                'id="' + name + '-' + value + '" ' :
-                'id="' + crudName + '-' + name + '" ';
+                'id="' + ID + name + '-' + value + '" ' :
+                'id="' + ID + crudName + '-' + name + '" ';
         };
 
         return '' +
@@ -25,7 +28,7 @@ var createInput = function (item, name, crudName) {
         '<div class="input">' +
             reduce(item.values, function (acc, value) {
                 return (acc || '') +
-                '<label for="' + name + '-' + value + '">' +
+                '<label for="' + ID + name + '-' + value + '">' +
                     value +
                 '</label>' +
                 '{{#' + name + '.' + value + '}}' +
@@ -48,7 +51,7 @@ var createInput = function (item, name, crudName) {
         case 'textarea':
             return '' +
             '<div class="input">' +
-                '<textarea id="' + crudName + '-' + name + '" ' +
+                '<textarea id="' + ID + crudName + '-' + name + '" ' +
                           'name="' + name + '">' +
                     '{{' + name + '}}' +
                 '</textarea>' +
@@ -133,6 +136,7 @@ var createFormTemplate = function (schema, crudName) {
 // ##         ##   ##           ##     ##        ##   ##
 // ##         ##   ##           ##     ##        ##    ##
 // ##        ####  ########     ##     ########  ##     ##
+
 
 var createFilterTemplate = function (schema, crudName) {
     return '' +

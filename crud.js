@@ -170,6 +170,13 @@ var union = function () {
     return united;
 };
 
+var generateUniqueID = (function () {
+    var count = 0;
+    return function () {
+        return count += 1;
+    };
+}());
+
 var mixinPubSub = function (object) {
     object = object || {};
     var topics = {};
@@ -472,6 +479,9 @@ var createRequestModel = function () {
     return that;
 };
 var createInput = function (item, name, crudName) {
+
+    var ID = generateUniqueID() + '-';
+
     var input = function (checked, value, isInputClass) {
         isInputClass = isInputClass === undefined ? true : isInputClass;
         var valueHTML = function () {
@@ -481,8 +491,8 @@ var createInput = function (item, name, crudName) {
 
         var id = function () {
             return item.type === 'checkbox' || item.type === 'radio' ?
-                'id="' + name + '-' + value + '" ' :
-                'id="' + crudName + '-' + name + '" ';
+                'id="' + ID + name + '-' + value + '" ' :
+                'id="' + ID + crudName + '-' + name + '" ';
         };
 
         return '' +
@@ -498,7 +508,7 @@ var createInput = function (item, name, crudName) {
         '<div class="input">' +
             reduce(item.values, function (acc, value) {
                 return (acc || '') +
-                '<label for="' + name + '-' + value + '">' +
+                '<label for="' + ID + name + '-' + value + '">' +
                     value +
                 '</label>' +
                 '{{#' + name + '.' + value + '}}' +
@@ -521,7 +531,7 @@ var createInput = function (item, name, crudName) {
         case 'textarea':
             return '' +
             '<div class="input">' +
-                '<textarea id="' + crudName + '-' + name + '" ' +
+                '<textarea id="' + ID + crudName + '-' + name + '" ' +
                           'name="' + name + '">' +
                     '{{' + name + '}}' +
                 '</textarea>' +
@@ -606,6 +616,7 @@ var createFormTemplate = function (schema, crudName) {
 // ##         ##   ##           ##     ##        ##   ##
 // ##         ##   ##           ##     ##        ##    ##
 // ##        ####  ########     ##     ########  ##     ##
+
 
 var createFilterTemplate = function (schema, crudName) {
     return '' +
@@ -717,6 +728,29 @@ var createPaginatorTemplate = function () {
     '</div>';
 };
 
+var serializeFormBySchema = function ($el, schema) {
+    return map(schema, function (item, name) {
+        var getValue = function (pseudo) {
+            return $el.find('[name="' + name + '"]' + (pseudo || '')).val();
+        };
+
+        switch(item.type) {
+            case 'radio':
+                return getValue(':checked');
+            case 'select':
+                return getValue(' option:selected');
+            case 'checkbox':
+                var checked = [];
+                $el.find('[name="' + name + '"]:checked').each(function () {
+                    checked.push($(this).val());
+                });
+                return checked;
+            default:
+                return getValue();
+        }
+    });
+};
+
 //  ######    #######   ##    ##  ########  ########    #######   ##        ##        ########  ########
 // ##    ##  ##     ##  ###   ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
 // ##        ##     ##  ####  ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
@@ -758,7 +792,6 @@ var createController = function (fig) {
     that.mapModelToView = function (modelData, schema) {
         schema = schema || that.schema;
         var isSelected = function (choice, value, name) {
-            //var type = that.schema[name].type;
             var type = schema[name].type;
             return type === 'radio' || type === 'select' ?
                 choice === value : value.indexOf(choice) !== -1;
@@ -766,11 +799,9 @@ var createController = function (fig) {
 
 
         var viewData = map(modelData, function (value, name) {
-            //var type = that.schema[name].type;
             var type = schema[name].type;
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
-                //foreach(that.schema[name].values, function (choice) {
                 foreach(schema[name].values, function (choice) {
                     if(isSelected(choice, value, name)) {
                         mappedValue[choice] = true;
@@ -924,7 +955,7 @@ var createListController = function (fig) {
     var parentRender = that.renderNoError;
     that.renderNoError = function () {
         that.$().html(Mustache.render(that.template, {
-            orderable: map(that.schema, partial(dot, 'orderable')),//that.orderModel.get('orderable'),
+            orderable: map(that.schema, partial(dot, 'orderable')),
             order: map(that.orderModel.get(), function (order, name) {
                 if(order === 'ascending') {
                     return { ascending: true };
@@ -1127,12 +1158,23 @@ var createPaginatorController = function (fig) {
 var createFilterController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
-        filterSchema = fig.filterSchema;
+        filterSchema = fig.filterSchema,
+        serialize = function () {
+            return serializeFormBySchema(that.$(), filterSchema);
+        };
 
     var parentMapModelToView = that.mapModelToView;
     that.mapModelToView = function (modelData) {
         return parentMapModelToView(modelData, filterSchema);
     };
+
+    that.renderNoError();
+    that.$().submit(function (e) {
+        e.preventDefault();
+        console.log('serialize', serialize());
+        that.model.set(serialize());
+    });
+
     return that;
 };
 
@@ -1151,26 +1193,7 @@ var createFormController = function (fig) {
     var that = mixinPubSub(createController(fig));
 
     that.serialize = function () {
-        return map(that.schema, function (item, name) {
-            var getValue = function (pseudo) {
-                return that.$('[name="' + name + '"]' + (pseudo || '')).val();
-            };
-
-            switch(item.type) {
-                case 'radio':
-                    return getValue(':checked');
-                case 'select':
-                    return getValue(' option:selected');
-                case 'checkbox':
-                    var checked = [];
-                    that.$('[name="' + name + '"]:checked').each(function () {
-                        checked.push($(this).val());
-                    });
-                    return checked;
-                default:
-                    return getValue();
-            }
-        });
+        return serializeFormBySchema(that.$(), that.schema);
     };
 
     var bind = function () {
@@ -1271,6 +1294,7 @@ this.createCRUD = function (fig) {
                 validate: validate
             });
         };
+
 
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
@@ -1409,7 +1433,7 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
-        filterController.render();
+        //filterController.render();
     };
 
     return that;

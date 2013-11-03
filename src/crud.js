@@ -24,6 +24,7 @@ this.createCRUD = function (fig) {
             });
         };
 
+
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
@@ -161,7 +162,7 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
-        filterController.render();
+        //filterController.render();
     };
 
     return that;

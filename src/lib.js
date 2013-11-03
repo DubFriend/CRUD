@@ -167,6 +167,13 @@ var union = function () {
     return united;
 };
 
+var generateUniqueID = (function () {
+    var count = 0;
+    return function () {
+        return count += 1;
+    };
+}());
+
 var mixinPubSub = function (object) {
     object = object || {};
     var topics = {};

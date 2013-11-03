@@ -85,9 +85,12 @@ function getParameters($startsWith, array $request) {
 }
 
 function buildOrderBySQL(array $request) {
-    $orders = array_filter(getParameters('order_', $request), function ($direction) {
-        return $direction !== "neutral";
-    });
+    $orders = array_filter(
+        getParameters('order_', $request),
+        function ($direction) {
+            return $direction !== 'neutral';
+        }
+    );
     $orderSQL = array();
     foreach($orders as $column => $direction) {
         if($direction === 'ascending') {
@@ -131,7 +134,7 @@ function buildWhereSQL(array $request) {
                 throw new Exception('Invalid filter keyname "' . $name . '".');
         }
     }
-    return count($filters) > 0 ? ' WHERE ' . implode(' AND ', $filtersSQL) : '';
+    return count($filtersSQL) > 0 ? ' WHERE ' . implode(' AND ', $filtersSQL) : '';
 }
 
 $response = null;
