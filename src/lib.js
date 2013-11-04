@@ -43,6 +43,14 @@ var isEmpty = function (object) {
     return true;
 };
 
+var isNumeric = function (candidate) {
+    return !isNaN(candidate);
+};
+
+var isInteger = function (candidate) {
+    return isNumeric(candidate) && Number(candidate) % 1 === 0;
+};
+
 //deep copy of json objects
 var copy = function (object) {
     return JSON.parse(JSON.stringify(object));

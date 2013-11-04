@@ -46,6 +46,14 @@ var isEmpty = function (object) {
     return true;
 };
 
+var isNumeric = function (candidate) {
+    return !isNaN(candidate);
+};
+
+var isInteger = function (candidate) {
+    return isNumeric(candidate) && Number(candidate) % 1 === 0;
+};
+
 //deep copy of json objects
 var copy = function (object) {
     return JSON.parse(JSON.stringify(object));
@@ -721,6 +729,7 @@ var createPaginatorTemplate = function () {
             '{{/pages}}' +
         '</ol>' +
         '<form class="crud-goto-page-form">' +
+            '<span class="number-of-pages">pages: {{numberOfPages}}</span>' +
             '<input type="text" name="goto-page" id="crud-goto-page" placeholder="page #"/>' +
             '<input type="submit" value="Go"/>' +
             '<div class="crud-help"></div>' +
@@ -986,7 +995,6 @@ var createListController = function (fig) {
 
     that.add = function (itemController) {
         items.push(itemController);
-        //that.renderItems();
     };
 
     that.getItemControllerByID = function (id) {
@@ -1003,7 +1011,6 @@ var createListController = function (fig) {
         items = filter(items, function (controller) {
             return controller.model.id() != id;
         });
-        //that.renderItems();
     };
 
     //rerendering the whole template was a glitchy
@@ -1036,6 +1043,19 @@ var createPaginatorController = function (fig) {
             var pageNumber = Number($(this).data('page-number'));
             that.model.set({ pageNumber: pageNumber });
         });
+
+        that.$('.crud-goto-page-form').unbind();
+        that.$('.crud-goto-page-form').submit(function (e) {
+            e.preventDefault();
+            var $input = that.$('.crud-goto-page-form').find('[name="goto-page"]');
+            var pageNumber = $input.val();
+            if(isInteger(pageNumber)) {
+                that.model.set({ pageNumber: Number(pageNumber) });
+            }
+            else {
+                $input.val('');
+            }
+        });
     };
 
     that.setSelected = function (pageNumber) {
@@ -1052,6 +1072,7 @@ var createPaginatorController = function (fig) {
         var error = that.model.validate();
         that.$().html(Mustache.render(that.template, {
             pages: pages,
+            numberOfPages: that.model.get('numberOfPages'),
             error: error
         }));
         that.setSelected(that.model.get('pageNumber'));
@@ -1141,7 +1162,6 @@ var createPaginatorController = function (fig) {
 
     that.model.subscribe('change', function (data) {
         that.render();
-
     });
 
     return that;

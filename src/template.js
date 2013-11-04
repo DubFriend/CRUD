@@ -241,6 +241,7 @@ var createPaginatorTemplate = function () {
             '{{/pages}}' +
         '</ol>' +
         '<form class="crud-goto-page-form">' +
+            '<span class="number-of-pages">pages: {{numberOfPages}}</span>' +
             '<input type="text" name="goto-page" id="crud-goto-page" placeholder="page #"/>' +
             '<input type="submit" value="Go"/>' +
             '<div class="crud-help"></div>' +
