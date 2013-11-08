@@ -1,8 +1,8 @@
 <?php
 //Wrapper to abstract the method of database access
-//(currently implented with PDO)
-class Sequel_Exception extends Exception {}
+//(implented with PDO)
 
+class Sequel_Exception extends Exception {}
 
 class Sequel_Table {
     private $table, $Sql;

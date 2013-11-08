@@ -59,7 +59,7 @@ function getPageNO() {
 }
 
 $requestData = json_decode(file_get_contents('php://input'), true);
-$rowsPerPage = 3;
+$rowsPerPage = 10;
 
 function doesStartWith($start, $string) {
     return substr($string, 0, strlen($start)) === $start;

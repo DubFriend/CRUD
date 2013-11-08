@@ -404,11 +404,30 @@ var createPaginatorController = function (fig) {
             return shifted;
         };
 
+        var fineTune = function (pagesSoFarInput) {
+            var pagesSoFar = copy(pagesSoFarInput);
+            var lengthSoFar = reduce(pagesSoFar, function (acc, pageNumber) {
+                return (acc || 0) + widthOfNumber(pageNumber);
+            });
+            var gapLength = widths.container - lengthSoFar;
+            var nextPage = last(pagesSoFar) + 1;
+            if(
+                gapLength > widthOfNumber(nextPage) &&
+                nextPage <= that.model.get('numberOfPages')
+            ) {
+                pagesSoFar.push(nextPage);
+            }
+            else if(gapLength < 0) {
+                pagesSoFar.pop();
+            }
+            return pagesSoFar;
+        };
+
         return function () {
             initHTMLWidths();
             var currentPage = that.model.get('pageNumber');
             var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
-            var pagesToRender = filter(rolloverNonPositives(
+            var pagesToRender = fineTune(filter(rolloverNonPositives(
                     reverse(getPageNumbers(currentPage, bufferWidth, false))
                     .concat([currentPage])
                     .concat(getPageNumbers(currentPage, bufferWidth, true))
@@ -416,7 +435,7 @@ var createPaginatorController = function (fig) {
                 function (pageNumber) {
                     return pageNumber <= that.model.get('numberOfPages');
                 }
-            );
+            ));
             return pagesToRender;
         };
     }());
