@@ -52,12 +52,18 @@ this.createCRUD = function (fig) {
 
     var filterModel = createFilterModel({
         requestModel: requestModel,
-        data: map(filterSchema, function (item, name) {
-            if(item.type === 'checkbox') {
-                item.value = item.value || [];
+        data: mapToObject(
+            filterSchema,
+            function (item) {
+                if(item.type === 'checkbox') {
+                    item.value = item.value || [];
+                }
+                return item.value === undefined ? null : item.value;
+            },
+            function (key, item) {
+                return item.name;
             }
-            return item.value === undefined ? null : item.value;
-        })
+        )
     });
 
     var filterController = createFilterController({
@@ -74,9 +80,21 @@ this.createCRUD = function (fig) {
     });
 
     var orderModel = createOrderModel({
-        data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
-            return item.order || 'neutral';
-        }),
+        data: map(
+            filter(
+                mapToObject(
+                    schema,
+                    identity,
+                    function (key, item) {
+                        return item.name;
+                    }
+                ),
+                partial(dot, 'orderable')
+            ),
+            function (item, name) {
+                return item.order || 'neutral';
+            }
+        ),
         requestModel: requestModel
     });
 

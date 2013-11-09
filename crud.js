@@ -801,18 +801,22 @@ var createController = function (fig) {
         });
     };
 
+    that.mapSchema = function (schema) {
+        return mapToObject(
+            schema,
+            function (item) {
+                return filter(item, function (item, key) {
+                    return key !== 'name';
+                });
+            },
+            function (key, item) {
+                return item.name;
+            }
+        );
+    };
+
     //that.schema = fig.schema;
-    that.schema = mapToObject(
-        fig.schema,
-        function (item) {
-            return filter(item, function (item, key) {
-                return key !== 'name';
-            });
-        },
-        function (key, item) {
-            return item.name;
-        }
-    );
+    that.schema = that.mapSchema(fig.schema);
 
 
 
@@ -831,15 +835,15 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        //console.log(schema);
+        console.log(schema);
 
         var viewData = map(modelData, function (value, name) {
-            //console.log('name',name);
+            console.log('name',name);
             if(!schema[name]) {
-                //console.log('BAD NAME', name);
+                console.log('BAD NAME', name);
             }
             var type = schema[name].type;
-            //console.log('type', type);
+            console.log('type', type);
             //var mappedValue = {};
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
@@ -899,7 +903,7 @@ var createListItemController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data) {
-        console.log(that.model.get());
+        //console.log(that.model.get());
         parentRender(data);
         that.bindView();
     };
@@ -1234,7 +1238,7 @@ var createPaginatorController = function (fig) {
 var createFilterController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
-        filterSchema = fig.filterSchema,
+        filterSchema = that.mapSchema(fig.filterSchema),
         serialize = function () {
             return serializeFormBySchema(that.$(), filterSchema);
         };
@@ -1247,7 +1251,7 @@ var createFilterController = function (fig) {
     that.renderNoError();
     that.$().submit(function (e) {
         e.preventDefault();
-        //console.log('serialize', serialize());
+        console.log('serialize', serialize());
         that.model.set(serialize());
     });
 
@@ -1398,12 +1402,18 @@ this.createCRUD = function (fig) {
 
     var filterModel = createFilterModel({
         requestModel: requestModel,
-        data: map(filterSchema, function (item, name) {
-            if(item.type === 'checkbox') {
-                item.value = item.value || [];
+        data: mapToObject(
+            filterSchema,
+            function (item) {
+                if(item.type === 'checkbox') {
+                    item.value = item.value || [];
+                }
+                return item.value === undefined ? null : item.value;
+            },
+            function (key, item) {
+                return item.name;
             }
-            return item.value === undefined ? null : item.value;
-        })
+        )
     });
 
     var filterController = createFilterController({
@@ -1420,9 +1430,21 @@ this.createCRUD = function (fig) {
     });
 
     var orderModel = createOrderModel({
-        data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
-            return item.order || 'neutral';
-        }),
+        data: map(
+            filter(
+                mapToObject(
+                    schema,
+                    identity,
+                    function (key, item) {
+                        return item.name;
+                    }
+                ),
+                partial(dot, 'orderable')
+            ),
+            function (item, name) {
+                return item.order || 'neutral';
+            }
+        ),
         requestModel: requestModel
     });
 
