@@ -478,7 +478,6 @@ var createFilterController = function (fig) {
     return that;
 };
 
-
 // ########   #######   ########   ##     ##
 // ##        ##     ##  ##     ##  ###   ###
 // ##        ##     ##  ##     ##  #### ####

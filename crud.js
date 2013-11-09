@@ -1217,7 +1217,6 @@ var createFilterController = function (fig) {
     return that;
 };
 
-
 // ########   #######   ########   ##     ##
 // ##        ##     ##  ##     ##  ###   ###
 // ##        ##     ##  ##     ##  #### ####
@@ -1474,6 +1473,8 @@ this.createCRUD = function (fig) {
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
+        paginatorModel.subscribe('change', that.newItem);
+        filterModel.subscribe('change', that.newItem);
     };
 
     return that;
