@@ -38,34 +38,70 @@
     };
 
     var buildSchema = function (extend) {
-        return union({
-            text: {
+        return [
+            {
+                name: 'text',
                 type: 'text',
                 value: 'default'
             },
-            password: {
+            {
+                name: 'password',
                 type: 'password'
             },
-            textarea: {
+            {
+                name: 'textarea',
                 type: 'textarea',
                 value: 'default'
             },
-            checkbox: {
+            {
+                name: 'checkbox',
                 type: 'checkbox',
                 values: ['a', 'b'],
                 value: ['a', 'b']
             },
-            radio: {
+            {
+                name: 'radio',
                 type: 'radio',
                 values: ['a', 'b'],
                 value: 'a'
             },
-            select: {
+            {
+                name: 'select',
                 type: 'select',
                 values: ['a', 'b'],
                 value: 'b'
             }
-        }, extend || {});
+        ].concat(extend || []);
+
+
+        // return union({
+        //     text: {
+        //         type: 'text',
+        //         value: 'default'
+        //     },
+        //     password: {
+        //         type: 'password'
+        //     },
+        //     textarea: {
+        //         type: 'textarea',
+        //         value: 'default'
+        //     },
+        //     checkbox: {
+        //         type: 'checkbox',
+        //         values: ['a', 'b'],
+        //         value: ['a', 'b']
+        //     },
+        //     radio: {
+        //         type: 'radio',
+        //         values: ['a', 'b'],
+        //         value: 'a'
+        //     },
+        //     select: {
+        //         type: 'select',
+        //         values: ['a', 'b'],
+        //         value: 'b'
+        //     }
+        // }, extend || {});
     };
 
     module('crud', {
@@ -78,6 +114,7 @@
             schema = buildSchema();
 
             validate = function (data) {
+                //console.log('VALIDATE', data);
                 var error = {};
                 if(data.text !== 'default') {
                     error.text = 'text error';
@@ -110,9 +147,15 @@
     });
 
     var getDefaultData = function () {
-        return map(buildSchema(), function (obj) {
-            return obj.value || '';
-        });
+        return mapToObject(
+            buildSchema(),
+            function (obj) {
+                return obj.value || '';
+            },
+            function (key, obj) {
+                return obj.name;
+            }
+        );
     };
 
     var getFormData = function () {
@@ -162,6 +205,7 @@
         //crud.init();
         ok($('#thing-crud-container').html(), 'form container not empty');
         ok($('#thing-crud-list-container').html(), 'list container not empty');
+        //console.log($('#thing-crud-container').html());
         deepEqual(getFormErrorData(), nullError(), 'validation errors not rendered');
     });
 
@@ -179,6 +223,7 @@
 
     test('renders errors', function () {
         buildFormController().render(union(getDefaultData(), { text: 'wrong' }));
+        //buildFormController().render();
         deepEqual(
             getFormErrorData(),
             union(nullError(), { text: 'text error' }),
@@ -191,12 +236,13 @@
             name: 'thing',
             url: 'crud.php',
             validate: validate,
-            schema: buildSchema({
-                checkbox: {
+            schema: buildSchema([
+                {
+                    name: 'checkbox',
                     type: 'checkbox',
                     values: ['a', 'b']
                 }
-            })
+            ])
         });
         //crud.init();
         ok(true, 'initiated without error');
@@ -360,9 +406,15 @@
 
     var getListItemData = function (el) {
         var $el = $(el || '#list-item-container');
-        return map(buildSchema(), function (val, name) {
-            return $el.find('[name="' + name + '"]').html();
-        });
+        return mapToObject(
+            buildSchema(),
+            function (val) {
+                return $el.find('[name="' + val.name + '"]').html();
+            },
+            function (key, val) {
+                return val.name;
+            }
+        );
     };
 
     module('listItemController', {

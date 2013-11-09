@@ -10,15 +10,32 @@ this.createCRUD = function (fig) {
             return item;
         },
         schema = map(fig.schema, setEmptyCheckboxes),
+        // schemaForController = mapToObject(
+        //     schema,
+        //     function (item) {
+        //         return filter(item, function (item, key) {
+        //             return key !== 'name';
+        //         });
+        //     },
+        //     function (key, item) {
+        //         return item.name;
+        //     }
+        // ),
         filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
         createDefaultModel = function (data, id) {
             return createSchemaModel({
                 id: id,
                 url: url,
-                data: data || map(schema, function (item) {
-                    return item.value || null;
-                }),
+                data: data || mapToObject(
+                    schema,
+                    function (item) {
+                        return item.value || null;
+                    },
+                    function (key, item) {
+                        return item.name;
+                    }
+                ),
                 validate: validate
             });
         };
@@ -65,7 +82,7 @@ this.createCRUD = function (fig) {
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
-        schema: schema,
+        schema: schema,//schemaForController,
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
@@ -94,7 +111,7 @@ this.createCRUD = function (fig) {
 
     var formController = createFormController({
         el: '#' + name + '-crud-container',
-        schema: schema,
+        schema: schema,//schemaForController,
         createDefaultModel: function() {
             return bindModel(createDefaultModel());
         },
@@ -113,7 +130,7 @@ this.createCRUD = function (fig) {
     var addItem = function (model) {
         var itemController = createListItemController({
             model: model,
-            schema: schema,
+            schema: schema,//schemaForController,
             template: that.listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);

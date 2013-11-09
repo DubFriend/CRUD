@@ -163,45 +163,93 @@
                 }
                 return error;
             },
-            schema: {
-                text: {
+            schema: [
+                {
+                    name: 'text',
                     type: 'text',
                     value: 'default'
                 },
-                textarea: {
+                {
+                    name: 'textarea',
                     type: 'textarea',
                     orderable: true
                 },
-                fruit: {
+                {
+                    name: 'fruit',
                     type: 'checkbox',
                     values: ['apple', 'orange'],
                     value: ['apple', 'orange']
                 },
-                letter: {
+                {
+                    name: 'letter',
                     type: 'radio',
                     values: ['a', 'b', 'c', 'd'],
                     value: 'c',
                     orderable: true
                 },
-                awesome: {
+                {
+                    name: 'awesome',
                     type: 'select',
                     values: ['1', '2', '3']
                 }
-            },
-            filterSchema: {
-                "Maximum Awesome": {
+            ],
+
+            // schema: {
+            //     text: {
+            //         type: 'text',
+            //         value: 'default'
+            //     },
+            //     textarea: {
+            //         type: 'textarea',
+            //         orderable: true
+            //     },
+            //     fruit: {
+            //         type: 'checkbox',
+            //         values: ['apple', 'orange'],
+            //         value: ['apple', 'orange']
+            //     },
+            //     letter: {
+            //         type: 'radio',
+            //         values: ['a', 'b', 'c', 'd'],
+            //         value: 'c',
+            //         orderable: true
+            //     },
+            //     awesome: {
+            //         type: 'select',
+            //         values: ['1', '2', '3']
+            //     }
+            // },
+            filterSchema: [
+                {
+                    name: "Maximum Awesome",
                     type: 'select',
                     values: ['1', '2', '3'],
                     value: '3'
                 },
-                "Search Textarea": {
+                {
+                    name: "Search Textarea",
                     type: 'text'
                 },
-                fruit: {
+                {
+                    name: "fruit",
                     type: 'checkbox',
                     values: ['apple', 'orange']
                 }
-            }
+            ]
+            // filterSchema: {
+            //     "Maximum Awesome": {
+            //         type: 'select',
+            //         values: ['1', '2', '3'],
+            //         value: '3'
+            //     },
+            //     "Search Textarea": {
+            //         type: 'text'
+            //     },
+            //     fruit: {
+            //         type: 'checkbox',
+            //         values: ['apple', 'orange']
+            //     }
+            // }
         });
     </script>
 </body>

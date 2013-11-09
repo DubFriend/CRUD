@@ -103,7 +103,7 @@ var mapToArray = function (collection, callback) {
 var mapToObject = function (collection, callback, keyCallback) {
     var mapped = {};
     foreach(collection, function (value, key, coll) {
-        key = keyCallback ? keyCallback(key) : key;
+        key = keyCallback ? keyCallback(key, value) : key;
         mapped[key] = callback(value, key, coll);
     });
     return mapped;

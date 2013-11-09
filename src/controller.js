@@ -33,7 +33,9 @@ var createController = function (fig) {
     var that = {},
         el = fig.el,
         render = function (isRenderError, data, errors) {
+            //console.log('DATA BEFORE', data);
             data = data || that.model.get();
+            //console.log('DATA', data);
             if(isRenderError) {
                 errors = that.mapErrorData(union(that.model.validate(data), errors));
             }
@@ -51,7 +53,21 @@ var createController = function (fig) {
         });
     };
 
-    that.schema = fig.schema;
+    //that.schema = fig.schema;
+    that.schema = mapToObject(
+        fig.schema,
+        function (item) {
+            return filter(item, function (item, key) {
+                return key !== 'name';
+            });
+        },
+        function (key, item) {
+            return item.name;
+        }
+    );
+
+
+
     that.model = fig.model;
     that.template = fig.template;
 
@@ -67,9 +83,16 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
+        //console.log(schema);
 
         var viewData = map(modelData, function (value, name) {
+            //console.log('name',name);
+            if(!schema[name]) {
+                //console.log('BAD NAME', name);
+            }
             var type = schema[name].type;
+            //console.log('type', type);
+            //var mappedValue = {};
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
                 foreach(schema[name].values, function (choice) {
@@ -79,6 +102,8 @@ var createController = function (fig) {
                 });
                 return mappedValue;
             }
+            //mappedValue.name = name;
+            //return mappedValue;
             else {
                 return value;
             }
@@ -126,6 +151,7 @@ var createListItemController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data) {
+        console.log(that.model.get());
         parentRender(data);
         that.bindView();
     };
@@ -473,7 +499,7 @@ var createFilterController = function (fig) {
     that.renderNoError();
     that.$().submit(function (e) {
         e.preventDefault();
-        console.log('serialize', serialize());
+        //console.log('serialize', serialize());
         that.model.set(serialize());
     });
 

@@ -115,7 +115,7 @@ var mapToArray = function (collection, callback) {
 var mapToObject = function (collection, callback, keyCallback) {
     var mapped = {};
     foreach(collection, function (value, key, coll) {
-        key = keyCallback ? keyCallback(key) : key;
+        key = keyCallback ? keyCallback(key, value) : key;
         mapped[key] = callback(value, key, coll);
     });
     return mapped;
@@ -587,14 +587,14 @@ var createInput = function (item, name, crudName) {
 };
 
 var reduceFormSchema = function (schema, crudName) {
-    return reduce(schema, function (acc, item, name) {
+    return reduce(schema, function (acc, item) {
         return (acc || '') +
         '<div class="control-set">' +
-            '<label for="' + crudName + '-' + name + '" class="label">' +
-                name +
+            '<label for="' + crudName + '-' + item.name + '" class="label">' +
+                item.name +
             '</label>' +
-            createInput(item, name, crudName) +
-            '<div class="crud-help">{{' + name + 'Help}}</div>' +
+            createInput(item, item.name, crudName) +
+            '<div class="crud-help">{{' + item.name + 'Help}}</div>' +
         '</div>';
     });
 };
@@ -659,12 +659,12 @@ var createFilterTemplate = function (schema, crudName) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema, crudName) {
+var createListItemTemplate = function (schema) {
     return '' +
     '<td><input type="checkbox" class="crud-list-selected"/></td>' +
-    reduce(schema, function (acc, item, name) {
+    reduce(schema, function (acc, item) {
         return (acc || '') +
-        '<td class="crud-list-item-column" name="' + name + '">{{' + name + '}}</td>';
+        '<td class="crud-list-item-column" name="' + item.name + '">{{' + item.name + '}}</td>';
     });
 };
 
@@ -685,32 +685,32 @@ var createListTemplate = function (schema, crudName) {
                     '<label for="crud-list-select-all">All</label>' +
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
-                reduce(schema, function (acc, item, name) {
+                reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
-                        '{{#orderable.' + name + '}}' +
-                            '<a href="#" data-name="' + name + '" class="crud-order">' +
-                                '{{#order.' + name + '.ascending}}' +
+                        '{{#orderable.' + item.name + '}}' +
+                            '<a href="#" data-name="' + item.name + '" class="crud-order">' +
+                                '{{#order.' + item.name + '.ascending}}' +
                                     '<span  crud-order-ascending">' +
                                         '{{{orderIcon.ascending}}}' +
                                     '</span>' +
-                                '{{/order.' + name + '.ascending}}' +
+                                '{{/order.' + item.name + '.ascending}}' +
 
-                                '{{#order.' + name + '.descending}}' +
+                                '{{#order.' + item.name + '.descending}}' +
                                     '<span class="crud-order-descending">' +
                                         '{{{orderIcon.descending}}}' +
                                     '</span>' +
-                                '{{/order.' + name + '.descending}}' +
+                                '{{/order.' + item.name + '.descending}}' +
 
-                                '{{#order.' + name + '.neutral}}' +
+                                '{{#order.' + item.name + '.neutral}}' +
                                     '<span class="crud-order-neutral">' +
                                         '{{{orderIcon.neutral}}}' +
                                     '</span>' +
-                                '{{/order.' + name + '.neutral}}' +
+                                '{{/order.' + item.name + '.neutral}}' +
                             '</a>' +
-                        '{{/orderable.' + name + '}}' +
+                        '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
-                            name +
+                            item.name +
                         '</span>' +
                     '</th>';
                 }) +
@@ -781,7 +781,9 @@ var createController = function (fig) {
     var that = {},
         el = fig.el,
         render = function (isRenderError, data, errors) {
+            //console.log('DATA BEFORE', data);
             data = data || that.model.get();
+            //console.log('DATA', data);
             if(isRenderError) {
                 errors = that.mapErrorData(union(that.model.validate(data), errors));
             }
@@ -799,7 +801,21 @@ var createController = function (fig) {
         });
     };
 
-    that.schema = fig.schema;
+    //that.schema = fig.schema;
+    that.schema = mapToObject(
+        fig.schema,
+        function (item) {
+            return filter(item, function (item, key) {
+                return key !== 'name';
+            });
+        },
+        function (key, item) {
+            return item.name;
+        }
+    );
+
+
+
     that.model = fig.model;
     that.template = fig.template;
 
@@ -815,9 +831,16 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
+        //console.log(schema);
 
         var viewData = map(modelData, function (value, name) {
+            //console.log('name',name);
+            if(!schema[name]) {
+                //console.log('BAD NAME', name);
+            }
             var type = schema[name].type;
+            //console.log('type', type);
+            //var mappedValue = {};
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
                 foreach(schema[name].values, function (choice) {
@@ -827,6 +850,8 @@ var createController = function (fig) {
                 });
                 return mappedValue;
             }
+            //mappedValue.name = name;
+            //return mappedValue;
             else {
                 return value;
             }
@@ -874,6 +899,7 @@ var createListItemController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data) {
+        console.log(that.model.get());
         parentRender(data);
         that.bindView();
     };
@@ -1221,7 +1247,7 @@ var createFilterController = function (fig) {
     that.renderNoError();
     that.$().submit(function (e) {
         e.preventDefault();
-        console.log('serialize', serialize());
+        //console.log('serialize', serialize());
         that.model.set(serialize());
     });
 
@@ -1330,15 +1356,32 @@ this.createCRUD = function (fig) {
             return item;
         },
         schema = map(fig.schema, setEmptyCheckboxes),
+        // schemaForController = mapToObject(
+        //     schema,
+        //     function (item) {
+        //         return filter(item, function (item, key) {
+        //             return key !== 'name';
+        //         });
+        //     },
+        //     function (key, item) {
+        //         return item.name;
+        //     }
+        // ),
         filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
         createDefaultModel = function (data, id) {
             return createSchemaModel({
                 id: id,
                 url: url,
-                data: data || map(schema, function (item) {
-                    return item.value || null;
-                }),
+                data: data || mapToObject(
+                    schema,
+                    function (item) {
+                        return item.value || null;
+                    },
+                    function (key, item) {
+                        return item.name;
+                    }
+                ),
                 validate: validate
             });
         };
@@ -1385,7 +1428,7 @@ this.createCRUD = function (fig) {
 
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
-        schema: schema,
+        schema: schema,//schemaForController,
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
@@ -1414,7 +1457,7 @@ this.createCRUD = function (fig) {
 
     var formController = createFormController({
         el: '#' + name + '-crud-container',
-        schema: schema,
+        schema: schema,//schemaForController,
         createDefaultModel: function() {
             return bindModel(createDefaultModel());
         },
@@ -1433,7 +1476,7 @@ this.createCRUD = function (fig) {
     var addItem = function (model) {
         var itemController = createListItemController({
             model: model,
-            schema: schema,
+            schema: schema,//schemaForController,
             template: that.listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
