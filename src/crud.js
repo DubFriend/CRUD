@@ -75,8 +75,9 @@ this.createCRUD = function (fig) {
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
-                addItem(model);
+                var itemController = addItem(model);
                 listController.renderItems();
+                listController.setSelected(itemController);
             }
         });
 
@@ -116,9 +117,10 @@ this.createCRUD = function (fig) {
             template: that.listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
-        listController.add(itemController);
+        listController.add(itemController, { prepend: true });
         listController.setSelected(itemController);
         bindModel(model);
+        return itemController;
     };
 
     var setCRUDList = function (rows) {

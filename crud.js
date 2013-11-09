@@ -1002,8 +1002,13 @@ var createListController = function (fig) {
         $('#crud-list-select-all').prop('checked', isSelected);
     };
 
-    that.add = function (itemController) {
-        items.push(itemController);
+    that.add = function (itemController, options) {
+        if(options.prepend === true) {
+            items.unshift(itemController);
+        }
+        else {
+            items.push(itemController);
+        }
     };
 
     that.getItemControllerByID = function (id) {
@@ -1393,8 +1398,9 @@ this.createCRUD = function (fig) {
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
-                addItem(model);
+                var itemController = addItem(model);
                 listController.renderItems();
+                listController.setSelected(itemController);
             }
         });
 
@@ -1434,9 +1440,10 @@ this.createCRUD = function (fig) {
             template: that.listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
-        listController.add(itemController);
+        listController.add(itemController, { prepend: true });
         listController.setSelected(itemController);
         bindModel(model);
+        return itemController;
     };
 
     var setCRUDList = function (rows) {

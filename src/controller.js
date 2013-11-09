@@ -254,8 +254,13 @@ var createListController = function (fig) {
         $('#crud-list-select-all').prop('checked', isSelected);
     };
 
-    that.add = function (itemController) {
-        items.push(itemController);
+    that.add = function (itemController, options) {
+        if(options.prepend === true) {
+            items.unshift(itemController);
+        }
+        else {
+            items.push(itemController);
+        }
     };
 
     that.getItemControllerByID = function (id) {
