@@ -23,9 +23,15 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: '' +
-                    '// <%= pkg.name %>\n' +
-                    '// <%= pkg.repository.url %>\n' +
-                    '// <%= grunt.template.today("mm-dd-yyyy") %>\n'
+                    '//  ######   ########   ##     ##  ########\n' +
+                    '// ##    ##  ##     ##  ##     ##  ##     ##\n' +
+                    '// ##        ##     ##  ##     ##  ##     ##\n' +
+                    '// ##        ########   ##     ##  ##     ##\n' +
+                    '// ##        ##   ##    ##     ##  ##     ##\n' +
+                    '// ##    ##  ##    ##   ##     ##  ##     ##\n' +
+                    '//  ######   ##     ##   #######   ########\n' +
+                    '// (MIT License) Brian Detering 2013\n' +
+                    '// https://github.com/DubFriend/CRUD\n'
             },
             dist: {
                 files: {

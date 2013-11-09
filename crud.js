@@ -1,3 +1,12 @@
+//  ######   ########   ##     ##  ########
+// ##    ##  ##     ##  ##     ##  ##     ##
+// ##        ##     ##  ##     ##  ##     ##
+// ##        ########   ##     ##  ##     ##
+// ##        ##   ##    ##     ##  ##     ##
+// ##    ##  ##    ##   ##     ##  ##     ##
+//  ######   ##     ##   #######   ########
+// (MIT License) Brian Detering 2013
+// https://github.com/DubFriend/CRUD
 (function () {
     'use strict';
 
@@ -1332,7 +1341,6 @@ this.createCRUD = function (fig) {
             });
         };
 
-
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
@@ -1341,9 +1349,7 @@ this.createCRUD = function (fig) {
 
     var requestModel = createRequestModel();
 
-    var paginatorModel = createPaginatorModel({
-        requestModel: requestModel
-    });
+    var paginatorModel = createPaginatorModel({ requestModel: requestModel });
 
     var filterModel = createFilterModel({
         requestModel: requestModel,
@@ -1367,20 +1373,12 @@ this.createCRUD = function (fig) {
         model: paginatorModel,
         template: that.paginatorTemplate
     });
-    paginatorController.render();
 
     var orderModel = createOrderModel({
         data: map(filter(schema, partial(dot, 'orderable')), function (item, name) {
             return item.order || 'neutral';
         }),
         requestModel: requestModel
-    });
-
-    requestModel.init({
-        url: url,
-        paginatorModel: paginatorModel,
-        filterModel: filterModel,
-        orderModel: orderModel
     });
 
     var listController = createListController({
@@ -1391,7 +1389,6 @@ this.createCRUD = function (fig) {
         createModel: createDefaultModel,
         template: that.listTemplate
     });
-    listController.renderNoError();
 
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
@@ -1406,6 +1403,7 @@ this.createCRUD = function (fig) {
             listController.remove(id);
             listController.setSelectAll(false);
             listController.renderItems();
+            that.newItem();
         });
 
         return model;
@@ -1418,10 +1416,6 @@ this.createCRUD = function (fig) {
             return bindModel(createDefaultModel());
         },
         template: that.formTemplate
-    });
-
-    formController.subscribe('new', function () {
-        listController.setSelected();
     });
 
     var setForm = function (model) {
@@ -1445,13 +1439,6 @@ this.createCRUD = function (fig) {
         bindModel(model);
     };
 
-
-    that.newItem = function () {
-        var defaultModel = createDefaultModel();
-        setForm(defaultModel);
-        bindModel(defaultModel);
-    };
-
     var setCRUDList = function (rows) {
         listController.clear();
         foreach(rows, function (row) {
@@ -1469,7 +1456,24 @@ this.createCRUD = function (fig) {
         paginatorController.model.set({ numberOfPages: response.pages });
     };
 
+    that.newItem = function () {
+        var defaultModel = createDefaultModel();
+        setForm(defaultModel);
+        bindModel(defaultModel);
+    };
+
     that.init = function () {
+        requestModel.init({
+            url: url,
+            paginatorModel: paginatorModel,
+            filterModel: filterModel,
+            orderModel: orderModel
+        });
+        formController.subscribe('new', function () {
+            listController.setSelected();
+        });
+        listController.renderNoError();
+        paginatorController.render();
         that.newItem();
         requestModel.subscribe('load', load);
         paginatorController.setPage(1);
