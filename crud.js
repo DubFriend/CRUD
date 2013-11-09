@@ -1003,6 +1003,7 @@ var createListController = function (fig) {
     };
 
     that.add = function (itemController, options) {
+        options = options || {};
         if(options.prepend === true) {
             items.unshift(itemController);
         }
@@ -1074,11 +1075,7 @@ var createPaginatorController = function (fig) {
 
     that.setSelected = function (pageNumber) {
         that.$('li a').removeClass('selected');
-        that.$('li a').each(function () {
-            if(Number($(this).data('page-number')) === pageNumber) {
-                $(this).addClass('selected');
-            }
-        });
+        that.$('li a[data-page-number="' + pageNumber + '"]').addClass('selected');
     };
 
     that.render = function (pages) {
@@ -1409,7 +1406,7 @@ this.createCRUD = function (fig) {
             listController.remove(id);
             listController.setSelectAll(false);
             listController.renderItems();
-            that.newItem();
+            newItem();
         });
 
         return model;
@@ -1463,7 +1460,7 @@ this.createCRUD = function (fig) {
         paginatorController.model.set({ numberOfPages: response.pages });
     };
 
-    that.newItem = function () {
+    var newItem = function () {
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
@@ -1480,13 +1477,12 @@ this.createCRUD = function (fig) {
     });
     listController.renderNoError();
     paginatorController.render();
-    that.newItem();
+    newItem();
     requestModel.subscribe('load', load);
     paginatorController.setPage(1);
-    paginatorModel.subscribe('change', that.newItem);
-    filterModel.subscribe('change', that.newItem);
+    paginatorModel.subscribe('change', newItem);
+    filterModel.subscribe('change', newItem);
 
-    return that;
 };
 
 }).call(this);

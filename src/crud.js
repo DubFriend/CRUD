@@ -86,7 +86,7 @@ this.createCRUD = function (fig) {
             listController.remove(id);
             listController.setSelectAll(false);
             listController.renderItems();
-            that.newItem();
+            newItem();
         });
 
         return model;
@@ -140,7 +140,7 @@ this.createCRUD = function (fig) {
         paginatorController.model.set({ numberOfPages: response.pages });
     };
 
-    that.newItem = function () {
+    var newItem = function () {
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
@@ -157,11 +157,10 @@ this.createCRUD = function (fig) {
     });
     listController.renderNoError();
     paginatorController.render();
-    that.newItem();
+    newItem();
     requestModel.subscribe('load', load);
     paginatorController.setPage(1);
-    paginatorModel.subscribe('change', that.newItem);
-    filterModel.subscribe('change', that.newItem);
+    paginatorModel.subscribe('change', newItem);
+    filterModel.subscribe('change', newItem);
 
-    return that;
 };

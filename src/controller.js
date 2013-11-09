@@ -255,6 +255,7 @@ var createListController = function (fig) {
     };
 
     that.add = function (itemController, options) {
+        options = options || {};
         if(options.prepend === true) {
             items.unshift(itemController);
         }
@@ -326,11 +327,7 @@ var createPaginatorController = function (fig) {
 
     that.setSelected = function (pageNumber) {
         that.$('li a').removeClass('selected');
-        that.$('li a').each(function () {
-            if(Number($(this).data('page-number')) === pageNumber) {
-                $(this).addClass('selected');
-            }
-        });
+        that.$('li a[data-page-number="' + pageNumber + '"]').addClass('selected');
     };
 
     that.render = function (pages) {
