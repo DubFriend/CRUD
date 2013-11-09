@@ -144,24 +144,22 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
-    that.init = function () {
-        requestModel.init({
-            url: url,
-            paginatorModel: paginatorModel,
-            filterModel: filterModel,
-            orderModel: orderModel
-        });
-        formController.subscribe('new', function () {
-            listController.setSelected();
-        });
-        listController.renderNoError();
-        paginatorController.render();
-        that.newItem();
-        requestModel.subscribe('load', load);
-        paginatorController.setPage(1);
-        paginatorModel.subscribe('change', that.newItem);
-        filterModel.subscribe('change', that.newItem);
-    };
+    requestModel.init({
+        url: url,
+        paginatorModel: paginatorModel,
+        filterModel: filterModel,
+        orderModel: orderModel
+    });
+    formController.subscribe('new', function () {
+        listController.setSelected();
+    });
+    listController.renderNoError();
+    paginatorController.render();
+    that.newItem();
+    requestModel.subscribe('load', load);
+    paginatorController.setPage(1);
+    paginatorModel.subscribe('change', that.newItem);
+    filterModel.subscribe('change', that.newItem);
 
     return that;
 };

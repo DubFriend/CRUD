@@ -79,10 +79,10 @@
             text-align: center;
         }
 
-        /*should not be given margin*/
+        /*should not be given margin (messes up calculation to determine number
+          of paginator pages to render)*/
         .crud-pages li {
             float: left;
-            /*margin: 0.2em;*/
         }
 
         .crud-pages li a {
@@ -201,10 +201,9 @@
                     type: 'checkbox',
                     values: ['apple', 'orange']
                 }
-            },
-            instantFilter: true
+            }
         });
-        crud.init();
+        //crud.init();
     </script>
 </body>
 </html>

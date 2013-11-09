@@ -159,14 +159,14 @@
     };
 
     test('initial render', function () {
-        crud.init();
+        //crud.init();
         ok($('#thing-crud-container').html(), 'form container not empty');
         ok($('#thing-crud-list-container').html(), 'list container not empty');
         deepEqual(getFormErrorData(), nullError(), 'validation errors not rendered');
     });
 
     test('renders initial values', function () {
-        crud.init();
+        //crud.init();
         deepEqual(getFormData(), {
             checkbox: ['a', 'b'],
             password: '',
@@ -198,7 +198,7 @@
                 }
             })
         });
-        crud.init();
+        //crud.init();
         ok(true, 'initiated without error');
     });
 
