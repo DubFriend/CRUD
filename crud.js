@@ -1,4 +1,4 @@
-// crud version 0.1.1
+// crud version 0.1.3
 // (MIT) 10-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
@@ -328,24 +328,22 @@ var createSchemaModel = function (fig) {
 
     that.delete = function () {
         console.log('delete', that.id());
-        //if(deletable) {
-            if(!that.isNew()) {
-                ajax({
-                    url: my.url + '/' + id,
-                    method: 'DELETE',
-                    success: function (response) {
-                        console.log('delete success', response);
-                        var id = that.id();
-                        that.clear();
-                        that.publish('destroyed', id);
-                    }
-                });
-            }
-            else {
-                that.clear();
-                that.publish('change', that);
-            }
-        //}
+        if(!that.isNew()) {
+            ajax({
+                url: my.url + '/' + id,
+                method: 'DELETE',
+                success: function (response) {
+                    console.log('delete success', response);
+                    var id = that.id();
+                    that.clear();
+                    that.publish('destroyed', id);
+                }
+            });
+        }
+        else {
+            that.clear();
+            that.publish('change', that);
+        }
     };
 
     return that;
@@ -686,6 +684,31 @@ var createListItemTemplate = function (schema, id, deletable) {
 // ########  ####   ######      ##
 
 var createListTemplate = function (schema, crudName, id, deletable) {
+    var orderable = function (name) {
+        return '' +
+        '{{#orderable.' + name + '}}' +
+            '<a href="#" data-name="' + name + '" class="crud-order">' +
+                '{{#order.' + name + '.ascending}}' +
+                    '<span  crud-order-ascending">' +
+                        '{{{orderIcon.ascending}}}' +
+                    '</span>' +
+                '{{/order.' + name + '.ascending}}' +
+
+                '{{#order.' + name + '.descending}}' +
+                    '<span class="crud-order-descending">' +
+                        '{{{orderIcon.descending}}}' +
+                    '</span>' +
+                '{{/order.' + name + '.descending}}' +
+
+                '{{#order.' + name + '.neutral}}' +
+                    '<span class="crud-order-neutral">' +
+                        '{{{orderIcon.neutral}}}' +
+                    '</span>' +
+                '{{/order.' + name + '.neutral}}' +
+            '</a>' +
+        '{{/orderable.' + name + '}}';
+    };
+
     return '' +
     '<table>' +
         '<thead>' +
@@ -697,35 +720,41 @@ var createListTemplate = function (schema, crudName, id, deletable) {
                         '<input type="checkbox" id="crud-list-select-all"/>' +
                     '</th>' : ''
                 ) +
-                // '<th>' +
-                //     '<label for="crud-list-select-all">All</label>' +
-                //     '<input type="checkbox" id="crud-list-select-all"/>' +
-                // '</th>' +
-                (id ? '<th>' + (id.label || 'id') + '</th>' : '') +
+                (
+                    id ?
+                        '<th>' +
+                            orderable('id') +
+                            '<span class="crud-th-content">' +
+                                (id.label || 'id') +
+                            '</span>' +
+                        '</th>' :
+                        ''
+                ) +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
-                        '{{#orderable.' + item.name + '}}' +
-                            '<a href="#" data-name="' + item.name + '" class="crud-order">' +
-                                '{{#order.' + item.name + '.ascending}}' +
-                                    '<span  crud-order-ascending">' +
-                                        '{{{orderIcon.ascending}}}' +
-                                    '</span>' +
-                                '{{/order.' + item.name + '.ascending}}' +
+                        orderable(item.name) +
+                        // '{{#orderable.' + item.name + '}}' +
+                        //     '<a href="#" data-name="' + item.name + '" class="crud-order">' +
+                        //         '{{#order.' + item.name + '.ascending}}' +
+                        //             '<span  crud-order-ascending">' +
+                        //                 '{{{orderIcon.ascending}}}' +
+                        //             '</span>' +
+                        //         '{{/order.' + item.name + '.ascending}}' +
 
-                                '{{#order.' + item.name + '.descending}}' +
-                                    '<span class="crud-order-descending">' +
-                                        '{{{orderIcon.descending}}}' +
-                                    '</span>' +
-                                '{{/order.' + item.name + '.descending}}' +
+                        //         '{{#order.' + item.name + '.descending}}' +
+                        //             '<span class="crud-order-descending">' +
+                        //                 '{{{orderIcon.descending}}}' +
+                        //             '</span>' +
+                        //         '{{/order.' + item.name + '.descending}}' +
 
-                                '{{#order.' + item.name + '.neutral}}' +
-                                    '<span class="crud-order-neutral">' +
-                                        '{{{orderIcon.neutral}}}' +
-                                    '</span>' +
-                                '{{/order.' + item.name + '.neutral}}' +
-                            '</a>' +
-                        '{{/orderable.' + item.name + '}}' +
+                        //         '{{#order.' + item.name + '.neutral}}' +
+                        //             '<span class="crud-order-neutral">' +
+                        //                 '{{{orderIcon.neutral}}}' +
+                        //             '</span>' +
+                        //         '{{/order.' + item.name + '.neutral}}' +
+                        //     '</a>' +
+                        // '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
                             (item.label || item.name) +
                         '</span>' +
@@ -736,7 +765,6 @@ var createListTemplate = function (schema, crudName, id, deletable) {
         '<tbody id="crud-list-item-container"></tbody>' +
     '</table>' +
     (deletable ? '<button id="crud-delete-selected">Delete Selected</button>' : '');
-    //'<button id="crud-delete-selected">Delete Selected</button>';
 };
 
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
@@ -971,6 +999,7 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
         items = [],
+        isIDOrderable = fig.isIDOrderable === true ? true : false,
         orderIcon = {
             ascending: '&#8679;',
             descending: '&#8681;',
@@ -1010,21 +1039,30 @@ var createListController = function (fig) {
 
     var parentRender = that.renderNoError;
     that.renderNoError = function () {
-        that.$().html(Mustache.render(that.template, {
-            orderable: map(that.schema, partial(dot, 'orderable')),
-            order: map(that.orderModel.get(), function (order, name) {
-                if(order === 'ascending') {
-                    return { ascending: true };
-                }
-                else if(order === 'descending') {
-                    return { descending: true };
-                }
-                else {
-                    return { neutral: true };
-                }
-            }),
+        var data = {
+            orderable: union(
+                { id: isIDOrderable },
+                map(that.schema, partial(dot, 'orderable'))
+            ),
+            order: union(
+                map(that.orderModel.get(), function (order, name) {
+                    if(order === 'ascending') {
+                        return { ascending: true };
+                    }
+                    else if(order === 'descending') {
+                        return { descending: true };
+                    }
+                    else {
+                        return { neutral: true };
+                    }
+                })
+            ),
             orderIcon: orderIcon
-        }));
+        };
+
+        console.log('list render data', data);
+
+        that.$().html(Mustache.render(that.template, data));
     };
 
     that.renderItems = function () {
@@ -1389,7 +1427,6 @@ this.createCRUD = function (fig) {
             return createSchemaModel({
                 id: id,
                 url: url,
-                //deletable: deletable,
                 data: data || mapToObject(
                     schema,
                     function (item) {
@@ -1406,7 +1443,7 @@ this.createCRUD = function (fig) {
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
-                var itemController = addItem(model);
+                var itemController = addItem(model, { prepend: true });
                 listController.renderItems();
                 listController.setSelected(itemController);
             }
@@ -1431,14 +1468,15 @@ this.createCRUD = function (fig) {
         setForm(itemController.model);
     };
 
-    var addItem = function (model) {
+    var addItem = function (model, options) {
+        options = options || {};
         var itemController = createListItemController({
             model: model,
             schema: schema,
             template: that.listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
-        listController.add(itemController, { prepend: true });
+        listController.add(itemController, options);
         listController.setSelected(itemController);
         bindModel(model);
         return itemController;
@@ -1494,7 +1532,7 @@ this.createCRUD = function (fig) {
 
     var orderModel = createOrderModel({
         data: map(
-            filter(
+            union({ id: id }, filter(
                 mapToObject(
                     schema,
                     identity,
@@ -1503,7 +1541,7 @@ this.createCRUD = function (fig) {
                     }
                 ),
                 partial(dot, 'orderable')
-            ),
+            )),
             function (item, name) {
                 return item.order || 'neutral';
             }
@@ -1527,6 +1565,7 @@ this.createCRUD = function (fig) {
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
+        isIDOrderable: id && id.orderable ? true : false,
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,

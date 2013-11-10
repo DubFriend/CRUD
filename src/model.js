@@ -111,24 +111,22 @@ var createSchemaModel = function (fig) {
 
     that.delete = function () {
         console.log('delete', that.id());
-        //if(deletable) {
-            if(!that.isNew()) {
-                ajax({
-                    url: my.url + '/' + id,
-                    method: 'DELETE',
-                    success: function (response) {
-                        console.log('delete success', response);
-                        var id = that.id();
-                        that.clear();
-                        that.publish('destroyed', id);
-                    }
-                });
-            }
-            else {
-                that.clear();
-                that.publish('change', that);
-            }
-        //}
+        if(!that.isNew()) {
+            ajax({
+                url: my.url + '/' + id,
+                method: 'DELETE',
+                success: function (response) {
+                    console.log('delete success', response);
+                    var id = that.id();
+                    that.clear();
+                    that.publish('destroyed', id);
+                }
+            });
+        }
+        else {
+            that.clear();
+            that.publish('change', that);
+        }
     };
 
     return that;

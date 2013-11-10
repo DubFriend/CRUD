@@ -18,7 +18,6 @@ this.createCRUD = function (fig) {
             return createSchemaModel({
                 id: id,
                 url: url,
-                //deletable: deletable,
                 data: data || mapToObject(
                     schema,
                     function (item) {
@@ -35,7 +34,7 @@ this.createCRUD = function (fig) {
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
-                var itemController = addItem(model);
+                var itemController = addItem(model, { prepend: true });
                 listController.renderItems();
                 listController.setSelected(itemController);
             }
@@ -60,14 +59,15 @@ this.createCRUD = function (fig) {
         setForm(itemController.model);
     };
 
-    var addItem = function (model) {
+    var addItem = function (model, options) {
+        options = options || {};
         var itemController = createListItemController({
             model: model,
             schema: schema,
             template: that.listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
-        listController.add(itemController, { prepend: true });
+        listController.add(itemController, options);
         listController.setSelected(itemController);
         bindModel(model);
         return itemController;
@@ -123,7 +123,7 @@ this.createCRUD = function (fig) {
 
     var orderModel = createOrderModel({
         data: map(
-            filter(
+            union({ id: id }, filter(
                 mapToObject(
                     schema,
                     identity,
@@ -132,7 +132,7 @@ this.createCRUD = function (fig) {
                     }
                 ),
                 partial(dot, 'orderable')
-            ),
+            )),
             function (item, name) {
                 return item.order || 'neutral';
             }
@@ -156,6 +156,7 @@ this.createCRUD = function (fig) {
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
+        isIDOrderable: id && id.orderable ? true : false,
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,

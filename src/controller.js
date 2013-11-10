@@ -205,6 +205,7 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
         items = [],
+        isIDOrderable = fig.isIDOrderable === true ? true : false,
         orderIcon = {
             ascending: '&#8679;',
             descending: '&#8681;',
@@ -244,21 +245,30 @@ var createListController = function (fig) {
 
     var parentRender = that.renderNoError;
     that.renderNoError = function () {
-        that.$().html(Mustache.render(that.template, {
-            orderable: map(that.schema, partial(dot, 'orderable')),
-            order: map(that.orderModel.get(), function (order, name) {
-                if(order === 'ascending') {
-                    return { ascending: true };
-                }
-                else if(order === 'descending') {
-                    return { descending: true };
-                }
-                else {
-                    return { neutral: true };
-                }
-            }),
+        var data = {
+            orderable: union(
+                { id: isIDOrderable },
+                map(that.schema, partial(dot, 'orderable'))
+            ),
+            order: union(
+                map(that.orderModel.get(), function (order, name) {
+                    if(order === 'ascending') {
+                        return { ascending: true };
+                    }
+                    else if(order === 'descending') {
+                        return { descending: true };
+                    }
+                    else {
+                        return { neutral: true };
+                    }
+                })
+            ),
             orderIcon: orderIcon
-        }));
+        };
+
+        console.log('list render data', data);
+
+        that.$().html(Mustache.render(that.template, data));
     };
 
     that.renderItems = function () {

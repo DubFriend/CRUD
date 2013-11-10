@@ -192,6 +192,31 @@ var createListItemTemplate = function (schema, id, deletable) {
 // ########  ####   ######      ##
 
 var createListTemplate = function (schema, crudName, id, deletable) {
+    var orderable = function (name) {
+        return '' +
+        '{{#orderable.' + name + '}}' +
+            '<a href="#" data-name="' + name + '" class="crud-order">' +
+                '{{#order.' + name + '.ascending}}' +
+                    '<span  crud-order-ascending">' +
+                        '{{{orderIcon.ascending}}}' +
+                    '</span>' +
+                '{{/order.' + name + '.ascending}}' +
+
+                '{{#order.' + name + '.descending}}' +
+                    '<span class="crud-order-descending">' +
+                        '{{{orderIcon.descending}}}' +
+                    '</span>' +
+                '{{/order.' + name + '.descending}}' +
+
+                '{{#order.' + name + '.neutral}}' +
+                    '<span class="crud-order-neutral">' +
+                        '{{{orderIcon.neutral}}}' +
+                    '</span>' +
+                '{{/order.' + name + '.neutral}}' +
+            '</a>' +
+        '{{/orderable.' + name + '}}';
+    };
+
     return '' +
     '<table>' +
         '<thead>' +
@@ -203,35 +228,41 @@ var createListTemplate = function (schema, crudName, id, deletable) {
                         '<input type="checkbox" id="crud-list-select-all"/>' +
                     '</th>' : ''
                 ) +
-                // '<th>' +
-                //     '<label for="crud-list-select-all">All</label>' +
-                //     '<input type="checkbox" id="crud-list-select-all"/>' +
-                // '</th>' +
-                (id ? '<th>' + (id.label || 'id') + '</th>' : '') +
+                (
+                    id ?
+                        '<th>' +
+                            orderable('id') +
+                            '<span class="crud-th-content">' +
+                                (id.label || 'id') +
+                            '</span>' +
+                        '</th>' :
+                        ''
+                ) +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
-                        '{{#orderable.' + item.name + '}}' +
-                            '<a href="#" data-name="' + item.name + '" class="crud-order">' +
-                                '{{#order.' + item.name + '.ascending}}' +
-                                    '<span  crud-order-ascending">' +
-                                        '{{{orderIcon.ascending}}}' +
-                                    '</span>' +
-                                '{{/order.' + item.name + '.ascending}}' +
+                        orderable(item.name) +
+                        // '{{#orderable.' + item.name + '}}' +
+                        //     '<a href="#" data-name="' + item.name + '" class="crud-order">' +
+                        //         '{{#order.' + item.name + '.ascending}}' +
+                        //             '<span  crud-order-ascending">' +
+                        //                 '{{{orderIcon.ascending}}}' +
+                        //             '</span>' +
+                        //         '{{/order.' + item.name + '.ascending}}' +
 
-                                '{{#order.' + item.name + '.descending}}' +
-                                    '<span class="crud-order-descending">' +
-                                        '{{{orderIcon.descending}}}' +
-                                    '</span>' +
-                                '{{/order.' + item.name + '.descending}}' +
+                        //         '{{#order.' + item.name + '.descending}}' +
+                        //             '<span class="crud-order-descending">' +
+                        //                 '{{{orderIcon.descending}}}' +
+                        //             '</span>' +
+                        //         '{{/order.' + item.name + '.descending}}' +
 
-                                '{{#order.' + item.name + '.neutral}}' +
-                                    '<span class="crud-order-neutral">' +
-                                        '{{{orderIcon.neutral}}}' +
-                                    '</span>' +
-                                '{{/order.' + item.name + '.neutral}}' +
-                            '</a>' +
-                        '{{/orderable.' + item.name + '}}' +
+                        //         '{{#order.' + item.name + '.neutral}}' +
+                        //             '<span class="crud-order-neutral">' +
+                        //                 '{{{orderIcon.neutral}}}' +
+                        //             '</span>' +
+                        //         '{{/order.' + item.name + '.neutral}}' +
+                        //     '</a>' +
+                        // '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
                             (item.label || item.name) +
                         '</span>' +
@@ -242,7 +273,6 @@ var createListTemplate = function (schema, crudName, id, deletable) {
         '<tbody id="crud-list-item-container"></tbody>' +
     '</table>' +
     (deletable ? '<button id="crud-delete-selected">Delete Selected</button>' : '');
-    //'<button id="crud-delete-selected">Delete Selected</button>';
 };
 
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
