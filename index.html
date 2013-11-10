@@ -163,9 +163,14 @@
                 }
                 return error;
             },
+            id: {
+                orderable: true,
+                label: 'id label'
+            },
             schema: [
                 {
                     name: 'text',
+                    label: 'label yo',
                     type: 'text',
                     value: 'default'
                 },
@@ -193,35 +198,10 @@
                     values: ['1', '2', '3']
                 }
             ],
-
-            // schema: {
-            //     text: {
-            //         type: 'text',
-            //         value: 'default'
-            //     },
-            //     textarea: {
-            //         type: 'textarea',
-            //         orderable: true
-            //     },
-            //     fruit: {
-            //         type: 'checkbox',
-            //         values: ['apple', 'orange'],
-            //         value: ['apple', 'orange']
-            //     },
-            //     letter: {
-            //         type: 'radio',
-            //         values: ['a', 'b', 'c', 'd'],
-            //         value: 'c',
-            //         orderable: true
-            //     },
-            //     awesome: {
-            //         type: 'select',
-            //         values: ['1', '2', '3']
-            //     }
-            // },
             filterSchema: [
                 {
                     name: "Maximum_Awesome",
+                    label: "Select Maximum Awesome",
                     type: 'select',
                     values: ['1', '2', '3'],
                     value: '3'
@@ -236,20 +216,6 @@
                     values: ['apple', 'orange']
                 }
             ]
-            // filterSchema: {
-            //     "Maximum Awesome": {
-            //         type: 'select',
-            //         values: ['1', '2', '3'],
-            //         value: '3'
-            //     },
-            //     "Search Textarea": {
-            //         type: 'text'
-            //     },
-            //     fruit: {
-            //         type: 'checkbox',
-            //         values: ['apple', 'orange']
-            //     }
-            // }
         });
     </script>
 </body>

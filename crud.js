@@ -1,5 +1,5 @@
 // crud version 0.1.0
-// (MIT) 09-11-2013
+// (MIT) 10-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -586,7 +586,7 @@ var reduceFormSchema = function (schema, crudName) {
         return (acc || '') +
         '<div class="control-set">' +
             '<label for="' + crudName + '-' + item.name + '" class="label">' +
-                item.name +
+                (item.label || item.name) +
             '</label>' +
             createInput(item, item.name, crudName) +
             '<div class="crud-help">{{' + item.name + 'Help}}</div>' +
@@ -654,9 +654,17 @@ var createFilterTemplate = function (schema, crudName) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema) {
+var createListItemTemplate = function (schema, id) {
     return '' +
     '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    (function () {
+        if(id) {
+            return '<td class="crud-list-item-column" name="id">{{id}}</td>';
+        }
+        else {
+            return '';
+        }
+    }()) +
     reduce(schema, function (acc, item) {
         return (acc || '') +
         '<td class="crud-list-item-column" name="' + item.name + '">{{' + item.name + '}}</td>';
@@ -671,7 +679,7 @@ var createListItemTemplate = function (schema) {
 // ##         ##   ##    ##     ##
 // ########  ####   ######      ##
 
-var createListTemplate = function (schema, crudName) {
+var createListTemplate = function (schema, crudName, id) {
     return '' +
     '<table>' +
         '<thead>' +
@@ -680,6 +688,14 @@ var createListTemplate = function (schema, crudName) {
                     '<label for="crud-list-select-all">All</label>' +
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
+                (function () {
+                    if(id) {
+                        return '<th>' + (id.label || 'id') + '</th>';
+                    }
+                    else {
+                        return '';
+                    }
+                }()) +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
@@ -705,7 +721,7 @@ var createListTemplate = function (schema, crudName) {
                             '</a>' +
                         '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
-                            item.name +
+                            (item.label || item.name) +
                         '</span>' +
                     '</th>';
                 }) +
@@ -885,21 +901,23 @@ var createListItemController = function (fig) {
 
     var parentMapModelToView = that.mapModelToView;
     that.mapModelToView = function (modelData) {
-        return map(parentMapModelToView(modelData), function (value, name) {
-            if(isObject(value)) {
-                return mapToArray(value, function (isSelected, name) {
-                    return name;
-                }).join(', ');
-            }
-            else {
-                return value;
-            }
-        });
+        return union(
+            { id: that.model.id() },
+            map(parentMapModelToView(modelData), function (value, name) {
+                if(isObject(value)) {
+                    return mapToArray(value, function (isSelected, name) {
+                        return name;
+                    }).join(', ');
+                }
+                else {
+                    return value;
+                }
+            })
+        );
     };
 
     var parentRender = that.render;
     that.render = function (data) {
-        //console.log(that.model.get());
         parentRender(data);
         that.bindView();
     };
@@ -1349,6 +1367,7 @@ this.createCRUD = function (fig) {
     var that = {},
         url = fig.url,
         name = fig.name,
+        id = fig.id || false,
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -1356,17 +1375,6 @@ this.createCRUD = function (fig) {
             return item;
         },
         schema = map(fig.schema, setEmptyCheckboxes),
-        // schemaForController = mapToObject(
-        //     schema,
-        //     function (item) {
-        //         return filter(item, function (item, key) {
-        //             return key !== 'name';
-        //         });
-        //     },
-        //     function (key, item) {
-        //         return item.name;
-        //     }
-        // ),
         filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
         createDefaultModel = function (data, id) {
@@ -1386,8 +1394,71 @@ this.createCRUD = function (fig) {
             });
         };
 
-    that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
-    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
+    var bindModel = function (model) {
+        model.subscribe('saved', function (wasNew) {
+            if(wasNew) {
+                var itemController = addItem(model);
+                listController.renderItems();
+                listController.setSelected(itemController);
+            }
+        });
+
+        model.subscribe('destroyed', function (id) {
+            listController.remove(id);
+            listController.setSelectAll(false);
+            listController.renderItems();
+            newItem();
+        });
+
+        return model;
+    };
+
+    var setForm = function (model) {
+        formController.setModel(model);
+    };
+
+    var selectedCallback = function (itemController) {
+        listController.setSelected(itemController);
+        setForm(itemController.model);
+    };
+
+    var addItem = function (model) {
+        var itemController = createListItemController({
+            model: model,
+            schema: schema,
+            template: that.listItemTemplate
+        });
+        itemController.subscribe('selected', selectedCallback);
+        listController.add(itemController, { prepend: true });
+        listController.setSelected(itemController);
+        bindModel(model);
+        return itemController;
+    };
+
+    var setCRUDList = function (rows) {
+        listController.clear();
+        foreach(rows, function (row) {
+            var id = row.id;
+            delete row.id;
+            addItem(createDefaultModel(row, id));
+            listController.setSelected();
+        });
+        listController.renderItems();
+    };
+
+    var load = function (response) {
+        setCRUDList(response.data);
+        paginatorController.model.set({ numberOfPages: response.pages });
+    };
+
+    var newItem = function () {
+        var defaultModel = createDefaultModel();
+        setForm(defaultModel);
+        bindModel(defaultModel);
+    };
+
+    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id);
+    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);
@@ -1412,19 +1483,6 @@ this.createCRUD = function (fig) {
         )
     });
 
-    var filterController = createFilterController({
-        el: '#' + name + '-crud-filter-container',
-        model: filterModel,
-        filterSchema: filterSchema,
-        template: that.filterTemplate
-    });
-
-    var paginatorController = createPaginatorController({
-        el: '#' + name + '-crud-paginator-nav',
-        model: paginatorModel,
-        template: that.paginatorTemplate
-    });
-
     var orderModel = createOrderModel({
         data: map(
             filter(
@@ -1444,89 +1502,36 @@ this.createCRUD = function (fig) {
         requestModel: requestModel
     });
 
+    var filterController = createFilterController({
+        el: '#' + name + '-crud-filter-container',
+        model: filterModel,
+        filterSchema: filterSchema,
+        template: that.filterTemplate
+    });
+
+    var paginatorController = createPaginatorController({
+        el: '#' + name + '-crud-paginator-nav',
+        model: paginatorModel,
+        template: that.paginatorTemplate
+    });
+
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
-        schema: schema,//schemaForController,
+        schema: schema,
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
         template: that.listTemplate
     });
 
-    var bindModel = function (model) {
-        model.subscribe('saved', function (wasNew) {
-            if(wasNew) {
-                var itemController = addItem(model);
-                listController.renderItems();
-                listController.setSelected(itemController);
-            }
-        });
-
-        model.subscribe('destroyed', function (id) {
-            console.log('destroyed', id);
-            listController.remove(id);
-            listController.setSelectAll(false);
-            listController.renderItems();
-            newItem();
-        });
-
-        return model;
-    };
-
     var formController = createFormController({
         el: '#' + name + '-crud-container',
-        schema: schema,//schemaForController,
+        schema: schema,
         createDefaultModel: function() {
             return bindModel(createDefaultModel());
         },
         template: that.formTemplate
     });
-
-    var setForm = function (model) {
-        formController.setModel(model);
-    };
-
-    var selectedCallback = function (itemController) {
-        listController.setSelected(itemController);
-        setForm(itemController.model);
-    };
-
-    var addItem = function (model) {
-        var itemController = createListItemController({
-            model: model,
-            schema: schema,//schemaForController,
-            template: that.listItemTemplate
-        });
-        itemController.subscribe('selected', selectedCallback);
-        listController.add(itemController, { prepend: true });
-        listController.setSelected(itemController);
-        bindModel(model);
-        return itemController;
-    };
-
-
-    var setCRUDList = function (rows) {
-        listController.clear();
-        foreach(rows, function (row) {
-            var id = row.id;
-            delete row.id;
-            addItem(createDefaultModel(row, id));
-            listController.setSelected();
-        });
-        listController.renderItems();
-    };
-
-    var load = function (response) {
-        console.log('load', response);
-        setCRUDList(response.data);
-        paginatorController.model.set({ numberOfPages: response.pages });
-    };
-
-    var newItem = function () {
-        var defaultModel = createDefaultModel();
-        setForm(defaultModel);
-        bindModel(defaultModel);
-    };
 
     requestModel.init({
         url: url,
@@ -1544,7 +1549,6 @@ this.createCRUD = function (fig) {
     paginatorController.setPage(1);
     paginatorModel.subscribe('change', newItem);
     filterModel.subscribe('change', newItem);
-
 };
 
 }).call(this);

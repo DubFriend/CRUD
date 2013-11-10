@@ -3,6 +3,7 @@ this.createCRUD = function (fig) {
     var that = {},
         url = fig.url,
         name = fig.name,
+        id = fig.id || false,
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -10,17 +11,6 @@ this.createCRUD = function (fig) {
             return item;
         },
         schema = map(fig.schema, setEmptyCheckboxes),
-        // schemaForController = mapToObject(
-        //     schema,
-        //     function (item) {
-        //         return filter(item, function (item, key) {
-        //             return key !== 'name';
-        //         });
-        //     },
-        //     function (key, item) {
-        //         return item.name;
-        //     }
-        // ),
         filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
         validate = fig.validate,
         createDefaultModel = function (data, id) {
@@ -40,8 +30,71 @@ this.createCRUD = function (fig) {
             });
         };
 
-    that.listTemplate = fig.listTemplate || createListTemplate(schema, name);
-    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, name);
+    var bindModel = function (model) {
+        model.subscribe('saved', function (wasNew) {
+            if(wasNew) {
+                var itemController = addItem(model);
+                listController.renderItems();
+                listController.setSelected(itemController);
+            }
+        });
+
+        model.subscribe('destroyed', function (id) {
+            listController.remove(id);
+            listController.setSelectAll(false);
+            listController.renderItems();
+            newItem();
+        });
+
+        return model;
+    };
+
+    var setForm = function (model) {
+        formController.setModel(model);
+    };
+
+    var selectedCallback = function (itemController) {
+        listController.setSelected(itemController);
+        setForm(itemController.model);
+    };
+
+    var addItem = function (model) {
+        var itemController = createListItemController({
+            model: model,
+            schema: schema,
+            template: that.listItemTemplate
+        });
+        itemController.subscribe('selected', selectedCallback);
+        listController.add(itemController, { prepend: true });
+        listController.setSelected(itemController);
+        bindModel(model);
+        return itemController;
+    };
+
+    var setCRUDList = function (rows) {
+        listController.clear();
+        foreach(rows, function (row) {
+            var id = row.id;
+            delete row.id;
+            addItem(createDefaultModel(row, id));
+            listController.setSelected();
+        });
+        listController.renderItems();
+    };
+
+    var load = function (response) {
+        setCRUDList(response.data);
+        paginatorController.model.set({ numberOfPages: response.pages });
+    };
+
+    var newItem = function () {
+        var defaultModel = createDefaultModel();
+        setForm(defaultModel);
+        bindModel(defaultModel);
+    };
+
+    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id);
+    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);
@@ -66,19 +119,6 @@ this.createCRUD = function (fig) {
         )
     });
 
-    var filterController = createFilterController({
-        el: '#' + name + '-crud-filter-container',
-        model: filterModel,
-        filterSchema: filterSchema,
-        template: that.filterTemplate
-    });
-
-    var paginatorController = createPaginatorController({
-        el: '#' + name + '-crud-paginator-nav',
-        model: paginatorModel,
-        template: that.paginatorTemplate
-    });
-
     var orderModel = createOrderModel({
         data: map(
             filter(
@@ -98,89 +138,36 @@ this.createCRUD = function (fig) {
         requestModel: requestModel
     });
 
+    var filterController = createFilterController({
+        el: '#' + name + '-crud-filter-container',
+        model: filterModel,
+        filterSchema: filterSchema,
+        template: that.filterTemplate
+    });
+
+    var paginatorController = createPaginatorController({
+        el: '#' + name + '-crud-paginator-nav',
+        model: paginatorModel,
+        template: that.paginatorTemplate
+    });
+
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
-        schema: schema,//schemaForController,
+        schema: schema,
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
         template: that.listTemplate
     });
 
-    var bindModel = function (model) {
-        model.subscribe('saved', function (wasNew) {
-            if(wasNew) {
-                var itemController = addItem(model);
-                listController.renderItems();
-                listController.setSelected(itemController);
-            }
-        });
-
-        model.subscribe('destroyed', function (id) {
-            console.log('destroyed', id);
-            listController.remove(id);
-            listController.setSelectAll(false);
-            listController.renderItems();
-            newItem();
-        });
-
-        return model;
-    };
-
     var formController = createFormController({
         el: '#' + name + '-crud-container',
-        schema: schema,//schemaForController,
+        schema: schema,
         createDefaultModel: function() {
             return bindModel(createDefaultModel());
         },
         template: that.formTemplate
     });
-
-    var setForm = function (model) {
-        formController.setModel(model);
-    };
-
-    var selectedCallback = function (itemController) {
-        listController.setSelected(itemController);
-        setForm(itemController.model);
-    };
-
-    var addItem = function (model) {
-        var itemController = createListItemController({
-            model: model,
-            schema: schema,//schemaForController,
-            template: that.listItemTemplate
-        });
-        itemController.subscribe('selected', selectedCallback);
-        listController.add(itemController, { prepend: true });
-        listController.setSelected(itemController);
-        bindModel(model);
-        return itemController;
-    };
-
-
-    var setCRUDList = function (rows) {
-        listController.clear();
-        foreach(rows, function (row) {
-            var id = row.id;
-            delete row.id;
-            addItem(createDefaultModel(row, id));
-            listController.setSelected();
-        });
-        listController.renderItems();
-    };
-
-    var load = function (response) {
-        console.log('load', response);
-        setCRUDList(response.data);
-        paginatorController.model.set({ numberOfPages: response.pages });
-    };
-
-    var newItem = function () {
-        var defaultModel = createDefaultModel();
-        setForm(defaultModel);
-        bindModel(defaultModel);
-    };
 
     requestModel.init({
         url: url,
@@ -198,5 +185,4 @@ this.createCRUD = function (fig) {
     paginatorController.setPage(1);
     paginatorModel.subscribe('change', newItem);
     filterModel.subscribe('change', newItem);
-
 };

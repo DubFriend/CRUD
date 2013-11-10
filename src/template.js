@@ -94,7 +94,7 @@ var reduceFormSchema = function (schema, crudName) {
         return (acc || '') +
         '<div class="control-set">' +
             '<label for="' + crudName + '-' + item.name + '" class="label">' +
-                item.name +
+                (item.label || item.name) +
             '</label>' +
             createInput(item, item.name, crudName) +
             '<div class="crud-help">{{' + item.name + 'Help}}</div>' +
@@ -162,9 +162,17 @@ var createFilterTemplate = function (schema, crudName) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema) {
+var createListItemTemplate = function (schema, id) {
     return '' +
     '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    (function () {
+        if(id) {
+            return '<td class="crud-list-item-column" name="id">{{id}}</td>';
+        }
+        else {
+            return '';
+        }
+    }()) +
     reduce(schema, function (acc, item) {
         return (acc || '') +
         '<td class="crud-list-item-column" name="' + item.name + '">{{' + item.name + '}}</td>';
@@ -179,7 +187,7 @@ var createListItemTemplate = function (schema) {
 // ##         ##   ##    ##     ##
 // ########  ####   ######      ##
 
-var createListTemplate = function (schema, crudName) {
+var createListTemplate = function (schema, crudName, id) {
     return '' +
     '<table>' +
         '<thead>' +
@@ -188,6 +196,14 @@ var createListTemplate = function (schema, crudName) {
                     '<label for="crud-list-select-all">All</label>' +
                     '<input type="checkbox" id="crud-list-select-all"/>' +
                 '</th>' +
+                (function () {
+                    if(id) {
+                        return '<th>' + (id.label || 'id') + '</th>';
+                    }
+                    else {
+                        return '';
+                    }
+                }()) +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
@@ -213,7 +229,7 @@ var createListTemplate = function (schema, crudName) {
                             '</a>' +
                         '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
-                            item.name +
+                            (item.label || item.name) +
                         '</span>' +
                     '</th>';
                 }) +

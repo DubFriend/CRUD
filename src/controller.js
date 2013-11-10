@@ -142,21 +142,23 @@ var createListItemController = function (fig) {
 
     var parentMapModelToView = that.mapModelToView;
     that.mapModelToView = function (modelData) {
-        return map(parentMapModelToView(modelData), function (value, name) {
-            if(isObject(value)) {
-                return mapToArray(value, function (isSelected, name) {
-                    return name;
-                }).join(', ');
-            }
-            else {
-                return value;
-            }
-        });
+        return union(
+            { id: that.model.id() },
+            map(parentMapModelToView(modelData), function (value, name) {
+                if(isObject(value)) {
+                    return mapToArray(value, function (isSelected, name) {
+                        return name;
+                    }).join(', ');
+                }
+                else {
+                    return value;
+                }
+            })
+        );
     };
 
     var parentRender = that.render;
     that.render = function (data) {
-        //console.log(that.model.get());
         parentRender(data);
         that.bindView();
     };
