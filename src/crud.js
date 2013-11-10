@@ -158,6 +158,7 @@ this.createCRUD = function (fig) {
         return itemController;
     };
 
+
     var setCRUDList = function (rows) {
         listController.clear();
         foreach(rows, function (row) {

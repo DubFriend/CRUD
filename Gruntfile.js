@@ -1,10 +1,16 @@
 module.exports = function (grunt) {
+    var bannerTemplate = '' +
+        '// <%= pkg.name %> version <%= pkg.version %>\n' +
+        '// (<%= pkg.license %>) <%= grunt.template.today("dd-mm-yyyy") %>\n' +
+        '// <%= pkg.website %>\n';
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
         concat: {
             options: {
-                separator: '\n'
+                separator: '\n',
+                banner: bannerTemplate
             },
             dist: {
                 src: [
@@ -22,16 +28,7 @@ module.exports = function (grunt) {
 
         uglify: {
             options: {
-                banner: '' +
-                    '//  ######   ########   ##     ##  ########\n' +
-                    '// ##    ##  ##     ##  ##     ##  ##     ##\n' +
-                    '// ##        ##     ##  ##     ##  ##     ##\n' +
-                    '// ##        ########   ##     ##  ##     ##\n' +
-                    '// ##        ##   ##    ##     ##  ##     ##\n' +
-                    '// ##    ##  ##    ##   ##     ##  ##     ##\n' +
-                    '//  ######   ##     ##   #######   ########\n' +
-                    '// (MIT License) Brian Detering 2013\n' +
-                    '// https://github.com/DubFriend/CRUD\n'
+                banner: bannerTemplate
             },
             dist: {
                 files: {

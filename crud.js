@@ -1,14 +1,8 @@
-//  ######   ########   ##     ##  ########
-// ##    ##  ##     ##  ##     ##  ##     ##
-// ##        ##     ##  ##     ##  ##     ##
-// ##        ########   ##     ##  ##     ##
-// ##        ##   ##    ##     ##  ##     ##
-// ##    ##  ##    ##   ##     ##  ##     ##
-//  ######   ##     ##   #######   ########
-// (MIT License) Brian Detering 2013
+// crud version 0.1.0
+// (MIT) 09-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
-    'use strict';
+'use strict';
 
 var identity = function (x) {
     return x;
@@ -315,6 +309,7 @@ var createSchemaModel = function (fig) {
     };
 
     that.save = function () {
+        //that.set(function(){}, )
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
@@ -823,6 +818,7 @@ var createController = function (fig) {
     that.model = fig.model;
     that.template = fig.template;
 
+
     that.$ = function (selector) {
         return selector ? $(el).find(selector) : $(el);
     };
@@ -835,15 +831,15 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        console.log(schema);
+        //console.log(schema);
 
         var viewData = map(modelData, function (value, name) {
-            console.log('name',name);
+            //console.log('name',name);
             if(!schema[name]) {
-                console.log('BAD NAME', name);
+                //console.log('BAD NAME', name);
             }
             var type = schema[name].type;
-            console.log('type', type);
+            //console.log('type', type);
             //var mappedValue = {};
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
@@ -1251,7 +1247,7 @@ var createFilterController = function (fig) {
     that.renderNoError();
     that.$().submit(function (e) {
         e.preventDefault();
-        console.log('serialize', serialize());
+        //console.log('serialize', serialize());
         that.model.set(serialize());
     });
 
@@ -1279,7 +1275,7 @@ var createFormController = function (fig) {
         that.$().unbind();
         that.$().submit(function (e) {
             e.preventDefault();
-            that.model.set(that.serialize());
+            that.model.set(that.serialize(), { validate: false });
             that.model.save();
         });
 
@@ -1507,6 +1503,7 @@ this.createCRUD = function (fig) {
         bindModel(model);
         return itemController;
     };
+
 
     var setCRUDList = function (rows) {
         listController.clear();

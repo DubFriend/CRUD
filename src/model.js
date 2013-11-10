@@ -92,6 +92,7 @@ var createSchemaModel = function (fig) {
     };
 
     that.save = function () {
+        //that.set(function(){}, )
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({

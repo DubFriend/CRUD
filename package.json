@@ -1,8 +1,8 @@
 {
   "name": "crud",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "client side crud ui generator",
-  "authors": [
+  "contributors": [
     {
       "name": "Brian Detering",
       "email": "BDeterin@gmail.com",
@@ -13,6 +13,8 @@
     "type": "git",
     "url": "https://github.com/DubFriend/CRUD.git"
   },
+  "website": "https://github.com/DubFriend/CRUD",
+  "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-concat": "~0.3.0",
