@@ -1,4 +1,4 @@
-// crud version 0.1.0
+// crud version 0.1.1
 // (MIT) 10-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
@@ -280,6 +280,7 @@ var createSchemaModel = function (fig) {
     var my = {};
     var that = createModel(fig, my),
         id = fig.id,
+        deletable = fig.deletable,
         ajax = fig.ajax || function (fig) {
             $.ajax({
                 url: that.isNew() ? my.url : my.url + '/' + that.id(),
@@ -309,7 +310,6 @@ var createSchemaModel = function (fig) {
     };
 
     that.save = function () {
-        //that.set(function(){}, )
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
@@ -328,22 +328,24 @@ var createSchemaModel = function (fig) {
 
     that.delete = function () {
         console.log('delete', that.id());
-        if(!that.isNew()) {
-            ajax({
-                url: my.url + '/' + id,
-                method: 'DELETE',
-                success: function (response) {
-                    console.log('delete success', response);
-                    var id = that.id();
-                    that.clear();
-                    that.publish('destroyed', id);
-                }
-            });
-        }
-        else {
-            that.clear();
-            that.publish('change', that);
-        }
+        //if(deletable) {
+            if(!that.isNew()) {
+                ajax({
+                    url: my.url + '/' + id,
+                    method: 'DELETE',
+                    success: function (response) {
+                        console.log('delete success', response);
+                        var id = that.id();
+                        that.clear();
+                        that.publish('destroyed', id);
+                    }
+                });
+            }
+            else {
+                that.clear();
+                that.publish('change', that);
+            }
+        //}
     };
 
     return that;
@@ -654,9 +656,13 @@ var createFilterTemplate = function (schema, crudName) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema, id) {
+var createListItemTemplate = function (schema, id, deletable) {
     return '' +
-    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    (
+        deletable ?
+            '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
+    ) +
+    //'<td><input type="checkbox" class="crud-list-selected"/></td>' +
     (function () {
         if(id) {
             return '<td class="crud-list-item-column" name="id">{{id}}</td>';
@@ -679,23 +685,23 @@ var createListItemTemplate = function (schema, id) {
 // ##         ##   ##    ##     ##
 // ########  ####   ######      ##
 
-var createListTemplate = function (schema, crudName, id) {
+var createListTemplate = function (schema, crudName, id, deletable) {
     return '' +
     '<table>' +
         '<thead>' +
             '<tr>' +
-                '<th>' +
-                    '<label for="crud-list-select-all">All</label>' +
-                    '<input type="checkbox" id="crud-list-select-all"/>' +
-                '</th>' +
-                (function () {
-                    if(id) {
-                        return '<th>' + (id.label || 'id') + '</th>';
-                    }
-                    else {
-                        return '';
-                    }
-                }()) +
+                (
+                    deletable ?
+                    '<th>' +
+                        '<label for="crud-list-select-all">All</label>' +
+                        '<input type="checkbox" id="crud-list-select-all"/>' +
+                    '</th>' : ''
+                ) +
+                // '<th>' +
+                //     '<label for="crud-list-select-all">All</label>' +
+                //     '<input type="checkbox" id="crud-list-select-all"/>' +
+                // '</th>' +
+                (id ? '<th>' + (id.label || 'id') + '</th>' : '') +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
@@ -729,7 +735,8 @@ var createListTemplate = function (schema, crudName, id) {
         '</thead>' +
         '<tbody id="crud-list-item-container"></tbody>' +
     '</table>' +
-    '<button id="crud-delete-selected">Delete Selected</button>';
+    (deletable ? '<button id="crud-delete-selected">Delete Selected</button>' : '');
+    //'<button id="crud-delete-selected">Delete Selected</button>';
 };
 
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
@@ -1368,6 +1375,7 @@ this.createCRUD = function (fig) {
         url = fig.url,
         name = fig.name,
         id = fig.id || false,
+        deletable = fig.deletable === false ? false : true,
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -1381,6 +1389,7 @@ this.createCRUD = function (fig) {
             return createSchemaModel({
                 id: id,
                 url: url,
+                //deletable: deletable,
                 data: data || mapToObject(
                     schema,
                     function (item) {
@@ -1457,8 +1466,8 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
-    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id);
-    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id);
+    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
+    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);

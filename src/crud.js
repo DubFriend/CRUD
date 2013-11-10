@@ -4,6 +4,7 @@ this.createCRUD = function (fig) {
         url = fig.url,
         name = fig.name,
         id = fig.id || false,
+        deletable = fig.deletable === false ? false : true,
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -17,6 +18,7 @@ this.createCRUD = function (fig) {
             return createSchemaModel({
                 id: id,
                 url: url,
+                //deletable: deletable,
                 data: data || mapToObject(
                     schema,
                     function (item) {
@@ -93,8 +95,8 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
-    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id);
-    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id);
+    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
+    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);

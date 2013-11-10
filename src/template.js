@@ -162,9 +162,13 @@ var createFilterTemplate = function (schema, crudName) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema, id) {
+var createListItemTemplate = function (schema, id, deletable) {
     return '' +
-    '<td><input type="checkbox" class="crud-list-selected"/></td>' +
+    (
+        deletable ?
+            '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
+    ) +
+    //'<td><input type="checkbox" class="crud-list-selected"/></td>' +
     (function () {
         if(id) {
             return '<td class="crud-list-item-column" name="id">{{id}}</td>';
@@ -187,23 +191,23 @@ var createListItemTemplate = function (schema, id) {
 // ##         ##   ##    ##     ##
 // ########  ####   ######      ##
 
-var createListTemplate = function (schema, crudName, id) {
+var createListTemplate = function (schema, crudName, id, deletable) {
     return '' +
     '<table>' +
         '<thead>' +
             '<tr>' +
-                '<th>' +
-                    '<label for="crud-list-select-all">All</label>' +
-                    '<input type="checkbox" id="crud-list-select-all"/>' +
-                '</th>' +
-                (function () {
-                    if(id) {
-                        return '<th>' + (id.label || 'id') + '</th>';
-                    }
-                    else {
-                        return '';
-                    }
-                }()) +
+                (
+                    deletable ?
+                    '<th>' +
+                        '<label for="crud-list-select-all">All</label>' +
+                        '<input type="checkbox" id="crud-list-select-all"/>' +
+                    '</th>' : ''
+                ) +
+                // '<th>' +
+                //     '<label for="crud-list-select-all">All</label>' +
+                //     '<input type="checkbox" id="crud-list-select-all"/>' +
+                // '</th>' +
+                (id ? '<th>' + (id.label || 'id') + '</th>' : '') +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
@@ -237,7 +241,8 @@ var createListTemplate = function (schema, crudName, id) {
         '</thead>' +
         '<tbody id="crud-list-item-container"></tbody>' +
     '</table>' +
-    '<button id="crud-delete-selected">Delete Selected</button>';
+    (deletable ? '<button id="crud-delete-selected">Delete Selected</button>' : '');
+    //'<button id="crud-delete-selected">Delete Selected</button>';
 };
 
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
