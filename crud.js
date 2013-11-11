@@ -1,5 +1,5 @@
 // crud version 0.1.3
-// (MIT) 10-11-2013
+// (MIT) 11-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -1417,20 +1417,28 @@ var createFormController = function (fig) {
 
     bind();
 
-    var setNewModelButtonVisibility = function () {
+    var setNewModelVisibility = function () {
         var $newItemButton = that.$('#crud-new-item');
-        if(that.model.isNew() && !$newItemButton.is(':hidden')) {
-            $newItemButton.hide();
+        if(that.model.isNew()) {
+            that.$('form').removeClass('crud-edit-form');
+            that.$('form').addClass('crud-create-form');
+            if(!$newItemButton.is(':hidden')) {
+                $newItemButton.hide();
+            }
         }
-        else if(!that.model.isNew() && $newItemButton.is(':hidden')) {
-            $newItemButton.show();
+        else {
+            that.$('form').addClass('crud-edit-form');
+            that.$('form').removeClass('crud-create-form');
+            if($newItemButton.is(':hidden')) {
+                $newItemButton.show();
+            }
         }
     };
 
     var parentRender = that.render;
     that.render = function (data, errors) {
         parentRender(data, errors);
-        setNewModelButtonVisibility();
+        setNewModelVisibility();
         bind();
     };
 
@@ -1438,12 +1446,12 @@ var createFormController = function (fig) {
     that.renderNoError = function (data) {
         parentRenderNoError(data);
         that.$('#crud-new-item').hide();
-        setNewModelButtonVisibility();
+        setNewModelVisibility();
         bind();
     };
 
     that.setModel = (function () {
-        var savedCallback = setNewModelButtonVisibility;
+        var savedCallback = setNewModelVisibility;
         var changeCallback = function (model) {
             that.render();
         };
