@@ -182,15 +182,31 @@ var union = function () {
 };
 
 //execute callback at most one time on the minimumInterval
-var debounce = function (minimumInterval, callback) {
+var debounce = function (minimumInterval, callback, isImmediate) {
     var timeout = null;
+    var isAttemptBlockedOnInterval = false;
     return function () {
         var that = this, args = arguments;
         if(timeout === null) {
             timeout = setTimeout(function () {
-                callback.apply(that, args);
+                if(isImmediate && isAttemptBlockedOnInterval) {
+                    //if it is immediate only call again if attempts have been made
+                    //during the timeout (so as to keep things up to date)
+                    callback.apply(that, args);
+                }
+                else if(!isImmediate) {
+                    //if it isnt immediate then this is the only callback call.
+                    callback.apply(that, args);
+                }
+                isAttemptBlockedOnInterval = false;
                 timeout = null;
             }, minimumInterval);
+            if(isImmediate) {
+                callback.apply(that, args);
+            }
+        }
+        else {
+            isAttemptBlockedOnInterval = true;
         }
     };
 };
@@ -1282,9 +1298,7 @@ var createFilterController = function (fig) {
 
     var parentMapModelToView = that.mapModelToView;
 
-    //var debounce = partial(debounce, 200);
-
-    var onFormChange = debounce(500, function () {
+    var onFormChange = partial(debounce, 500, function () {
         that.model.set(serialize());
     });
 
@@ -1295,20 +1309,20 @@ var createFilterController = function (fig) {
     that.renderNoError();
 
     if(isInstantFilter) {
-
-        console.log('filterSchema', filterSchema);
         foreach(filterSchema, function (item, name) {
             var $elem = that.$('[name="' + name + '"]');
             switch(item.type) {
                 case 'text':
                 case 'password':
                 case 'textarea':
-                    $elem.keyup(onFormChange);
+                    //wait until end of timeout to execute
+                    $elem.keyup(onFormChange(false));
                     break;
                 case 'radio':
                 case 'checkbox':
                 case 'select':
-                    $elem.change(onFormChange);
+                    //execute immediately
+                    $elem.change(onFormChange(true));
                     break;
                 default:
                     throw 'Invalid item type: ' + item.type;

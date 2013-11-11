@@ -176,15 +176,31 @@ var union = function () {
 };
 
 //execute callback at most one time on the minimumInterval
-var debounce = function (minimumInterval, callback) {
+var debounce = function (minimumInterval, callback, isImmediate) {
     var timeout = null;
+    var isAttemptBlockedOnInterval = false;
     return function () {
         var that = this, args = arguments;
         if(timeout === null) {
             timeout = setTimeout(function () {
-                callback.apply(that, args);
+                if(isImmediate && isAttemptBlockedOnInterval) {
+                    //if it is immediate only call again if attempts have been made
+                    //during the timeout (so as to keep things up to date)
+                    callback.apply(that, args);
+                }
+                else if(!isImmediate) {
+                    //if it isnt immediate then this is the only callback call.
+                    callback.apply(that, args);
+                }
+                isAttemptBlockedOnInterval = false;
                 timeout = null;
             }, minimumInterval);
+            if(isImmediate) {
+                callback.apply(that, args);
+            }
+        }
+        else {
+            isAttemptBlockedOnInterval = true;
         }
     };
 };

@@ -494,9 +494,7 @@ var createFilterController = function (fig) {
 
     var parentMapModelToView = that.mapModelToView;
 
-    //var debounce = partial(debounce, 200);
-
-    var onFormChange = debounce(500, function () {
+    var onFormChange = partial(debounce, 500, function () {
         that.model.set(serialize());
     });
 
@@ -507,20 +505,20 @@ var createFilterController = function (fig) {
     that.renderNoError();
 
     if(isInstantFilter) {
-
-        console.log('filterSchema', filterSchema);
         foreach(filterSchema, function (item, name) {
             var $elem = that.$('[name="' + name + '"]');
             switch(item.type) {
                 case 'text':
                 case 'password':
                 case 'textarea':
-                    $elem.keyup(onFormChange);
+                    //wait until end of timeout to execute
+                    $elem.keyup(onFormChange(false));
                     break;
                 case 'radio':
                 case 'checkbox':
                 case 'select':
-                    $elem.change(onFormChange);
+                    //execute immediately
+                    $elem.change(onFormChange(true));
                     break;
                 default:
                     throw 'Invalid item type: ' + item.type;
