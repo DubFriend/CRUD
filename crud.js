@@ -1,4 +1,4 @@
-// crud version 0.1.3
+// crud version 0.2.0
 // (MIT) 11-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
@@ -1416,6 +1416,7 @@ var createFormController = function (fig) {
     };
 
     bind();
+
 
     var setNewModelVisibility = function () {
         var $newItemButton = that.$('#crud-new-item');
