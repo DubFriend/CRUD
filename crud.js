@@ -181,6 +181,20 @@ var union = function () {
     return united;
 };
 
+//execute callback at most one time on the minimumInterval
+var debounce = function (minimumInterval, callback) {
+    var timeout = null;
+    return function () {
+        var that = this, args = arguments;
+        if(timeout === null) {
+            timeout = setTimeout(function () {
+                callback.apply(that, args);
+                timeout = null;
+            }, minimumInterval);
+        }
+    };
+};
+
 var generateUniqueID = (function () {
     var count = 0;
     return function () {
@@ -630,7 +644,7 @@ var createFormTemplate = function (schema, crudName) {
 // ##        ####  ########     ##     ########  ##     ##
 
 
-var createFilterTemplate = function (schema, crudName) {
+var createFilterTemplate = function (schema, crudName, isInstantFilter) {
     return '' +
     '<form>' +
         '<fieldset>' +
@@ -638,9 +652,12 @@ var createFilterTemplate = function (schema, crudName) {
             reduceFormSchema(schema, crudName) +
             '<div class="control-set">' +
                 '<div class="label">&nbsp;</div>' +
-                '<div class="input">' +
-                    '<input type="submit" class="js-crud-filter" value="Search"/>' +
-                '</div>' +
+                (
+                    isInstantFilter ? '' :
+                    '<div class="input">' +
+                        '<input type="submit" class="js-crud-filter" value="Search"/>' +
+                    '</div>'
+                ) +
             '</div>' +
         '</fieldset>' +
     '</form>';
@@ -660,7 +677,6 @@ var createListItemTemplate = function (schema, id, deletable) {
         deletable ?
             '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
     ) +
-    //'<td><input type="checkbox" class="crud-list-selected"/></td>' +
     (function () {
         if(id) {
             return '<td class="crud-list-item-column" name="id">{{id}}</td>';
@@ -722,39 +738,17 @@ var createListTemplate = function (schema, crudName, id, deletable) {
                 ) +
                 (
                     id ?
-                        '<th>' +
-                            orderable('id') +
-                            '<span class="crud-th-content">' +
-                                (id.label || 'id') +
-                            '</span>' +
-                        '</th>' :
-                        ''
+                    '<th>' +
+                        orderable('id') +
+                        '<span class="crud-th-content">' +
+                            (id.label || 'id') +
+                        '</span>' +
+                    '</th>' : ''
                 ) +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
                         orderable(item.name) +
-                        // '{{#orderable.' + item.name + '}}' +
-                        //     '<a href="#" data-name="' + item.name + '" class="crud-order">' +
-                        //         '{{#order.' + item.name + '.ascending}}' +
-                        //             '<span  crud-order-ascending">' +
-                        //                 '{{{orderIcon.ascending}}}' +
-                        //             '</span>' +
-                        //         '{{/order.' + item.name + '.ascending}}' +
-
-                        //         '{{#order.' + item.name + '.descending}}' +
-                        //             '<span class="crud-order-descending">' +
-                        //                 '{{{orderIcon.descending}}}' +
-                        //             '</span>' +
-                        //         '{{/order.' + item.name + '.descending}}' +
-
-                        //         '{{#order.' + item.name + '.neutral}}' +
-                        //             '<span class="crud-order-neutral">' +
-                        //                 '{{{orderIcon.neutral}}}' +
-                        //             '</span>' +
-                        //         '{{/order.' + item.name + '.neutral}}' +
-                        //     '</a>' +
-                        // '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
                             (item.label || item.name) +
                         '</span>' +
@@ -780,7 +774,7 @@ var createPaginatorTemplate = function () {
     '<div class="crud-paginator">' +
         '<ol class="crud-pages">' +
             '{{#pages}}' +
-                '<li><a data-page-number="{{.}}" href="#/page/{{.}}">{{.}}</a></li>' +
+                '<li><a data-page-number="{{.}}" href="#">{{.}}</a></li>' +
             '{{/pages}}' +
         '</ol>' +
         '<form class="crud-goto-page-form">' +
@@ -827,9 +821,7 @@ var createController = function (fig) {
     var that = {},
         el = fig.el,
         render = function (isRenderError, data, errors) {
-            //console.log('DATA BEFORE', data);
             data = data || that.model.get();
-            //console.log('DATA', data);
             if(isRenderError) {
                 errors = that.mapErrorData(union(that.model.validate(data), errors));
             }
@@ -861,14 +853,9 @@ var createController = function (fig) {
         );
     };
 
-    //that.schema = fig.schema;
     that.schema = that.mapSchema(fig.schema);
-
-
-
     that.model = fig.model;
     that.template = fig.template;
-
 
     that.$ = function (selector) {
         return selector ? $(el).find(selector) : $(el);
@@ -882,16 +869,8 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        //console.log(schema);
-
         var viewData = map(modelData, function (value, name) {
-            //console.log('name',name);
-            if(!schema[name]) {
-                //console.log('BAD NAME', name);
-            }
             var type = schema[name].type;
-            //console.log('type', type);
-            //var mappedValue = {};
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
                 foreach(schema[name].values, function (choice) {
@@ -901,8 +880,6 @@ var createController = function (fig) {
                 });
                 return mappedValue;
             }
-            //mappedValue.name = name;
-            //return mappedValue;
             else {
                 return value;
             }
@@ -1298,19 +1275,49 @@ var createFilterController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
         filterSchema = that.mapSchema(fig.filterSchema),
+        isInstantFilter = fig.isInstantFilter,
         serialize = function () {
             return serializeFormBySchema(that.$(), filterSchema);
         };
 
     var parentMapModelToView = that.mapModelToView;
+
+    //var debounce = partial(debounce, 200);
+
+    var onFormChange = debounce(500, function () {
+        that.model.set(serialize());
+    });
+
     that.mapModelToView = function (modelData) {
         return parentMapModelToView(modelData, filterSchema);
     };
 
     that.renderNoError();
+
+    if(isInstantFilter) {
+
+        console.log('filterSchema', filterSchema);
+        foreach(filterSchema, function (item, name) {
+            var $elem = that.$('[name="' + name + '"]');
+            switch(item.type) {
+                case 'text':
+                case 'password':
+                case 'textarea':
+                    $elem.keyup(onFormChange);
+                    break;
+                case 'radio':
+                case 'checkbox':
+                case 'select':
+                    $elem.change(onFormChange);
+                    break;
+                default:
+                    throw 'Invalid item type: ' + item.type;
+            }
+        });
+    }
+
     that.$().submit(function (e) {
         e.preventDefault();
-        //console.log('serialize', serialize());
         that.model.set(serialize());
     });
 
@@ -1413,6 +1420,7 @@ this.createCRUD = function (fig) {
         url = fig.url,
         name = fig.name,
         id = fig.id || false,
+        isInstantFilter = fig.instantFilter || false,
         deletable = fig.deletable === false ? false : true,
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
@@ -1508,7 +1516,7 @@ this.createCRUD = function (fig) {
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
-    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);
+    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
 
     var requestModel = createRequestModel();
 
@@ -1553,6 +1561,7 @@ this.createCRUD = function (fig) {
         el: '#' + name + '-crud-filter-container',
         model: filterModel,
         filterSchema: filterSchema,
+        isInstantFilter: isInstantFilter,
         template: that.filterTemplate
     });
 

@@ -175,6 +175,20 @@ var union = function () {
     return united;
 };
 
+//execute callback at most one time on the minimumInterval
+var debounce = function (minimumInterval, callback) {
+    var timeout = null;
+    return function () {
+        var that = this, args = arguments;
+        if(timeout === null) {
+            timeout = setTimeout(function () {
+                callback.apply(that, args);
+                timeout = null;
+            }, minimumInterval);
+        }
+    };
+};
+
 var generateUniqueID = (function () {
     var count = 0;
     return function () {

@@ -72,36 +72,6 @@
                 value: 'b'
             }
         ].concat(extend || []);
-
-
-        // return union({
-        //     text: {
-        //         type: 'text',
-        //         value: 'default'
-        //     },
-        //     password: {
-        //         type: 'password'
-        //     },
-        //     textarea: {
-        //         type: 'textarea',
-        //         value: 'default'
-        //     },
-        //     checkbox: {
-        //         type: 'checkbox',
-        //         values: ['a', 'b'],
-        //         value: ['a', 'b']
-        //     },
-        //     radio: {
-        //         type: 'radio',
-        //         values: ['a', 'b'],
-        //         value: 'a'
-        //     },
-        //     select: {
-        //         type: 'select',
-        //         values: ['a', 'b'],
-        //         value: 'b'
-        //     }
-        // }, extend || {});
     };
 
     module('crud', {
@@ -202,15 +172,12 @@
     };
 
     test('initial render', function () {
-        //crud.init();
         ok($('#thing-crud-container').html(), 'form container not empty');
         ok($('#thing-crud-list-container').html(), 'list container not empty');
-        //console.log($('#thing-crud-container').html());
         deepEqual(getFormErrorData(), nullError(), 'validation errors not rendered');
     });
 
     test('renders initial values', function () {
-        //crud.init();
         deepEqual(getFormData(), {
             checkbox: ['a', 'b'],
             password: '',
@@ -223,7 +190,6 @@
 
     test('renders errors', function () {
         buildFormController().render(union(getDefaultData(), { text: 'wrong' }));
-        //buildFormController().render();
         deepEqual(
             getFormErrorData(),
             union(nullError(), { text: 'text error' }),
@@ -400,7 +366,7 @@
             el: el || '#list-item-container',
             model: buildModel({ id: 5 }),
             schema: buildSchema(),
-            template: createListItemTemplate(buildSchema())
+            template: createListItemTemplate(buildSchema(), null, true)
         });
     };
 
@@ -494,7 +460,7 @@
         $el.find('th').each(function () {
             mapped.push($(this).html());
         });
-        mapped.shift(); //remove the "All" checkbox
+        //mapped.shift(); //remove the "All" checkbox
         return mapped;
     };
 

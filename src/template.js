@@ -138,7 +138,7 @@ var createFormTemplate = function (schema, crudName) {
 // ##        ####  ########     ##     ########  ##     ##
 
 
-var createFilterTemplate = function (schema, crudName) {
+var createFilterTemplate = function (schema, crudName, isInstantFilter) {
     return '' +
     '<form>' +
         '<fieldset>' +
@@ -146,9 +146,12 @@ var createFilterTemplate = function (schema, crudName) {
             reduceFormSchema(schema, crudName) +
             '<div class="control-set">' +
                 '<div class="label">&nbsp;</div>' +
-                '<div class="input">' +
-                    '<input type="submit" class="js-crud-filter" value="Search"/>' +
-                '</div>' +
+                (
+                    isInstantFilter ? '' :
+                    '<div class="input">' +
+                        '<input type="submit" class="js-crud-filter" value="Search"/>' +
+                    '</div>'
+                ) +
             '</div>' +
         '</fieldset>' +
     '</form>';
@@ -168,7 +171,6 @@ var createListItemTemplate = function (schema, id, deletable) {
         deletable ?
             '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
     ) +
-    //'<td><input type="checkbox" class="crud-list-selected"/></td>' +
     (function () {
         if(id) {
             return '<td class="crud-list-item-column" name="id">{{id}}</td>';
@@ -230,39 +232,17 @@ var createListTemplate = function (schema, crudName, id, deletable) {
                 ) +
                 (
                     id ?
-                        '<th>' +
-                            orderable('id') +
-                            '<span class="crud-th-content">' +
-                                (id.label || 'id') +
-                            '</span>' +
-                        '</th>' :
-                        ''
+                    '<th>' +
+                        orderable('id') +
+                        '<span class="crud-th-content">' +
+                            (id.label || 'id') +
+                        '</span>' +
+                    '</th>' : ''
                 ) +
                 reduce(schema, function (acc, item) {
                     return (acc || '') +
                     '<th>' +
                         orderable(item.name) +
-                        // '{{#orderable.' + item.name + '}}' +
-                        //     '<a href="#" data-name="' + item.name + '" class="crud-order">' +
-                        //         '{{#order.' + item.name + '.ascending}}' +
-                        //             '<span  crud-order-ascending">' +
-                        //                 '{{{orderIcon.ascending}}}' +
-                        //             '</span>' +
-                        //         '{{/order.' + item.name + '.ascending}}' +
-
-                        //         '{{#order.' + item.name + '.descending}}' +
-                        //             '<span class="crud-order-descending">' +
-                        //                 '{{{orderIcon.descending}}}' +
-                        //             '</span>' +
-                        //         '{{/order.' + item.name + '.descending}}' +
-
-                        //         '{{#order.' + item.name + '.neutral}}' +
-                        //             '<span class="crud-order-neutral">' +
-                        //                 '{{{orderIcon.neutral}}}' +
-                        //             '</span>' +
-                        //         '{{/order.' + item.name + '.neutral}}' +
-                        //     '</a>' +
-                        // '{{/orderable.' + item.name + '}}' +
                         '<span class="crud-th-content">' +
                             (item.label || item.name) +
                         '</span>' +
@@ -288,7 +268,7 @@ var createPaginatorTemplate = function () {
     '<div class="crud-paginator">' +
         '<ol class="crud-pages">' +
             '{{#pages}}' +
-                '<li><a data-page-number="{{.}}" href="#/page/{{.}}">{{.}}</a></li>' +
+                '<li><a data-page-number="{{.}}" href="#">{{.}}</a></li>' +
             '{{/pages}}' +
         '</ol>' +
         '<form class="crud-goto-page-form">' +

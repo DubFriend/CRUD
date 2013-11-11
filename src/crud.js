@@ -4,6 +4,7 @@ this.createCRUD = function (fig) {
         url = fig.url,
         name = fig.name,
         id = fig.id || false,
+        isInstantFilter = fig.instantFilter || false,
         deletable = fig.deletable === false ? false : true,
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
@@ -99,7 +100,7 @@ this.createCRUD = function (fig) {
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
-    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name);
+    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
 
     var requestModel = createRequestModel();
 
@@ -144,6 +145,7 @@ this.createCRUD = function (fig) {
         el: '#' + name + '-crud-filter-container',
         model: filterModel,
         filterSchema: filterSchema,
+        isInstantFilter: isInstantFilter,
         template: that.filterTemplate
     });
 

@@ -33,9 +33,7 @@ var createController = function (fig) {
     var that = {},
         el = fig.el,
         render = function (isRenderError, data, errors) {
-            //console.log('DATA BEFORE', data);
             data = data || that.model.get();
-            //console.log('DATA', data);
             if(isRenderError) {
                 errors = that.mapErrorData(union(that.model.validate(data), errors));
             }
@@ -67,14 +65,9 @@ var createController = function (fig) {
         );
     };
 
-    //that.schema = fig.schema;
     that.schema = that.mapSchema(fig.schema);
-
-
-
     that.model = fig.model;
     that.template = fig.template;
-
 
     that.$ = function (selector) {
         return selector ? $(el).find(selector) : $(el);
@@ -88,16 +81,8 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        //console.log(schema);
-
         var viewData = map(modelData, function (value, name) {
-            //console.log('name',name);
-            if(!schema[name]) {
-                //console.log('BAD NAME', name);
-            }
             var type = schema[name].type;
-            //console.log('type', type);
-            //var mappedValue = {};
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
                 foreach(schema[name].values, function (choice) {
@@ -107,8 +92,6 @@ var createController = function (fig) {
                 });
                 return mappedValue;
             }
-            //mappedValue.name = name;
-            //return mappedValue;
             else {
                 return value;
             }
@@ -504,19 +487,49 @@ var createFilterController = function (fig) {
     fig = fig || {};
     var that = mixinPubSub(createController(fig)),
         filterSchema = that.mapSchema(fig.filterSchema),
+        isInstantFilter = fig.isInstantFilter,
         serialize = function () {
             return serializeFormBySchema(that.$(), filterSchema);
         };
 
     var parentMapModelToView = that.mapModelToView;
+
+    //var debounce = partial(debounce, 200);
+
+    var onFormChange = debounce(500, function () {
+        that.model.set(serialize());
+    });
+
     that.mapModelToView = function (modelData) {
         return parentMapModelToView(modelData, filterSchema);
     };
 
     that.renderNoError();
+
+    if(isInstantFilter) {
+
+        console.log('filterSchema', filterSchema);
+        foreach(filterSchema, function (item, name) {
+            var $elem = that.$('[name="' + name + '"]');
+            switch(item.type) {
+                case 'text':
+                case 'password':
+                case 'textarea':
+                    $elem.keyup(onFormChange);
+                    break;
+                case 'radio':
+                case 'checkbox':
+                case 'select':
+                    $elem.change(onFormChange);
+                    break;
+                default:
+                    throw 'Invalid item type: ' + item.type;
+            }
+        });
+    }
+
     that.$().submit(function (e) {
         e.preventDefault();
-        //console.log('serialize', serialize());
         that.model.set(serialize());
     });
 
