@@ -197,19 +197,14 @@ var createListController = function (fig) {
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
 
         openDeleteConfirmation = function () {
-            console.log('openDeleteConfirmation');
-            $('body').prepend('<div class="crud-delete-container"></div>');
-            $('.crud-delete-container').html(Mustache.render(
-                deleteConfirmationTemplate
-            ));
-            bindDeleteConfirmation();
+            $(".crud-delete-modal").modal({
+                fadeDuration: 200,
+                fadeDelay: 0
+            });
         },
 
         closeDeleteConfirmation = function () {
-            console.log('closeDeleteConfirmation');
-            $('.crud-cancel-delete').unbind();
-            $('.crud-confirm-delete').unbind();
-            $('.crud-delete-container').remove();
+            $.modal.close();
         },
 
         bindDeleteConfirmation = function () {
@@ -248,6 +243,9 @@ var createListController = function (fig) {
                 that.orderModel.toggle($(this).data('name'));
             });
         };
+
+    $('body').prepend(Mustache.render(deleteConfirmationTemplate));
+    bindDeleteConfirmation();
 
     that.orderModel = fig.orderModel;
 

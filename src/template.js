@@ -265,16 +265,20 @@ var createListTemplate = function (schema, crudName, id, deletable) {
 
 var createDeleteConfirmationTemplate = function () {
     return '' +
-    '<div class="crud-delete crud-modal">' +
-        '<span class="crud-message">' +
-            'Are you sure you want to delete the selected Items?' +
-        '</span>' +
-        '<button type="button" class="crud-confirm-delete">' +
-            'Delete' +
-        '</button>' +
-        '<button type="button" class="crud-cancel-delete">' +
-            'Cancel' +
-        '</button>' +
+    '<div class="crud-delete-modal modal">' +
+        '<div class="crud-modal-dialogue">' +
+            '<p class="crud-message">' +
+                'Are you sure you want to delete the selected items?' +
+            '</p>' +
+            '<center>' +
+                '<button type="button" class="crud-confirm-delete">' +
+                    'Delete' +
+                '</button>' +
+                '<button type="button" class="crud-cancel-delete">' +
+                    'Cancel' +
+                '</button>' +
+            '</center>' +
+        '</div>' +
     '</div>';
 };
 

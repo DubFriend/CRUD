@@ -781,16 +781,20 @@ var createListTemplate = function (schema, crudName, id, deletable) {
 
 var createDeleteConfirmationTemplate = function () {
     return '' +
-    '<div class="crud-delete crud-modal">' +
-        '<span class="crud-message">' +
-            'Are you sure you want to delete the selected Items?' +
-        '</span>' +
-        '<button type="button" class="crud-confirm-delete">' +
-            'Delete' +
-        '</button>' +
-        '<button type="button" class="crud-cancel-delete">' +
-            'Cancel' +
-        '</button>' +
+    '<div class="crud-delete-modal modal">' +
+        '<div class="crud-modal-dialogue">' +
+            '<p class="crud-message">' +
+                'Are you sure you want to delete the selected items?' +
+            '</p>' +
+            '<center>' +
+                '<button type="button" class="crud-confirm-delete">' +
+                    'Delete' +
+                '</button>' +
+                '<button type="button" class="crud-cancel-delete">' +
+                    'Cancel' +
+                '</button>' +
+            '</center>' +
+        '</div>' +
     '</div>';
 };
 
@@ -1019,19 +1023,14 @@ var createListController = function (fig) {
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
 
         openDeleteConfirmation = function () {
-            console.log('openDeleteConfirmation');
-            $('body').prepend('<div class="crud-delete-container"></div>');
-            $('.crud-delete-container').html(Mustache.render(
-                deleteConfirmationTemplate
-            ));
-            bindDeleteConfirmation();
+            $(".crud-delete-modal").modal({
+                fadeDuration: 200,
+                fadeDelay: 0
+            });
         },
 
         closeDeleteConfirmation = function () {
-            console.log('closeDeleteConfirmation');
-            $('.crud-cancel-delete').unbind();
-            $('.crud-confirm-delete').unbind();
-            $('.crud-delete-container').remove();
+            $.modal.close();
         },
 
         bindDeleteConfirmation = function () {
@@ -1070,6 +1069,9 @@ var createListController = function (fig) {
                 that.orderModel.toggle($(this).data('name'));
             });
         };
+
+    $('body').prepend(Mustache.render(deleteConfirmationTemplate));
+    bindDeleteConfirmation();
 
     that.orderModel = fig.orderModel;
 
