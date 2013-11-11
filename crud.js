@@ -1417,7 +1417,6 @@ var createFormController = function (fig) {
 
     bind();
 
-
     var setNewModelVisibility = function () {
         var $newItemButton = that.$('#crud-new-item');
         if(that.model.isNew()) {
@@ -1580,9 +1579,18 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
+
     that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
     that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
-    that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
+
+    //that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
+    that.formTemplate = fig.createFormTemplate ?
+        fig.createFormTemplate.apply({
+            schema: schema,
+            name: name,
+            createInput: createInput
+        }) : createFormTemplate(schema, name);
+
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
     that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();

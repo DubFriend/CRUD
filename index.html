@@ -238,7 +238,35 @@
                     type: 'checkbox',
                     values: ['apple', 'orange']
                 }
-            ]
+            ],
+
+            createFormTemplate: function () {
+                var that = this;
+                return '' +
+                '<form>' +
+                    '<legend>Custom ' + that.name + '</legend>' +
+                    (function () {
+                        'use strict';
+                        var key, html = '', item;
+                        for(key in that.schema) {
+                            if(that.schema.hasOwnProperty(key)) {
+                                item = that.schema[key];
+                                html += '' +
+                                '<label for="' + that.name + '-' + item.name + '">' +
+                                    (item.label || item.name) +
+                                '</label>' +
+                                that.createInput(item, item.name, that.name) +
+                                '<div>{{' + item.name + 'Help}}</div>';
+                            }
+                        }
+                        return html;
+                    }()) +
+                    '<input type="submit" value="Save"/>' +
+                    '<button id="crud-new-item" type="button">' +
+                        'New ' + that.name +
+                    '</button>' +
+                '</form>';
+            },
         });
     </script>
 </body>
