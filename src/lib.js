@@ -183,13 +183,7 @@ var debounce = function (minimumInterval, callback, isImmediate) {
         var that = this, args = arguments;
         if(timeout === null) {
             timeout = setTimeout(function () {
-                if(isImmediate && isAttemptBlockedOnInterval) {
-                    //if it is immediate only call again if attempts have been made
-                    //during the timeout (so as to keep things up to date)
-                    callback.apply(that, args);
-                }
-                else if(!isImmediate) {
-                    //if it isnt immediate then this is the only callback call.
+                if(!isImmediate || isAttemptBlockedOnInterval) {
                     callback.apply(that, args);
                 }
                 isAttemptBlockedOnInterval = false;

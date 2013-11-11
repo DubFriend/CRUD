@@ -189,13 +189,7 @@ var debounce = function (minimumInterval, callback, isImmediate) {
         var that = this, args = arguments;
         if(timeout === null) {
             timeout = setTimeout(function () {
-                if(isImmediate && isAttemptBlockedOnInterval) {
-                    //if it is immediate only call again if attempts have been made
-                    //during the timeout (so as to keep things up to date)
-                    callback.apply(that, args);
-                }
-                else if(!isImmediate) {
-                    //if it isnt immediate then this is the only callback call.
+                if(!isImmediate || isAttemptBlockedOnInterval) {
                     callback.apply(that, args);
                 }
                 isAttemptBlockedOnInterval = false;
@@ -777,6 +771,30 @@ var createListTemplate = function (schema, crudName, id, deletable) {
     (deletable ? '<button id="crud-delete-selected">Delete Selected</button>' : '');
 };
 
+// ########   ########  ##        ########  ########  ########
+// ##     ##  ##        ##        ##           ##     ##
+// ##     ##  ##        ##        ##           ##     ##
+// ##     ##  ######    ##        ######       ##     ######
+// ##     ##  ##        ##        ##           ##     ##
+// ##     ##  ##        ##        ##           ##     ##
+// ########   ########  ########  ########     ##     ########
+
+var createDeleteConfirmationTemplate = function () {
+    return '' +
+    '<div class="crud-delete crud-modal">' +
+        '<span class="crud-message">' +
+            'Are you sure you want to delete the selected Items?' +
+        '</span>' +
+        '<button type="button" class="crud-confirm-delete">' +
+            'Delete' +
+        '</button>' +
+        '<button type="button" class="crud-cancel-delete">' +
+            'Cancel' +
+        '</button>' +
+    '</div>';
+};
+
+
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
 // ##     ##    ## ##    ##    ##    ##   ###   ##    ## ##       ##     ##     ##  ##     ##
 // ##     ##   ##   ##   ##          ##   ####  ##   ##   ##      ##     ##     ##  ##     ##
@@ -998,6 +1016,37 @@ var createListController = function (fig) {
             descending: '&#8681;',
             neutral: '&#8691;'
         },
+        deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
+
+        openDeleteConfirmation = function () {
+            console.log('openDeleteConfirmation');
+            $('body').prepend('<div class="crud-delete-container"></div>');
+            $('.crud-delete-container').html(Mustache.render(
+                deleteConfirmationTemplate
+            ));
+            bindDeleteConfirmation();
+        },
+
+        closeDeleteConfirmation = function () {
+            console.log('closeDeleteConfirmation');
+            $('.crud-cancel-delete').unbind();
+            $('.crud-confirm-delete').unbind();
+            $('.crud-delete-container').remove();
+        },
+
+        bindDeleteConfirmation = function () {
+            $('.crud-cancel-delete').unbind();
+            $('.crud-confirm-delete').unbind();
+            $('.crud-cancel-delete').click(closeDeleteConfirmation);
+            $('.crud-confirm-delete').click(function () {
+                foreach(items, function (listItemController) {
+                    if(listItemController.isSelected()) {
+                        listItemController.model.delete();
+                    }
+                });
+                closeDeleteConfirmation();
+            });
+        },
 
         bind = function () {
             that.$('#crud-list-select-all').unbind();
@@ -1008,14 +1057,8 @@ var createListController = function (fig) {
             });
 
             that.$('#crud-delete-selected').unbind();
-            that.$('#crud-delete-selected').click(function (e) {
-                e.preventDefault();
-                foreach(items, function (listItemController) {
-                    if(listItemController.isSelected()) {
-                        listItemController.model.delete();
-                    }
-                });
-            });
+            that.$('#crud-delete-selected').click(openDeleteConfirmation);
+
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {
@@ -1531,6 +1574,7 @@ this.createCRUD = function (fig) {
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
+    that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
 
     var requestModel = createRequestModel();
 
@@ -1592,7 +1636,8 @@ this.createCRUD = function (fig) {
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
-        template: that.listTemplate
+        template: that.listTemplate,
+        deleteConfirmationTemplate: that.deleteConfirmationTemplate
     });
 
     var formController = createFormController({

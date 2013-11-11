@@ -194,6 +194,37 @@ var createListController = function (fig) {
             descending: '&#8681;',
             neutral: '&#8691;'
         },
+        deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
+
+        openDeleteConfirmation = function () {
+            console.log('openDeleteConfirmation');
+            $('body').prepend('<div class="crud-delete-container"></div>');
+            $('.crud-delete-container').html(Mustache.render(
+                deleteConfirmationTemplate
+            ));
+            bindDeleteConfirmation();
+        },
+
+        closeDeleteConfirmation = function () {
+            console.log('closeDeleteConfirmation');
+            $('.crud-cancel-delete').unbind();
+            $('.crud-confirm-delete').unbind();
+            $('.crud-delete-container').remove();
+        },
+
+        bindDeleteConfirmation = function () {
+            $('.crud-cancel-delete').unbind();
+            $('.crud-confirm-delete').unbind();
+            $('.crud-cancel-delete').click(closeDeleteConfirmation);
+            $('.crud-confirm-delete').click(function () {
+                foreach(items, function (listItemController) {
+                    if(listItemController.isSelected()) {
+                        listItemController.model.delete();
+                    }
+                });
+                closeDeleteConfirmation();
+            });
+        },
 
         bind = function () {
             that.$('#crud-list-select-all').unbind();
@@ -204,14 +235,8 @@ var createListController = function (fig) {
             });
 
             that.$('#crud-delete-selected').unbind();
-            that.$('#crud-delete-selected').click(function (e) {
-                e.preventDefault();
-                foreach(items, function (listItemController) {
-                    if(listItemController.isSelected()) {
-                        listItemController.model.delete();
-                    }
-                });
-            });
+            that.$('#crud-delete-selected').click(openDeleteConfirmation);
+
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {

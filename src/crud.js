@@ -101,6 +101,7 @@ this.createCRUD = function (fig) {
     that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
     that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
+    that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
 
     var requestModel = createRequestModel();
 
@@ -162,7 +163,8 @@ this.createCRUD = function (fig) {
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
-        template: that.listTemplate
+        template: that.listTemplate,
+        deleteConfirmationTemplate: that.deleteConfirmationTemplate
     });
 
     var formController = createFormController({
