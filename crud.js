@@ -1,4 +1,4 @@
-// crud version 0.2.0
+// crud version 0.3.0
 // (MIT) 11-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
@@ -799,7 +799,6 @@ var createDeleteConfirmationTemplate = function () {
         '</div>' +
     '</div>';
 };
-
 
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########
 // ##     ##    ## ##    ##    ##    ##   ###   ##    ## ##       ##     ##     ##  ##     ##
