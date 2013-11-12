@@ -514,12 +514,19 @@ var createRequestModel = function () {
 
     return that;
 };
-var createInput = function (item, name, crudName) {
+var createInput = function (fig) {
+
+    var item = fig.item;
+
+    var name = item.name;
+
+    var crudName = fig.name;
+
+    var className = fig.class || '';
 
     var ID = generateUniqueID() + '-';
 
-    var input = function (checked, value, isInputClass) {
-        isInputClass = isInputClass === undefined ? true : isInputClass;
+    var input = function (checked, value) {
         var valueHTML = function () {
             return item.type === 'checkbox' || item.type === 'radio' ?
                 'value="' + value + '" ' : 'value="{{' + name + '}}" ';
@@ -532,29 +539,26 @@ var createInput = function (item, name, crudName) {
         };
 
         return '' +
-        (isInputClass ? '<div class="input">' : '') +
-            '<input type="' + item.type + '" ' + id() +
-                    'name="' + name + '" ' + valueHTML() +
-                    (checked ? 'checked' : '') + '/>' +
-        (isInputClass ? '</div>' : '');
+        '<input type="' + item.type + '" ' + id() +
+                'name="' + name + '" ' + valueHTML() +
+                ' class="' + className + '" ' +
+                (checked ? 'checked' : '') + '/>';
     };
 
     var inputGroup = function () {
         return '' +
-        '<div class="input">' +
-            reduce(item.values, function (acc, value) {
-                return (acc || '') +
-                '<label for="' + ID + name + '-' + value + '">' +
-                    value +
-                '</label>' +
-                '{{#' + name + '.' + value + '}}' +
-                    input(true, value, false) +
-                '{{/' + name + '.' + value + '}}' +
-                '{{^' + name + '.' + value + '}}' +
-                    input(false, value, false) +
-                '{{/' + name + '.' + value + '}}';
-            }) +
-        '</div>';
+        reduce(item.values, function (acc, value) {
+            return (acc || '') +
+            '<label for="' + ID + name + '-' + value + '">' +
+                value +
+            '</label>' +
+            '{{#' + name + '.' + value + '}}' +
+                input(true, value) +
+            '{{/' + name + '.' + value + '}}' +
+            '{{^' + name + '.' + value + '}}' +
+                input(false, value) +
+            '{{/' + name + '.' + value + '}}';
+        });
     };
 
     switch(item.type) {
@@ -566,12 +570,10 @@ var createInput = function (item, name, crudName) {
 
         case 'textarea':
             return '' +
-            '<div class="input">' +
-                '<textarea id="' + ID + crudName + '-' + name + '" ' +
-                          'name="' + name + '">' +
-                    '{{' + name + '}}' +
-                '</textarea>' +
-            '</div>';
+            '<textarea id="' + ID + crudName + '-' + name + '" ' +
+                      'name="' + name + '" class="' + className + '">' +
+                '{{' + name + '}}' +
+            '</textarea>';
 
         case 'checkbox':
             return inputGroup();
@@ -581,29 +583,29 @@ var createInput = function (item, name, crudName) {
 
         case 'select':
             return '' +
-            '<div class="input">' +
-                '<select name="' + name + '">' +
-                    reduce(item.values, function (acc, value) {
-                        acc = acc || '';
-                        return acc +
-                        '{{#' + name + '.' + value + '}}' +
-                            '<option value="' + value + '" selected>' +
-                                value +
-                            '</option>' +
-                        '{{/' + name + '.' + value + '}}' +
-                        '{{^' + name + '.' + value + '}}' +
-                            '<option value="' + value + '">' +
-                                value +
-                            '</option>' +
-                        '{{/' + name + '.' + value + '}}';
-                    }) +
-                '</select>' +
-            '</div>';
+            '<select name="' + name + '" class="' + className + '">' +
+                reduce(item.values, function (acc, value) {
+                    acc = acc || '';
+                    return acc +
+                    '{{#' + name + '.' + value + '}}' +
+                        '<option value="' + value + '" selected>' +
+                            value +
+                        '</option>' +
+                    '{{/' + name + '.' + value + '}}' +
+                    '{{^' + name + '.' + value + '}}' +
+                        '<option value="' + value + '">' +
+                            value +
+                        '</option>' +
+                    '{{/' + name + '.' + value + '}}';
+                }) +
+            '</select>';
 
         default:
             throw 'Invalid input type: ' + item.type;
     }
 };
+
+
 
 var reduceFormSchema = function (schema, crudName) {
     return reduce(schema, function (acc, item) {
@@ -612,7 +614,11 @@ var reduceFormSchema = function (schema, crudName) {
             '<label for="' + crudName + '-' + item.name + '" class="label">' +
                 (item.label || item.name) +
             '</label>' +
-            createInput(item, item.name, crudName) +
+            createInput({
+                item: item,
+                name: crudName,
+                class: 'foo'
+            }) +
             '<div class="crud-help">{{' + item.name + 'Help}}</div>' +
         '</div>';
     });
@@ -636,7 +642,7 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="label">&nbsp;</div>' +
                 '<div class="input">' +
                     '<input type="submit" class="js-crud-save" value="Save"/>' +
-                    '<button id="crud-new-item" type="button">' +
+                    '<button class="crud-new-item" type="button">' +
                         'New ' + crudName +
                     '</button>' +
                 '</div>' +
@@ -1408,8 +1414,8 @@ var createFormController = function (fig) {
             that.model.save();
         });
 
-        $('#crud-new-item').unbind();
-        $('#crud-new-item').click(function () {
+        $('.crud-new-item').unbind();
+        $('.crud-new-item').click(function () {
             that.setModel(fig.createDefaultModel());
             that.publish('new');
         });
@@ -1418,7 +1424,7 @@ var createFormController = function (fig) {
     bind();
 
     var setNewModelVisibility = function () {
-        var $newItemButton = that.$('#crud-new-item');
+        var $newItemButton = that.$('.crud-new-item');
         if(that.model.isNew()) {
             that.$('form').removeClass('crud-edit-form');
             that.$('form').addClass('crud-create-form');
@@ -1445,7 +1451,7 @@ var createFormController = function (fig) {
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
         parentRenderNoError(data);
-        that.$('#crud-new-item').hide();
+        that.$('.crud-new-item').hide();
         setNewModelVisibility();
         bind();
     };

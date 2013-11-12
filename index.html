@@ -255,14 +255,18 @@
                                 '<label for="' + that.name + '-' + item.name + '">' +
                                     (item.label || item.name) +
                                 '</label>' +
-                                that.createInput(item, item.name, that.name) +
-                                '<div>{{' + item.name + 'Help}}</div>';
+                                that.createInput({
+                                    item: item,
+                                    name: that.name,
+                                    class: 'foo'
+                                }) +
+                                '{{' + item.name + 'Help}}';
                             }
                         }
                         return html;
                     }()) +
                     '<input type="submit" value="Save"/>' +
-                    '<button id="crud-new-item" type="button">' +
+                    '<button class="crud-new-item">' +
                         'New ' + that.name +
                     '</button>' +
                 '</form>';

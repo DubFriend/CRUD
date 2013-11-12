@@ -582,8 +582,8 @@ var createFormController = function (fig) {
             that.model.save();
         });
 
-        $('#crud-new-item').unbind();
-        $('#crud-new-item').click(function () {
+        $('.crud-new-item').unbind();
+        $('.crud-new-item').click(function () {
             that.setModel(fig.createDefaultModel());
             that.publish('new');
         });
@@ -592,7 +592,7 @@ var createFormController = function (fig) {
     bind();
 
     var setNewModelVisibility = function () {
-        var $newItemButton = that.$('#crud-new-item');
+        var $newItemButton = that.$('.crud-new-item');
         if(that.model.isNew()) {
             that.$('form').removeClass('crud-edit-form');
             that.$('form').addClass('crud-create-form');
@@ -619,7 +619,7 @@ var createFormController = function (fig) {
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
         parentRenderNoError(data);
-        that.$('#crud-new-item').hide();
+        that.$('.crud-new-item').hide();
         setNewModelVisibility();
         bind();
     };
