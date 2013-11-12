@@ -1,5 +1,5 @@
 // crud version 0.3.0
-// (MIT) 11-11-2013
+// (MIT) 12-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -1027,7 +1027,8 @@ var createListController = function (fig) {
         openDeleteConfirmation = function () {
             $(".crud-delete-modal").modal({
                 fadeDuration: 200,
-                fadeDelay: 0
+                fadeDelay: 0,
+                showClose: false
             });
         },
 
@@ -1067,7 +1068,8 @@ var createListController = function (fig) {
             });
 
             that.$('.crud-order').unbind();
-            that.$('.crud-order').click(function () {
+            that.$('.crud-order').click(function (e) {
+                e.preventDefault();
                 that.orderModel.toggle($(this).data('name'));
             });
         };
@@ -1181,7 +1183,8 @@ var createPaginatorController = function (fig) {
 
     var bind = function () {
         that.$('li a').unbind();
-        that.$('li a').click(function () {
+        that.$('li a').click(function (e) {
+            e.preventDefault();
             var pageNumber = Number($(this).data('page-number'));
             that.model.set({ pageNumber: pageNumber });
         });
