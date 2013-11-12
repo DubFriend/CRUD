@@ -105,23 +105,23 @@
         }
 
         .crud-goto-page-form {
-            width: 220px;
+            /*width: 220px;*/
             float: right;
         }
 
         .crud-goto-page-form .number-of-pages {
-            width: 120px;
+            /*width: 120px;*/
             padding: 0.5em;
             position: relative;
             top: 2px;
         }
 
         .crud-goto-page-form input[type="text"] {
-            width: 58px;
+            /*width: 58px;*/
         }
 
         .crud-goto-page-form input[type="submit"] {
-            width: 40px;
+            /*width: 40px;*/
             padding: 1px;
             margin: 0;
         }
@@ -339,7 +339,10 @@
                     '</thead>' +
                     '<tbody class="crud-list-item-container"></tbody>' +
                 '</table>' +
-                (that.deletable ? '<button class="crud-delete-selected">Delete Selected</button>' : '');
+                (that.deletable ?
+                    '<button class="crud-delete-selected">' +
+                        'Delete Selected' +
+                    '</button>' : '');
             },
 
             createListItemTemplate: function () {
@@ -352,6 +355,33 @@
                 reduce(that.schema, function (acc, item) {
                     return (acc || '') + '<td>{{' + item.name + '}}</td>';
                 });
+            },
+
+            createPaginatorTemplate: function () {
+                return '' +
+                '<ol class="crud-pages">' +
+                    '{{#pages}}' +
+                        '<li><a data-page-number="{{.}}" href="#">{{.}}</a></li>' +
+                    '{{/pages}}' +
+                '</ol>' +
+                '<form class="crud-goto-page-form">' +
+                    '{{numberOfPages}}' +
+                    '<input type="text" name="goto-page"/>' +
+                    '<input type="submit" value="Go"/>' +
+                '</form>';
+            },
+
+            createDeleteConfirmationTemplate: function () {
+                return '' +
+                '<div class="crud-delete-modal modal">' +
+                    'Sure you want to delete?' +
+                    '<button class="crud-confirm-delete">' +
+                        'Delete' +
+                    '</button>' +
+                    '<button class="crud-cancel-delete">' +
+                        'Cancel' +
+                    '</button>' +
+                '</div>';
             }
         });
     </script>

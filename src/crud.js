@@ -138,9 +138,13 @@ this.createCRUD = function (fig) {
         }) : createFilterTemplate(filterSchema, name, isInstantFilter);
 
 
-    that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+    //that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
+    that.paginatorTemplate = fig.createPaginatorTemplate ?
+        fig.createPaginatorTemplate() : createPaginatorTemplate();
 
-    that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
+    //that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
+    that.deleteConfirmationTemplate = fig.createDeleteConfirmationTemplate ?
+        fig.createDeleteConfirmationTemplate() : createDeleteConfirmationTemplate();
 
     var requestModel = createRequestModel();
 

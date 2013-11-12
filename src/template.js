@@ -273,10 +273,10 @@ var createDeleteConfirmationTemplate = function () {
                 'Are you sure you want to delete the selected items?' +
             '</p>' +
             '<center>' +
-                '<button type="button" class="crud-confirm-delete">' +
+                '<button class="crud-confirm-delete">' +
                     'Delete' +
                 '</button>' +
-                '<button type="button" class="crud-cancel-delete">' +
+                '<button class="crud-cancel-delete">' +
                     'Cancel' +
                 '</button>' +
             '</center>' +
@@ -303,7 +303,7 @@ var createPaginatorTemplate = function () {
         '</ol>' +
         '<form class="crud-goto-page-form">' +
             '<span class="number-of-pages">pages: {{numberOfPages}}</span>' +
-            '<input type="text" name="goto-page" id="crud-goto-page" placeholder="page #"/>' +
+            '<input type="text" name="goto-page" placeholder="page #"/>' +
             '<input type="submit" value="Go"/>' +
             '<div class="crud-help"></div>' +
         '</form>' +
