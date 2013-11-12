@@ -424,7 +424,7 @@
         listItemController.subscribe('selected', function (controller) {
             isSelectedPublished = true;
         });
-        listItemController.$('.crud-list-item-column').click();
+        listItemController.$().click();
         strictEqual(isSelectedPublished, true, 'publishes on click');
     });
 
@@ -497,7 +497,7 @@
         listController.render();
         listController.add(buildListItemController('#crud-list-item-5'));
         listController.remove(5);
-        strictEqual($('#crud-list-item-container').html(), '', 'item removed');
+        strictEqual($('.crud-list-item-container').html(), '', 'item removed');
     });
 
 // ########      ###      ######    ####  ##    ##     ###     ########   #######   ########       ##     ##   #######   ########   ########  ##

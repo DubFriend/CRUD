@@ -97,19 +97,49 @@ this.createCRUD = function (fig) {
     };
 
 
-    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
-    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
+    //that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
+    that.listTemplate = fig.createListTemplate ?
+        fig.createListTemplate.apply({
+            schema: schema,
+            name: name,
+            id: id,
+            deletable: deletable,
+            orderable: orderable,
+            uniqueID: generateUniqueID
+        }) : createListTemplate(schema, name, id, deletable);
+
+
+    //that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
+    that.listItemTemplate = fig.createListItemTemplate ?
+        fig.createListItemTemplate.apply({
+            schema: schema,
+            id: id,
+            deletable: deletable
+        }) : createListItemTemplate(schema, id, deletable);
+
 
     //that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.formTemplate = fig.createFormTemplate ?
         fig.createFormTemplate.apply({
             schema: schema,
             name: name,
-            createInput: createInput
+            createInput: createInput,
+            uniqueID: generateUniqueID
         }) : createFormTemplate(schema, name);
 
+    //that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
+    that.filterTemplate = fig.createFilterTemplate ?
+        fig.createFilterTemplate.apply({
+            filterSchema: filterSchema,
+            name: name,
+            createInput: createInput,
+            isInstantFilter: isInstantFilter,
+            uniqueID: generateUniqueID
+        }) : createFilterTemplate(filterSchema, name, isInstantFilter);
+
+
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
-    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
+
     that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
 
     var requestModel = createRequestModel();

@@ -155,7 +155,8 @@ var createListItemController = function (fig) {
     };
 
     that.bindView = function () {
-        that.$('.crud-list-item-column').hover(
+        //that.$('.crud-list-item-column').hover(
+        that.$().hover(
             function () {
                 that.$().addClass('hover');
             },
@@ -164,7 +165,7 @@ var createListItemController = function (fig) {
             }
         );
 
-        that.$('.crud-list-item-column').click(function () {
+        that.$().click(function () {
             that.publish('selected', that);
         });
     };
@@ -222,20 +223,20 @@ var createListController = function (fig) {
         },
 
         bind = function () {
-            that.$('#crud-list-select-all').unbind();
-            that.$('#crud-list-select-all').change(function () {
+            that.$('.crud-list-select-all').unbind();
+            that.$('.crud-list-select-all').change(function () {
                 that.$('.crud-list-selected').prop(
                     'checked', $(this).is(':checked')
                 );
             });
 
-            that.$('#crud-delete-selected').unbind();
-            that.$('#crud-delete-selected').click(openDeleteConfirmation);
+            that.$('.crud-delete-selected').unbind();
+            that.$('.crud-delete-selected').click(openDeleteConfirmation);
 
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {
-                $('#crud-list-select-all').prop('checked', false);
+                $('.crud-list-select-all').prop('checked', false);
             });
 
             that.$('.crud-order').unbind();
@@ -278,13 +279,11 @@ var createListController = function (fig) {
     };
 
     that.renderItems = function () {
-        var $container = that.$('#crud-list-item-container');
+        var $container = that.$('.crud-list-item-container');
         $container.html('');
         foreach(items, function (item) {
             var elID = 'crud-list-item-' + item.model.id();
-            $container.append(
-                '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
-            );
+            $container.append('<tr id="' + elID + '"></tr>');
             item.render();
         });
         bind();
@@ -300,7 +299,7 @@ var createListController = function (fig) {
     };
 
     that.setSelectAll = function (isSelected) {
-        $('#crud-list-select-all').prop('checked', isSelected);
+        $('.crud-list-select-all').prop('checked', isSelected);
     };
 
     that.add = function (itemController, options) {
@@ -583,7 +582,8 @@ var createFormController = function (fig) {
         });
 
         $('.crud-new-item').unbind();
-        $('.crud-new-item').click(function () {
+        $('.crud-new-item').click(function (e) {
+            e.preventDefault();
             that.setModel(fig.createDefaultModel());
             that.publish('new');
         });

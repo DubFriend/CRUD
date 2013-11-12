@@ -168,6 +168,18 @@
     <script src="jquery-modal/jquery.modal.js"></script>
     <script src="crud.js"></script>
     <script>
+
+        //utility function to help with building html strings from objects.
+        var reduce = function (collection, callback) {
+            var accumulation, key;
+            for(key in collection) {
+                if(collection.hasOwnProperty(key)) {
+                    accumulation = callback(accumulation, collection[key], key, collection);
+                }
+            }
+            return accumulation;
+        };
+
         createCRUD({
             name: 'Thing',
             url: 'crud.php',
@@ -242,35 +254,105 @@
 
             createFormTemplate: function () {
                 var that = this;
+                var ID = that.uniqueID();
                 return '' +
                 '<form>' +
                     '<legend>Custom ' + that.name + '</legend>' +
-                    (function () {
-                        'use strict';
-                        var key, html = '', item;
-                        for(key in that.schema) {
-                            if(that.schema.hasOwnProperty(key)) {
-                                item = that.schema[key];
-                                html += '' +
-                                '<label for="' + that.name + '-' + item.name + '">' +
-                                    (item.label || item.name) +
-                                '</label>' +
-                                that.createInput({
-                                    item: item,
-                                    name: that.name,
-                                    class: 'foo'
-                                }) +
-                                '{{' + item.name + 'Help}}';
-                            }
-                        }
-                        return html;
-                    }()) +
+                    reduce(that.schema, function (acc,item) {
+                        return (acc || '') +
+                        '<label for="' + ID + '-' + that.name + '-' + item.name + '">' +
+                            (item.label || item.name) +
+                        '</label>' +
+                        that.createInput({
+                            item: item,
+                            name: that.name,
+                            class: 'foo',
+                            ID: ID
+                        }) +
+                        '{{' + item.name + 'Help}}';
+                    }) +
                     '<input type="submit" value="Save"/>' +
                     '<button class="crud-new-item">' +
                         'New ' + that.name +
                     '</button>' +
                 '</form>';
             },
+
+            createFilterTemplate: function () {
+                var that = this;
+                var ID = that.uniqueID();
+                return '' +
+                '<form>' +
+                    '<legend>Custom Search ' + that.name + '</legend>' +
+                    reduce(that.filterSchema, function (acc, item) {
+                        return (acc || '') +
+                        '<label for="' + ID + '-' + that.name + '-' + item.name + '">' +
+                            (item.label || item.name) +
+                        '</label>' +
+                        that.createInput({
+                            item: item,
+                            name: that.name,
+                            class: 'foo',
+                            ID: ID
+                        });
+                    }) +
+                    (
+                        that.isInstantFilter ?
+                            '' : '<input type="submit" value="Search"/>'
+                    ) +
+                '</form>';
+            },
+
+            createListTemplate: function () {
+                var that = this;
+                var ID = that.uniqueID();
+                return '' +
+                '<table>' +
+                    '<thead>' +
+                        '<tr>' +
+                            (
+                                that.deletable ?
+                                '<th>' +
+                                    '<label for="' + ID + '-crud-list-select-all">All</label>' +
+                                    '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
+                                           'class="crud-list-select-all"/>' +
+                                '</th>' : ''
+                            ) +
+                            (
+                                that.id ?
+                                '<th>' +
+                                    that.orderable('id') +
+                                    '<span class="crud-th-content">' +
+                                        (that.id.label || 'id') +
+                                    '</span>' +
+                                '</th>' : ''
+                            ) +
+
+                            reduce(that.schema, function (acc, item) {
+                                return (acc || '') +
+                                '<th>' +
+                                    that.orderable(item.name) +
+                                    (item.label || item.name) +
+                                '</th>';
+                            }) +
+                        '</tr>' +
+                    '</thead>' +
+                    '<tbody class="crud-list-item-container"></tbody>' +
+                '</table>' +
+                (that.deletable ? '<button class="crud-delete-selected">Delete Selected</button>' : '');
+            },
+
+            createListItemTemplate: function () {
+                var that = this;
+                return '' +
+                (that.deletable ?
+                    '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
+                ) +
+                (that.id ? '<td>{{id}}</td>' : '') +
+                reduce(that.schema, function (acc, item) {
+                    return (acc || '') + '<td>{{' + item.name + '}}</td>';
+                });
+            }
         });
     </script>
 </body>

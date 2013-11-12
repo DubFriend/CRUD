@@ -524,7 +524,7 @@ var createInput = function (fig) {
 
     var className = fig.class || '';
 
-    var ID = generateUniqueID() + '-';
+    var ID = fig.ID ? fig.ID + '-' : generateUniqueID() + '-';
 
     var input = function (checked, value) {
         var valueHTML = function () {
@@ -606,19 +606,20 @@ var createInput = function (fig) {
 };
 
 
-
 var reduceFormSchema = function (schema, crudName) {
     return reduce(schema, function (acc, item) {
         return (acc || '') +
-        '<div class="control-set">' +
-            '<label for="' + crudName + '-' + item.name + '" class="label">' +
+        '<div class="crud-control-set">' +
+            '<label for="' + crudName + '-' + item.name + '">' +
                 (item.label || item.name) +
             '</label>' +
-            createInput({
-                item: item,
-                name: crudName,
-                class: 'foo'
-            }) +
+            '<div class="crud-input-group">' +
+                createInput({
+                    item: item,
+                    name: crudName,
+                    class: 'foo'
+                }) +
+            '</div>' +
             '<div class="crud-help">{{' + item.name + 'Help}}</div>' +
         '</div>';
     });
@@ -638,11 +639,11 @@ var createFormTemplate = function (schema, crudName) {
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
             reduceFormSchema(schema, crudName) +
-            '<div class="control-set">' +
-                '<div class="label">&nbsp;</div>' +
-                '<div class="input">' +
-                    '<input type="submit" class="js-crud-save" value="Save"/>' +
-                    '<button class="crud-new-item" type="button">' +
+            '<div class="crud-control-set">' +
+                '<label>&nbsp;</label>' +
+                '<div class="crud-input-group">' +
+                    '<input type="submit" value="Save"/>' +
+                    '<button class="crud-new-item">' +
                         'New ' + crudName +
                     '</button>' +
                 '</div>' +
@@ -659,19 +660,18 @@ var createFormTemplate = function (schema, crudName) {
 // ##         ##   ##           ##     ##        ##    ##
 // ##        ####  ########     ##     ########  ##     ##
 
-
 var createFilterTemplate = function (schema, crudName, isInstantFilter) {
     return '' +
     '<form>' +
         '<fieldset>' +
             '<legend>Search ' + crudName + '</legend>' +
             reduceFormSchema(schema, crudName) +
-            '<div class="control-set">' +
+            '<div class="crud-control-set">' +
                 '<div class="label">&nbsp;</div>' +
                 (
                     isInstantFilter ? '' :
-                    '<div class="input">' +
-                        '<input type="submit" class="js-crud-filter" value="Search"/>' +
+                    '<div class="crud-input-group">' +
+                        '<input type="submit" value="Search"/>' +
                     '</div>'
                 ) +
             '</div>' +
@@ -695,7 +695,7 @@ var createListItemTemplate = function (schema, id, deletable) {
     ) +
     (function () {
         if(id) {
-            return '<td class="crud-list-item-column" name="id">{{id}}</td>';
+            return '<td name="id">{{id}}</td>';
         }
         else {
             return '';
@@ -703,7 +703,7 @@ var createListItemTemplate = function (schema, id, deletable) {
     }()) +
     reduce(schema, function (acc, item) {
         return (acc || '') +
-        '<td class="crud-list-item-column" name="' + item.name + '">{{' + item.name + '}}</td>';
+        '<td name="' + item.name + '">{{' + item.name + '}}</td>';
     });
 };
 
@@ -715,32 +715,27 @@ var createListItemTemplate = function (schema, id, deletable) {
 // ##         ##   ##    ##     ##
 // ########  ####   ######      ##
 
+var orderable = function (name) {
+    return '' +
+    '{{#orderable.' + name + '}}' +
+        '<a href="#" data-name="' + name + '" class="crud-order">' +
+            '{{#order.' + name + '.ascending}}' +
+                '{{{orderIcon.ascending}}}' +
+            '{{/order.' + name + '.ascending}}' +
+
+            '{{#order.' + name + '.descending}}' +
+                '{{{orderIcon.descending}}}' +
+            '{{/order.' + name + '.descending}}' +
+
+            '{{#order.' + name + '.neutral}}' +
+                '{{{orderIcon.neutral}}}' +
+            '{{/order.' + name + '.neutral}}' +
+        '</a>' +
+    '{{/orderable.' + name + '}}';
+};
+
 var createListTemplate = function (schema, crudName, id, deletable) {
-    var orderable = function (name) {
-        return '' +
-        '{{#orderable.' + name + '}}' +
-            '<a href="#" data-name="' + name + '" class="crud-order">' +
-                '{{#order.' + name + '.ascending}}' +
-                    '<span  crud-order-ascending">' +
-                        '{{{orderIcon.ascending}}}' +
-                    '</span>' +
-                '{{/order.' + name + '.ascending}}' +
-
-                '{{#order.' + name + '.descending}}' +
-                    '<span class="crud-order-descending">' +
-                        '{{{orderIcon.descending}}}' +
-                    '</span>' +
-                '{{/order.' + name + '.descending}}' +
-
-                '{{#order.' + name + '.neutral}}' +
-                    '<span class="crud-order-neutral">' +
-                        '{{{orderIcon.neutral}}}' +
-                    '</span>' +
-                '{{/order.' + name + '.neutral}}' +
-            '</a>' +
-        '{{/orderable.' + name + '}}';
-    };
-
+    var ID = generateUniqueID();
     return '' +
     '<table>' +
         '<thead>' +
@@ -748,8 +743,9 @@ var createListTemplate = function (schema, crudName, id, deletable) {
                 (
                     deletable ?
                     '<th>' +
-                        '<label for="crud-list-select-all">All</label>' +
-                        '<input type="checkbox" id="crud-list-select-all"/>' +
+                        '<label for="' + ID + '-crud-list-select-all">All</label>' +
+                        '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
+                               'class="crud-list-select-all"/>' +
                     '</th>' : ''
                 ) +
                 (
@@ -772,9 +768,9 @@ var createListTemplate = function (schema, crudName, id, deletable) {
                 }) +
             '</tr>' +
         '</thead>' +
-        '<tbody id="crud-list-item-container"></tbody>' +
+        '<tbody class="crud-list-item-container"></tbody>' +
     '</table>' +
-    (deletable ? '<button id="crud-delete-selected">Delete Selected</button>' : '');
+    (deletable ? '<button class="crud-delete-selected">Delete Selected</button>' : '');
 };
 
 // ########   ########  ##        ########  ########  ########
@@ -987,7 +983,8 @@ var createListItemController = function (fig) {
     };
 
     that.bindView = function () {
-        that.$('.crud-list-item-column').hover(
+        //that.$('.crud-list-item-column').hover(
+        that.$().hover(
             function () {
                 that.$().addClass('hover');
             },
@@ -996,7 +993,7 @@ var createListItemController = function (fig) {
             }
         );
 
-        that.$('.crud-list-item-column').click(function () {
+        that.$().click(function () {
             that.publish('selected', that);
         });
     };
@@ -1054,20 +1051,20 @@ var createListController = function (fig) {
         },
 
         bind = function () {
-            that.$('#crud-list-select-all').unbind();
-            that.$('#crud-list-select-all').change(function () {
+            that.$('.crud-list-select-all').unbind();
+            that.$('.crud-list-select-all').change(function () {
                 that.$('.crud-list-selected').prop(
                     'checked', $(this).is(':checked')
                 );
             });
 
-            that.$('#crud-delete-selected').unbind();
-            that.$('#crud-delete-selected').click(openDeleteConfirmation);
+            that.$('.crud-delete-selected').unbind();
+            that.$('.crud-delete-selected').click(openDeleteConfirmation);
 
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {
-                $('#crud-list-select-all').prop('checked', false);
+                $('.crud-list-select-all').prop('checked', false);
             });
 
             that.$('.crud-order').unbind();
@@ -1110,13 +1107,11 @@ var createListController = function (fig) {
     };
 
     that.renderItems = function () {
-        var $container = that.$('#crud-list-item-container');
+        var $container = that.$('.crud-list-item-container');
         $container.html('');
         foreach(items, function (item) {
             var elID = 'crud-list-item-' + item.model.id();
-            $container.append(
-                '<tr id="' + elID + '" ' + 'class="list-item"></tr>'
-            );
+            $container.append('<tr id="' + elID + '"></tr>');
             item.render();
         });
         bind();
@@ -1132,7 +1127,7 @@ var createListController = function (fig) {
     };
 
     that.setSelectAll = function (isSelected) {
-        $('#crud-list-select-all').prop('checked', isSelected);
+        $('.crud-list-select-all').prop('checked', isSelected);
     };
 
     that.add = function (itemController, options) {
@@ -1415,7 +1410,8 @@ var createFormController = function (fig) {
         });
 
         $('.crud-new-item').unbind();
-        $('.crud-new-item').click(function () {
+        $('.crud-new-item').click(function (e) {
+            e.preventDefault();
             that.setModel(fig.createDefaultModel());
             that.publish('new');
         });
@@ -1586,19 +1582,49 @@ this.createCRUD = function (fig) {
     };
 
 
-    that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
-    that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
+    //that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
+    that.listTemplate = fig.createListTemplate ?
+        fig.createListTemplate.apply({
+            schema: schema,
+            name: name,
+            id: id,
+            deletable: deletable,
+            orderable: orderable,
+            uniqueID: generateUniqueID
+        }) : createListTemplate(schema, name, id, deletable);
+
+
+    //that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
+    that.listItemTemplate = fig.createListItemTemplate ?
+        fig.createListItemTemplate.apply({
+            schema: schema,
+            id: id,
+            deletable: deletable
+        }) : createListItemTemplate(schema, id, deletable);
+
 
     //that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
     that.formTemplate = fig.createFormTemplate ?
         fig.createFormTemplate.apply({
             schema: schema,
             name: name,
-            createInput: createInput
+            createInput: createInput,
+            uniqueID: generateUniqueID
         }) : createFormTemplate(schema, name);
 
+    //that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
+    that.filterTemplate = fig.createFilterTemplate ?
+        fig.createFilterTemplate.apply({
+            filterSchema: filterSchema,
+            name: name,
+            createInput: createInput,
+            isInstantFilter: isInstantFilter,
+            uniqueID: generateUniqueID
+        }) : createFilterTemplate(filterSchema, name, isInstantFilter);
+
+
     that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
-    that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
+
     that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
 
     var requestModel = createRequestModel();
