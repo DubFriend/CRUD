@@ -44,7 +44,7 @@ this.createCRUD = function (fig) {
         var itemController = createListItemController({
             model: model,
             schema: schema,
-            template: that.listItemTemplate
+            template: listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
         listController.add(itemController, options);
@@ -100,15 +100,20 @@ this.createCRUD = function (fig) {
     };
 
     var newItem = function () {
-        //console.log('newItem');
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
     };
 
+// ########  ########  ##     ##  ########   ##           ###     ########  ########
+//    ##     ##        ###   ###  ##     ##  ##          ## ##       ##     ##
+//    ##     ##        #### ####  ##     ##  ##         ##   ##      ##     ##
+//    ##     ######    ## ### ##  ########   ##        ##     ##     ##     ######
+//    ##     ##        ##     ##  ##         ##        #########     ##     ##
+//    ##     ##        ##     ##  ##         ##        ##     ##     ##     ##
+//    ##     ########  ##     ##  ##         ########  ##     ##     ##     ########
 
-    //that.listTemplate = fig.listTemplate || createListTemplate(schema, name, id, deletable);
-    that.listTemplate = fig.createListTemplate ?
+    var listTemplate = fig.createListTemplate ?
         fig.createListTemplate.apply({
             schema: schema,
             name: name,
@@ -119,8 +124,7 @@ this.createCRUD = function (fig) {
         }) : createListTemplate(schema, name, id, deletable);
 
 
-    //that.listItemTemplate = fig.listItemTemplate || createListItemTemplate(schema, id, deletable);
-    that.listItemTemplate = fig.createListItemTemplate ?
+    var listItemTemplate = fig.createListItemTemplate ?
         fig.createListItemTemplate.apply({
             schema: schema,
             id: id,
@@ -128,8 +132,7 @@ this.createCRUD = function (fig) {
         }) : createListItemTemplate(schema, id, deletable);
 
 
-    //that.formTemplate = fig.formTemplate || createFormTemplate(schema, name);
-    that.formTemplate = fig.createFormTemplate ?
+    var formTemplate = fig.createFormTemplate ?
         fig.createFormTemplate.apply({
             schema: schema,
             name: name,
@@ -137,8 +140,7 @@ this.createCRUD = function (fig) {
             uniqueID: generateUniqueID
         }) : createFormTemplate(schema, name);
 
-    //that.filterTemplate = fig.filterTemplate || createFilterTemplate(filterSchema, name, isInstantFilter);
-    that.filterTemplate = fig.createFilterTemplate ?
+    var filterTemplate = fig.createFilterTemplate ?
         fig.createFilterTemplate.apply({
             filterSchema: filterSchema,
             name: name,
@@ -148,13 +150,19 @@ this.createCRUD = function (fig) {
         }) : createFilterTemplate(filterSchema, name, isInstantFilter);
 
 
-    //that.paginatorTemplate = fig.paginatorTemplate || createPaginatorTemplate();
-    that.paginatorTemplate = fig.createPaginatorTemplate ?
+    var paginatorTemplate = fig.createPaginatorTemplate ?
         fig.createPaginatorTemplate() : createPaginatorTemplate();
 
-    //that.deleteConfirmationTemplate = fig.deleteConfirmationTemplate || createDeleteConfirmationTemplate();
-    that.deleteConfirmationTemplate = fig.createDeleteConfirmationTemplate ?
+    var deleteConfirmationTemplate = fig.createDeleteConfirmationTemplate ?
         fig.createDeleteConfirmationTemplate() : createDeleteConfirmationTemplate();
+
+// ##     ##   #######   ########   ########  ##
+// ###   ###  ##     ##  ##     ##  ##        ##
+// #### ####  ##     ##  ##     ##  ##        ##
+// ## ### ##  ##     ##  ##     ##  ######    ##
+// ##     ##  ##     ##  ##     ##  ##        ##
+// ##     ##  ##     ##  ##     ##  ##        ##
+// ##     ##   #######   ########   ########  ########
 
     var requestModel = createRequestModel();
 
@@ -195,18 +203,26 @@ this.createCRUD = function (fig) {
         requestModel: requestModel
     });
 
+//  ######    #######   ##    ##  ########  ########    #######   ##        ##        ########  ########
+// ##    ##  ##     ##  ###   ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
+// ##        ##     ##  ####  ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
+// ##        ##     ##  ## ## ##     ##     ########   ##     ##  ##        ##        ######    ########
+// ##        ##     ##  ##  ####     ##     ##   ##    ##     ##  ##        ##        ##        ##   ##
+// ##    ##  ##     ##  ##   ###     ##     ##    ##   ##     ##  ##        ##        ##        ##    ##
+//  ######    #######   ##    ##     ##     ##     ##   #######   ########  ########  ########  ##     ##
+
     var filterController = createFilterController({
         el: '#' + name + '-crud-filter-container',
         model: filterModel,
         filterSchema: filterSchema,
         isInstantFilter: isInstantFilter,
-        template: that.filterTemplate
+        template: filterTemplate
     });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
         model: paginatorModel,
-        template: that.paginatorTemplate
+        template: paginatorTemplate
     });
 
     var listController = createListController({
@@ -216,8 +232,8 @@ this.createCRUD = function (fig) {
         model: createDefaultModel(),
         orderModel: orderModel,
         createModel: createDefaultModel,
-        template: that.listTemplate,
-        deleteConfirmationTemplate: that.deleteConfirmationTemplate
+        template: listTemplate,
+        deleteConfirmationTemplate: deleteConfirmationTemplate
     });
 
     var formController = createFormController({
@@ -226,8 +242,16 @@ this.createCRUD = function (fig) {
         createDefaultModel: function() {
             return bindModel(createDefaultModel());
         },
-        template: that.formTemplate
+        template: formTemplate
     });
+
+// ####  ##    ##  ####  ########
+//  ##   ###   ##   ##      ##
+//  ##   ####  ##   ##      ##
+//  ##   ## ## ##   ##      ##
+//  ##   ##  ####   ##      ##
+//  ##   ##   ###   ##      ##
+// ####  ##    ##  ####     ##
 
     requestModel.init({
         url: url,
@@ -235,12 +259,17 @@ this.createCRUD = function (fig) {
         filterModel: filterModel,
         orderModel: orderModel
     });
+
     formController.subscribe('new', function () {
         listController.setSelected();
     });
+
     listController.renderNoError();
+
     requestModel.subscribe('load', load);
     paginatorModel.subscribe('change', newItem);
     filterModel.subscribe('change', newItem);
+
+    //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);
 };

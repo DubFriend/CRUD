@@ -379,6 +379,7 @@ var createPaginatorController = function (fig) {
     };
 
     that.render = function (pages) {
+        console.log('render');
         pages = pages || that.calculatePageRange();
         var error = that.model.validate();
         that.$().html(Mustache.render(that.template, {
@@ -490,7 +491,7 @@ var createPaginatorController = function (fig) {
         };
     }());
 
-    that.model.subscribe('change:pageNumber', function (data) {
+    that.model.subscribe('change', function (data) {
         that.render();
     });
 
