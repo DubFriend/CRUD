@@ -87,11 +87,13 @@
             top: 2px;
             margin: 0.3em;
         }
+
     </style>
   </head>
   <body>
     <div class="container">
         <h1>CRUD</h1>
+        <hr/>
         <div class="row">
             <div id="Thing-crud-container" class="col-sm-6"></div>
             <div id="Thing-crud-filter-container" class="col-sm-6"></div>
@@ -236,8 +238,7 @@
                 var that = this;
                 var ID = that.uniqueID();
                 return '' +
-                '<form class="form-horizontal crud-save-form well" role="form">' +
-
+                '<form class="form-horizontal crud-save-form" role="form">' +
                     '<legend>' +
                         that.name +
                         '<span class="pull-right status">' +
@@ -245,21 +246,22 @@
                             '<span class="glyphicon glyphicon-save pull-right"></span>' +
                         '</span>' +
                     '</legend>' +
-
                     reduceSchemaToForm({
                         schema: that.schema,
                         createInput: that.createInput,
                         ID: ID
                     }) +
                     '<div class="form-group">' +
-                        '<div class="col-sm-offset-3 col-sm-2">' +
+                        '<div class="col-sm-offset-3 col-sm-9">' +
+                        //'<div class="col-sm-offset-3 col-sm-2">' +
                             '<input type="submit" class="btn btn-lg btn-primary" value="Save"/>' +
-                        '</div>' +
-                        '<div class="col-sm-2">' +
+                        //'</div>' +
+                        //'<div class="col-sm-2">' +
                             '<button class="crud-new-item btn btn-lg btn-success">' +
                                 'New ' + that.name +
                             '</button>' +
-                        '</div>'+
+                        //'</div>'+
+                        '</div>' +
                     '</div>' +
                 '</form>';
             },
@@ -268,7 +270,7 @@
                 var that = this;
                 var ID = that.uniqueID();
                 return '' +
-                '<form class="form-horizontal" role="form">' +
+                '<form class="form-horizontal well" role="form">' +
                     '<legend>Search ' + that.name + '</legend>' +
                     reduceSchemaToForm({
                         schema: that.filterSchema,

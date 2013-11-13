@@ -155,7 +155,6 @@ var createListItemController = function (fig) {
     };
 
     that.bindView = function () {
-        //that.$('.crud-list-item-column').hover(
         that.$().hover(
             function () {
                 that.$().addClass('hover');
@@ -274,8 +273,6 @@ var createListController = function (fig) {
             ),
             orderIcon: orderIcon
         };
-
-        console.log('list render data', data);
 
         that.$().html(Mustache.render(that.template, data));
     };
@@ -614,6 +611,7 @@ var createFormController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors) {
+        console.error('render');
         parentRender(data, errors, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -623,6 +621,7 @@ var createFormController = function (fig) {
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
+        console.error('renderNoError');
         parentRenderNoError(data, undefined, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -656,8 +655,6 @@ var createFormController = function (fig) {
             }
         };
     }());
-
-    that.setModel(that.model);
 
     return that;
 };

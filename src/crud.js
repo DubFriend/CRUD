@@ -32,28 +32,7 @@ this.createCRUD = function (fig) {
             });
         };
 
-    var bindModel = function (model) {
-        model.subscribe('saved', function (wasNew) {
-            if(wasNew) {
-                var itemController = addItem(model, { prepend: true });
-                listController.renderItems();
-                listController.setSelected(itemController);
-            }
-        });
 
-        model.subscribe('destroyed', function (id) {
-            listController.remove(id);
-            listController.setSelectAll(false);
-            listController.renderItems();
-            newItem();
-        });
-
-        return model;
-    };
-
-    var setForm = function (model) {
-        formController.setModel(model);
-    };
 
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
@@ -86,11 +65,36 @@ this.createCRUD = function (fig) {
     };
 
     var load = function (response) {
+        console.log('load');
         setCRUDList(response.data);
         paginatorController.model.set({ numberOfPages: response.pages });
     };
 
+    var bindModel = function (model) {
+        model.subscribe('saved', function (wasNew) {
+            if(wasNew) {
+                var itemController = addItem(model, { prepend: true });
+                listController.renderItems();
+                listController.setSelected(itemController);
+            }
+        });
+
+        model.subscribe('destroyed', function (id) {
+            listController.remove(id);
+            listController.setSelectAll(false);
+            listController.renderItems();
+            newItem();
+        });
+
+        return model;
+    };
+
+    var setForm = function (model) {
+        formController.setModel(model);
+    };
+
     var newItem = function () {
+        console.log('newItem');
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
@@ -230,7 +234,6 @@ this.createCRUD = function (fig) {
     });
     listController.renderNoError();
     paginatorController.render();
-    newItem();
     requestModel.subscribe('load', load);
     paginatorController.setPage(1);
     paginatorModel.subscribe('change', newItem);

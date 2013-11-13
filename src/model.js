@@ -118,14 +118,12 @@ var createSchemaModel = function (fig) {
                 success: function (response) {
                     console.log('delete success', response);
                     var id = that.id();
-                    that.clear();
                     that.publish('destroyed', id);
                 }
             });
         }
         else {
             that.clear();
-            that.publish('change', that);
         }
     };
 
