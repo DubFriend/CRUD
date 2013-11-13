@@ -638,6 +638,7 @@ var createFormTemplate = function (schema, crudName) {
     '<form>' +
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
+            '<span class="crud-status">{{status}}</span>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +
                 '<label>&nbsp;</label>' +
@@ -859,7 +860,7 @@ var serializeFormBySchema = function ($el, schema) {
 var createController = function (fig) {
     var that = {},
         el = fig.el,
-        render = function (isRenderError, data, errors) {
+        render = function (isRenderError, data, errors, extra) {
             data = data || that.model.get();
             if(isRenderError) {
                 errors = that.mapErrorData(union(that.model.validate(data), errors));
@@ -868,7 +869,7 @@ var createController = function (fig) {
                 errors = {};
             }
             that.$().html(Mustache.render(that.template, union(
-                that.mapModelToView(data), errors
+                that.mapModelToView(data), errors, (extra || {})
             )));
         };
 
@@ -1441,14 +1442,18 @@ var createFormController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors) {
-        parentRender(data, errors);
+        parentRender(data, errors, {
+            status: (that.model.isNew() ? 'Create' : 'Edit')
+        });
         setNewModelVisibility();
         bind();
     };
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
-        parentRenderNoError(data);
+        parentRenderNoError(data, undefined, {
+            status: (that.model.isNew() ? 'Create' : 'Edit')
+        });
         that.$('.crud-new-item').hide();
         setNewModelVisibility();
         bind();

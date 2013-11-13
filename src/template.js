@@ -122,6 +122,7 @@ var createFormTemplate = function (schema, crudName) {
     '<form>' +
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
+            '<span class="crud-status">{{status}}</span>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +
                 '<label>&nbsp;</label>' +

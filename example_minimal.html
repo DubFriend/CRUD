@@ -258,6 +258,7 @@
                 return '' +
                 '<form>' +
                     '<legend>Custom ' + that.name + '</legend>' +
+                    '<p>{{status}}</p>' +
                     reduce(that.schema, function (acc,item) {
                         return (acc || '') +
                         '<label for="' + ID + '-' + that.name + '-' + item.name + '">' +

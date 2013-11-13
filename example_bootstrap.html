@@ -13,12 +13,36 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
     <style>
-        /*tr.hover {
-            background-color: #ACD5E2;
-        }*/
-
         .container .selected {
             background-color: #A7EBBF;
+        }
+
+        body .container tr.selected td {
+            background-color: #A7EBBF;
+        }
+
+        .container tr.hover {
+            cursor: pointer;
+        }
+
+/*
+        .crud-save-form {
+            border: solid 1px white;
+        }*/
+
+        .crud-save-form .status {
+            width: 100px;
+        }
+
+
+
+        .crud-edit-form {
+           /*background-color: #ECF8E1;*/
+            /*border: solid 1px rgb(161, 189, 219);*/
+        }
+
+        .crud-create-form {
+            /*border: solid 1px rgb(130, 204, 127);*/
         }
 
         .crud-pages {
@@ -34,18 +58,8 @@
             float: left;
         }
 
-
-/*        .crud-pages li a:hover {
-            background-color: pink;
-        }
-*/
         .crud-goto-page-form {
             float: right;
-            /*width: 150px;*/
-        }
-
-        .crud-goto-page-form input[name="goto-page"] {
-            /*width: 70px;*/
         }
 
         body .crud-input-group {
@@ -73,7 +87,6 @@
             top: 2px;
             margin: 0.3em;
         }
-
     </style>
   </head>
   <body>
@@ -223,8 +236,16 @@
                 var that = this;
                 var ID = that.uniqueID();
                 return '' +
-                '<form class="form-horizontal" role="form">' +
-                    '<legend>' + that.name + '</legend>' +
+                '<form class="form-horizontal crud-save-form well" role="form">' +
+
+                    '<legend>' +
+                        that.name +
+                        '<span class="pull-right status">' +
+                            '{{status}}' +
+                            '<span class="glyphicon glyphicon-save pull-right"></span>' +
+                        '</span>' +
+                    '</legend>' +
+
                     reduceSchemaToForm({
                         schema: that.schema,
                         createInput: that.createInput,
