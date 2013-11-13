@@ -168,6 +168,7 @@ var createPaginatorModel = function (fig) {
 
     that.set = partial(that.set, function (newData) {
         if(newData.pageNumber) {
+            that.publish('change:pageNumber', newData);
             requestModel.changePage(newData.pageNumber);
         }
     });
@@ -265,7 +266,9 @@ var createRequestModel = function () {
     };
 
     that.search = function () {
-        paginatorModel.set({ pageNumber: 1 }, { silent: true });
+        if(paginatorModel.get('pageNumber') !== 1) {
+            paginatorModel.set({ pageNumber: 1 });
+        }
         ajax();
     };
 

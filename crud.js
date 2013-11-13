@@ -1,4 +1,4 @@
-// crud version 0.3.0
+// crud version 0.3.1
 // (MIT) 12-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
@@ -409,6 +409,7 @@ var createPaginatorModel = function (fig) {
 
     that.set = partial(that.set, function (newData) {
         if(newData.pageNumber) {
+            that.publish('change:pageNumber', newData);
             requestModel.changePage(newData.pageNumber);
         }
     });
@@ -506,7 +507,9 @@ var createRequestModel = function () {
     };
 
     that.search = function () {
-        paginatorModel.set({ pageNumber: 1 }, { silent: true });
+        if(paginatorModel.get('pageNumber') !== 1) {
+            paginatorModel.set({ pageNumber: 1 });
+        }
         ajax();
     };
 
@@ -1316,7 +1319,7 @@ var createPaginatorController = function (fig) {
         };
     }());
 
-    that.model.subscribe('change', function (data) {
+    that.model.subscribe('change:pageNumber', function (data) {
         that.render();
     });
 
@@ -1437,7 +1440,6 @@ var createFormController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors) {
-        console.error('render');
         parentRender(data, errors, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -1447,7 +1449,6 @@ var createFormController = function (fig) {
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
-        console.error('renderNoError');
         parentRenderNoError(data, undefined, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -1551,11 +1552,17 @@ this.createCRUD = function (fig) {
         listController.renderItems();
     };
 
-    var load = function (response) {
-        console.log('load');
-        setCRUDList(response.data);
-        paginatorController.model.set({ numberOfPages: response.pages });
-    };
+    var load = (function () {
+        var isFirstLoad = true;
+        return function (response) {
+            setCRUDList(response.data);
+            paginatorController.model.set({ numberOfPages: response.pages });
+            if(isFirstLoad) {
+                paginatorController.render();
+                isFirstLoad = false;
+            }
+        };
+    }());
 
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
@@ -1581,7 +1588,7 @@ this.createCRUD = function (fig) {
     };
 
     var newItem = function () {
-        console.log('newItem');
+        //console.log('newItem');
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
@@ -1720,11 +1727,10 @@ this.createCRUD = function (fig) {
         listController.setSelected();
     });
     listController.renderNoError();
-    paginatorController.render();
     requestModel.subscribe('load', load);
-    paginatorController.setPage(1);
     paginatorModel.subscribe('change', newItem);
     filterModel.subscribe('change', newItem);
+    paginatorController.setPage(1);
 };
 
 }).call(this);

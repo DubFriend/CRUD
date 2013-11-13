@@ -490,7 +490,7 @@ var createPaginatorController = function (fig) {
         };
     }());
 
-    that.model.subscribe('change', function (data) {
+    that.model.subscribe('change:pageNumber', function (data) {
         that.render();
     });
 
@@ -611,7 +611,6 @@ var createFormController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors) {
-        console.error('render');
         parentRender(data, errors, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -621,7 +620,6 @@ var createFormController = function (fig) {
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
-        console.error('renderNoError');
         parentRenderNoError(data, undefined, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });

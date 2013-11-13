@@ -64,11 +64,17 @@ this.createCRUD = function (fig) {
         listController.renderItems();
     };
 
-    var load = function (response) {
-        console.log('load');
-        setCRUDList(response.data);
-        paginatorController.model.set({ numberOfPages: response.pages });
-    };
+    var load = (function () {
+        var isFirstLoad = true;
+        return function (response) {
+            setCRUDList(response.data);
+            paginatorController.model.set({ numberOfPages: response.pages });
+            if(isFirstLoad) {
+                paginatorController.render();
+                isFirstLoad = false;
+            }
+        };
+    }());
 
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
@@ -94,7 +100,7 @@ this.createCRUD = function (fig) {
     };
 
     var newItem = function () {
-        console.log('newItem');
+        //console.log('newItem');
         var defaultModel = createDefaultModel();
         setForm(defaultModel);
         bindModel(defaultModel);
@@ -233,9 +239,8 @@ this.createCRUD = function (fig) {
         listController.setSelected();
     });
     listController.renderNoError();
-    paginatorController.render();
     requestModel.subscribe('load', load);
-    paginatorController.setPage(1);
     paginatorModel.subscribe('change', newItem);
     filterModel.subscribe('change', newItem);
+    paginatorController.setPage(1);
 };
