@@ -204,23 +204,6 @@ $(document).ready(function () {
         },
 
         schema: [
-            // {
-            //     name: 'fooX',
-            //     type: 'checkbox'
-            //     label: 'foo',
-            //     values: [
-            //         {
-            //             value: 1,
-            //             label: 'A'
-            //         },
-            //         {
-            //             value: 2,
-            //             label: 'B'
-            //         }
-            //     ],
-            //     value: [1]
-            // }
-
             {
                 name: 'text',
                 label: 'label yo',
@@ -236,20 +219,35 @@ $(document).ready(function () {
             {
                 name: 'fruit',
                 type: 'checkbox',
-                values: ['apple', 'orange'],
+                //values: ['apple', 'orange'],
+                values: [
+                    { value: 'apple', label: 'La Pomme' },
+                    { value: 'orange', label: 'L\'Orange' }
+                ],
                 value: ['orange']
             },
             {
                 name: 'letter',
                 type: 'radio',
-                values: ['a', 'b', 'c', 'd'],
+                //values: ['a', 'b', 'c', 'd'],
+                values: [
+                    { value: 'a', label: 'A' },
+                    { value: 'b' },
+                    { value: 'c' },
+                    { value: 'd', label: 'D' }
+                ],
                 value: 'b',
                 orderable: true
             },
             {
                 name: 'awesome',
                 type: 'select',
-                values: ['1', '2', '3']
+                //values: ['1', '2', '3']
+                values: [
+                    { value: '1', label: 'One' },
+                    { value: '2', label: 'Two' },
+                    { value: '3', label: 'Three' }
+                ]
             }
         ],
 
@@ -259,7 +257,12 @@ $(document).ready(function () {
                 name: "Maximum_Awesome",
                 label: "Awesome",
                 type: 'select',
-                values: ['1', '2', '3'],
+                //values: ['1', '2', '3'],
+                values: [
+                    { value: '1', label: '<= One' },
+                    { value: '2', label: '<= Two' },
+                    { value: '3', label: '<= Three' }
+                ],
                 value: '3'
             },
             {
@@ -270,7 +273,11 @@ $(document).ready(function () {
             {
                 name: "fruit",
                 type: 'checkbox',
-                values: ['apple', 'orange']
+                //values: ['apple', 'orange']
+                values: [
+                    { value: 'apple', label: 'pomme' },
+                    { value: 'orange' }
+                ]
             }
         ],
 

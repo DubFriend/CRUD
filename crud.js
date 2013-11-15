@@ -1,5 +1,5 @@
 // crud version 0.3.2
-// (MIT) 14-11-2013
+// (MIT) 15-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -548,10 +548,11 @@ var createInput = function (fig) {
 
     var inputGroup = function () {
         return '' +
-        reduce(item.values, function (acc, value) {
+        reduce(item.values, function (acc, valueObject) {
+            var value = valueObject.value;
             return (acc || '') +
             '<label for="' + ID + name + '-' + value + '">' +
-                value +
+                (valueObject.label || value) +
             '</label>' +
             '{{#' + name + '.' + value + '}}' +
                 input(true, value) +
@@ -585,17 +586,18 @@ var createInput = function (fig) {
         case 'select':
             return '' +
             '<select name="' + name + '" class="' + className + '">' +
-                reduce(item.values, function (acc, value) {
+                reduce(item.values, function (acc, valueObject) {
+                    var value = valueObject.value;
                     acc = acc || '';
                     return acc +
                     '{{#' + name + '.' + value + '}}' +
                         '<option value="' + value + '" selected>' +
-                            value +
+                            (valueObject.label || value) +
                         '</option>' +
                     '{{/' + name + '.' + value + '}}' +
                     '{{^' + name + '.' + value + '}}' +
                         '<option value="' + value + '">' +
-                            value +
+                            (valueObject.label || value) +
                         '</option>' +
                     '{{/' + name + '.' + value + '}}';
                 }) +
@@ -1501,8 +1503,28 @@ this.createCRUD = function (fig) {
             }
             return item;
         },
-        schema = map(fig.schema, setEmptyCheckboxes),
-        filterSchema = map(fig.filterSchema, setEmptyCheckboxes),
+
+        mapSchema = function (schema) {
+            return map(schema, function (itemRef) {
+                var item = copy(itemRef);
+                switch(item.type) {
+                    case 'radio':
+                    case 'checkbox':
+                    case 'select':
+                        item.values = map(item.values, partial(dot, 'value'));
+                        break;
+                }
+                return item;
+            });
+        },
+
+        viewSchema = map(fig.schema, setEmptyCheckboxes),
+        viewFilterSchema = map(fig.filterSchema, setEmptyCheckboxes),
+
+        schema = mapSchema(viewSchema),
+        filterSchema = mapSchema(viewFilterSchema),
+
+
         validate = fig.validate,
         createDefaultModel = function (data, id) {
             return createSchemaModel({
@@ -1610,14 +1632,14 @@ this.createCRUD = function (fig) {
             deletable: deletable,
             orderable: orderable,
             uniqueID: generateUniqueID
-        }) : createListTemplate(schema, name, id, deletable);
+        }) : createListTemplate(viewSchema, name, id, deletable);
 
     var listItemTemplate = fig.createListItemTemplate ?
         fig.createListItemTemplate.apply({
             schema: schema,
             id: id,
             deletable: deletable
-        }) : createListItemTemplate(schema, id, deletable);
+        }) : createListItemTemplate(viewSchema, id, deletable);
 
     var paginatorTemplate = fig.createPaginatorTemplate ?
         fig.createPaginatorTemplate() : createPaginatorTemplate();
@@ -1674,12 +1696,12 @@ this.createCRUD = function (fig) {
     if(fig.filterSchema) {
         filterTemplate = fig.createFilterTemplate ?
             fig.createFilterTemplate.apply({
-                filterSchema: filterSchema,
+                filterSchema: viewFilterSchema,
                 name: name,
                 createInput: createInput,
                 isInstantFilter: isInstantFilter,
                 uniqueID: generateUniqueID
-            }) : createFilterTemplate(filterSchema, name, isInstantFilter);
+            }) : createFilterTemplate(viewFilterSchema, name, isInstantFilter);
 
         filterModel = createFilterModel({
             requestModel: requestModel,
@@ -1714,11 +1736,11 @@ this.createCRUD = function (fig) {
     if(!readOnly) {
         formTemplate = fig.createFormTemplate ?
             fig.createFormTemplate.apply({
-                schema: schema,
+                schema: viewSchema,
                 name: name,
                 createInput: createInput,
                 uniqueID: generateUniqueID
-            }) : createFormTemplate(schema, name);
+            }) : createFormTemplate(viewSchema, name);
 
         formController = createFormController({
             el: '#' + name + '-crud-container',

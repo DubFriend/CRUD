@@ -31,10 +31,11 @@ var createInput = function (fig) {
 
     var inputGroup = function () {
         return '' +
-        reduce(item.values, function (acc, value) {
+        reduce(item.values, function (acc, valueObject) {
+            var value = valueObject.value;
             return (acc || '') +
             '<label for="' + ID + name + '-' + value + '">' +
-                value +
+                (valueObject.label || value) +
             '</label>' +
             '{{#' + name + '.' + value + '}}' +
                 input(true, value) +
@@ -68,17 +69,18 @@ var createInput = function (fig) {
         case 'select':
             return '' +
             '<select name="' + name + '" class="' + className + '">' +
-                reduce(item.values, function (acc, value) {
+                reduce(item.values, function (acc, valueObject) {
+                    var value = valueObject.value;
                     acc = acc || '';
                     return acc +
                     '{{#' + name + '.' + value + '}}' +
                         '<option value="' + value + '" selected>' +
-                            value +
+                            (valueObject.label || value) +
                         '</option>' +
                     '{{/' + name + '.' + value + '}}' +
                     '{{^' + name + '.' + value + '}}' +
                         '<option value="' + value + '">' +
-                            value +
+                            (valueObject.label || value) +
                         '</option>' +
                     '{{/' + name + '.' + value + '}}';
                 }) +
