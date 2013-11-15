@@ -5,7 +5,12 @@ this.createCRUD = function (fig) {
         name = fig.name,
         id = fig.id || false,
         isInstantFilter = fig.instantFilter || false,
-        deletable = fig.deletable === false ? false : true,
+
+
+        readOnly = fig.readOnly || false,
+        deletable = readOnly ? false : (fig.deletable === false ? false : true),
+
+
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -36,7 +41,9 @@ this.createCRUD = function (fig) {
 
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
-        setForm(itemController.model);
+        if(!readOnly) {
+            setForm(itemController.model);
+        }
     };
 
     var addItem = function (model, options) {
@@ -101,7 +108,9 @@ this.createCRUD = function (fig) {
 
     var newItem = function () {
         var defaultModel = createDefaultModel();
-        setForm(defaultModel);
+        if(!readOnly) {
+            setForm(defaultModel);
+        }
         bindModel(defaultModel);
     };
 
@@ -109,46 +118,9 @@ this.createCRUD = function (fig) {
 
 
 
+    var requestModel = createRequestModel();
 
 
-
-    var filterTemplate, filterModel, filterController;
-    if(fig.filterSchema) {
-        filterTemplate = fig.createFilterTemplate ?
-            fig.createFilterTemplate.apply({
-                filterSchema: filterSchema,
-                name: name,
-                createInput: createInput,
-                isInstantFilter: isInstantFilter,
-                uniqueID: generateUniqueID
-            }) : createFilterTemplate(filterSchema, name, isInstantFilter);
-
-        filterModel = createFilterModel({
-            requestModel: requestModel,
-            data: mapToObject(
-                filterSchema,
-                function (item) {
-                    if(item.type === 'checkbox') {
-                        item.value = item.value || [];
-                    }
-                    return item.value === undefined ? null : item.value;
-                },
-                function (key, item) {
-                    return item.name;
-                }
-            )
-        });
-
-        filterController = createFilterController({
-            el: '#' + name + '-crud-filter-container',
-            model: filterModel,
-            filterSchema: filterSchema,
-            isInstantFilter: isInstantFilter,
-            template: filterTemplate
-        });
-
-        filterModel.subscribe('change', newItem);
-    }
 
 
 
@@ -181,13 +153,13 @@ this.createCRUD = function (fig) {
         }) : createListItemTemplate(schema, id, deletable);
 
 
-    var formTemplate = fig.createFormTemplate ?
-        fig.createFormTemplate.apply({
-            schema: schema,
-            name: name,
-            createInput: createInput,
-            uniqueID: generateUniqueID
-        }) : createFormTemplate(schema, name);
+    // var formTemplate = fig.createFormTemplate ?
+    //     fig.createFormTemplate.apply({
+    //         schema: schema,
+    //         name: name,
+    //         createInput: createInput,
+    //         uniqueID: generateUniqueID
+    //     }) : createFormTemplate(schema, name);
 
     // var filterTemplate = fig.createFilterTemplate ?
     //     fig.createFilterTemplate.apply({
@@ -212,7 +184,7 @@ this.createCRUD = function (fig) {
 // ##     ##  ##     ##  ##     ##  ##        ##
 // ##     ##   #######   ########   ########  ########
 
-    var requestModel = createRequestModel();
+    // var requestModel = createRequestModel();
 
     var paginatorModel = createPaginatorModel({ requestModel: requestModel });
 
@@ -284,14 +256,96 @@ this.createCRUD = function (fig) {
         deleteConfirmationTemplate: deleteConfirmationTemplate
     });
 
-    var formController = createFormController({
-        el: '#' + name + '-crud-container',
-        schema: schema,
-        createDefaultModel: function() {
-            return bindModel(createDefaultModel());
-        },
-        template: formTemplate
-    });
+    // var formController = createFormController({
+    //     el: '#' + name + '-crud-container',
+    //     schema: schema,
+    //     createDefaultModel: function() {
+    //         return bindModel(createDefaultModel());
+    //     },
+    //     template: formTemplate
+    // });
+
+
+
+
+
+
+
+
+
+
+
+    var filterTemplate, filterModel, filterController;
+    if(fig.filterSchema) {
+        filterTemplate = fig.createFilterTemplate ?
+            fig.createFilterTemplate.apply({
+                filterSchema: filterSchema,
+                name: name,
+                createInput: createInput,
+                isInstantFilter: isInstantFilter,
+                uniqueID: generateUniqueID
+            }) : createFilterTemplate(filterSchema, name, isInstantFilter);
+
+        filterModel = createFilterModel({
+            requestModel: requestModel,
+            data: mapToObject(
+                filterSchema,
+                function (item) {
+                    if(item.type === 'checkbox') {
+                        item.value = item.value || [];
+                    }
+                    return item.value === undefined ? null : item.value;
+                },
+                function (key, item) {
+                    return item.name;
+                }
+            )
+        });
+
+        filterController = createFilterController({
+            el: '#' + name + '-crud-filter-container',
+            model: filterModel,
+            filterSchema: filterSchema,
+            isInstantFilter: isInstantFilter,
+            template: filterTemplate
+        });
+
+        filterModel.subscribe('change', newItem);
+    }
+
+    var formTemplate, formController;
+    if(!readOnly) {
+        formTemplate = fig.createFormTemplate ?
+            fig.createFormTemplate.apply({
+                schema: schema,
+                name: name,
+                createInput: createInput,
+                uniqueID: generateUniqueID
+            }) : createFormTemplate(schema, name);
+
+        formController = createFormController({
+            el: '#' + name + '-crud-container',
+            schema: schema,
+            createDefaultModel: function() {
+                return bindModel(createDefaultModel());
+            },
+            template: formTemplate
+        });
+
+        formController.subscribe('new', function () {
+            listController.setSelected();
+        });
+
+        paginatorModel.subscribe('change', newItem);
+    }
+
+
+
+
+
+
+
+
 
 // ####  ##    ##  ####  ########
 //  ##   ###   ##   ##      ##
@@ -308,14 +362,15 @@ this.createCRUD = function (fig) {
         orderModel: orderModel
     });
 
-    formController.subscribe('new', function () {
-        listController.setSelected();
-    });
+    // formController.subscribe('new', function () {
+    //     listController.setSelected();
+    // });
 
     listController.renderNoError();
 
     requestModel.subscribe('load', load);
-    paginatorModel.subscribe('change', newItem);
+
+    // paginatorModel.subscribe('change', newItem);
 
     // filterModel.subscribe('change', newItem);
 

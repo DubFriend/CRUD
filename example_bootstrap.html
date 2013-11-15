@@ -196,11 +196,13 @@ $(document).ready(function () {
 
         //deletable: false,
 
-        id: {
-            orderable: true,
-            order: 'ascending',
-            label: 'id'
-        },
+        readOnly: true,
+
+        // id: {
+        //     orderable: true,
+        //     order: 'ascending',
+        //     label: 'id'
+        // },
 
         schema: [
             {
@@ -235,26 +237,26 @@ $(document).ready(function () {
             }
         ],
 
-        // instantFilter: true,
-        // filterSchema: [
-        //     {
-        //         name: "Maximum_Awesome",
-        //         label: "Awesome",
-        //         type: 'select',
-        //         values: ['1', '2', '3'],
-        //         value: '3'
-        //     },
-        //     {
-        //         name: "Search_Textarea",
-        //         label: "Textarea",
-        //         type: 'text'
-        //     },
-        //     {
-        //         name: "fruit",
-        //         type: 'checkbox',
-        //         values: ['apple', 'orange']
-        //     }
-        // ],
+        instantFilter: true,
+        filterSchema: [
+            {
+                name: "Maximum_Awesome",
+                label: "Awesome",
+                type: 'select',
+                values: ['1', '2', '3'],
+                value: '3'
+            },
+            {
+                name: "Search_Textarea",
+                label: "Textarea",
+                type: 'text'
+            },
+            {
+                name: "fruit",
+                type: 'checkbox',
+                values: ['apple', 'orange']
+            }
+        ],
 
         createFormTemplate: function () {
             var that = this;
