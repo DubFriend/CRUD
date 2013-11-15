@@ -245,7 +245,7 @@ var createRequestModel = function () {
                 url: url + '/page/' + (fig.page || 1),
                 method: 'GET',
                 data: union(
-                    appendKey('filter_', filterModel.get()),
+                    (filterModel ? appendKey('filter_', filterModel.get()) : {}),
                     appendKey('order_', orderModel.get())
                 ),
                 dataType: 'json',

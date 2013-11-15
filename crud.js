@@ -1,5 +1,5 @@
 // crud version 0.3.1
-// (MIT) 13-11-2013
+// (MIT) 14-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -486,7 +486,7 @@ var createRequestModel = function () {
                 url: url + '/page/' + (fig.page || 1),
                 method: 'GET',
                 data: union(
-                    appendKey('filter_', filterModel.get()),
+                    (filterModel ? appendKey('filter_', filterModel.get()) : {}),
                     appendKey('order_', orderModel.get())
                 ),
                 dataType: 'json',
@@ -1208,7 +1208,6 @@ var createPaginatorController = function (fig) {
     };
 
     that.render = function (pages) {
-        console.log('render');
         pages = pages || that.calculatePageRange();
         var error = that.model.validate();
         that.$().html(Mustache.render(that.template, {
@@ -1424,15 +1423,15 @@ var createFormController = function (fig) {
     var setNewModelVisibility = function () {
         var $newItemButton = that.$('.crud-new-item');
         if(that.model.isNew()) {
-            that.$('form').removeClass('crud-edit-form');
-            that.$('form').addClass('crud-create-form');
+            that.$('*').removeClass('crud-status-edit');
+            that.$('*').addClass('crud-status-create');
             if(!$newItemButton.is(':hidden')) {
                 $newItemButton.hide();
             }
         }
         else {
-            that.$('form').addClass('crud-edit-form');
-            that.$('form').removeClass('crud-create-form');
+            that.$('*').addClass('crud-status-edit');
+            that.$('*').removeClass('crud-status-create');
             if($newItemButton.is(':hidden')) {
                 $newItemButton.show();
             }
@@ -1594,6 +1593,55 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
+
+
+
+
+
+
+
+    var filterTemplate, filterModel, filterController;
+    if(fig.filterSchema) {
+        filterTemplate = fig.createFilterTemplate ?
+            fig.createFilterTemplate.apply({
+                filterSchema: filterSchema,
+                name: name,
+                createInput: createInput,
+                isInstantFilter: isInstantFilter,
+                uniqueID: generateUniqueID
+            }) : createFilterTemplate(filterSchema, name, isInstantFilter);
+
+        filterModel = createFilterModel({
+            requestModel: requestModel,
+            data: mapToObject(
+                filterSchema,
+                function (item) {
+                    if(item.type === 'checkbox') {
+                        item.value = item.value || [];
+                    }
+                    return item.value === undefined ? null : item.value;
+                },
+                function (key, item) {
+                    return item.name;
+                }
+            )
+        });
+
+        filterController = createFilterController({
+            el: '#' + name + '-crud-filter-container',
+            model: filterModel,
+            filterSchema: filterSchema,
+            isInstantFilter: isInstantFilter,
+            template: filterTemplate
+        });
+
+        filterModel.subscribe('change', newItem);
+    }
+
+
+
+
+
 // ########  ########  ##     ##  ########   ##           ###     ########  ########
 //    ##     ##        ###   ###  ##     ##  ##          ## ##       ##     ##
 //    ##     ##        #### ####  ##     ##  ##         ##   ##      ##     ##
@@ -1629,15 +1677,14 @@ this.createCRUD = function (fig) {
             uniqueID: generateUniqueID
         }) : createFormTemplate(schema, name);
 
-    var filterTemplate = fig.createFilterTemplate ?
-        fig.createFilterTemplate.apply({
-            filterSchema: filterSchema,
-            name: name,
-            createInput: createInput,
-            isInstantFilter: isInstantFilter,
-            uniqueID: generateUniqueID
-        }) : createFilterTemplate(filterSchema, name, isInstantFilter);
-
+    // var filterTemplate = fig.createFilterTemplate ?
+    //     fig.createFilterTemplate.apply({
+    //         filterSchema: filterSchema,
+    //         name: name,
+    //         createInput: createInput,
+    //         isInstantFilter: isInstantFilter,
+    //         uniqueID: generateUniqueID
+    //     }) : createFilterTemplate(filterSchema, name, isInstantFilter);
 
     var paginatorTemplate = fig.createPaginatorTemplate ?
         fig.createPaginatorTemplate() : createPaginatorTemplate();
@@ -1657,21 +1704,21 @@ this.createCRUD = function (fig) {
 
     var paginatorModel = createPaginatorModel({ requestModel: requestModel });
 
-    var filterModel = createFilterModel({
-        requestModel: requestModel,
-        data: mapToObject(
-            filterSchema,
-            function (item) {
-                if(item.type === 'checkbox') {
-                    item.value = item.value || [];
-                }
-                return item.value === undefined ? null : item.value;
-            },
-            function (key, item) {
-                return item.name;
-            }
-        )
-    });
+    // var filterModel = createFilterModel({
+    //     requestModel: requestModel,
+    //     data: mapToObject(
+    //         filterSchema,
+    //         function (item) {
+    //             if(item.type === 'checkbox') {
+    //                 item.value = item.value || [];
+    //             }
+    //             return item.value === undefined ? null : item.value;
+    //         },
+    //         function (key, item) {
+    //             return item.name;
+    //         }
+    //     )
+    // });
 
     var orderModel = createOrderModel({
         data: map(
@@ -1700,13 +1747,13 @@ this.createCRUD = function (fig) {
 // ##    ##  ##     ##  ##   ###     ##     ##    ##   ##     ##  ##        ##        ##        ##    ##
 //  ######    #######   ##    ##     ##     ##     ##   #######   ########  ########  ########  ##     ##
 
-    var filterController = createFilterController({
-        el: '#' + name + '-crud-filter-container',
-        model: filterModel,
-        filterSchema: filterSchema,
-        isInstantFilter: isInstantFilter,
-        template: filterTemplate
-    });
+    // var filterController = createFilterController({
+    //     el: '#' + name + '-crud-filter-container',
+    //     model: filterModel,
+    //     filterSchema: filterSchema,
+    //     isInstantFilter: isInstantFilter,
+    //     template: filterTemplate
+    // });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
@@ -1757,7 +1804,8 @@ this.createCRUD = function (fig) {
 
     requestModel.subscribe('load', load);
     paginatorModel.subscribe('change', newItem);
-    filterModel.subscribe('change', newItem);
+
+    // filterModel.subscribe('change', newItem);
 
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);

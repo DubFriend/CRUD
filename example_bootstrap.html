@@ -26,12 +26,39 @@
     }
 
     .crud-save-form .status {
-        width: 100px;
+        position: relative;
+        padding: 0.5em;
+        bottom: 0.5em;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
     }
 
-    .crud-edit-form {}
+    .status .glyphicon {
+        margin-left: 1em;
+    }
 
-    .crud-create-form {}
+    legend span {
+       /* position: relative;
+        -moz-transition:width 0.3s ease, background-color 0.3s ease;
+        -webkit-transition:width 0.3s ease, background-color 0.3s ease;
+        -o-transition:width 0.3s ease, background-color 0.3s ease;
+        transition:width 0.3s ease, background-color 0.3s ease;*/
+        background-color: rgba(94, 169, 235, 0.5);
+        width: 130px;
+    }
+
+
+    legend span.crud-status-edit {
+        /*position: relative;
+        -moz-transition:width 0.3s ease, background-color 0.3s ease;
+        -webkit-transition:width 0.3s ease, background-color 0.3s ease;
+        -o-transition:width 0.3s ease, background-color 0.3s ease;
+        transition:width 0.3s ease, background-color 0.3s ease;*/
+        background-color: rgba(107, 221, 107, 0.5);
+        width: 130px;
+    }
+
 
     .crud-pages {
         display:block;
@@ -50,9 +77,13 @@
         float: right;
     }
 
+    .crud-goto-page-form input[type="text"] {
+        width: 7em;
+    }
+
     body .crud-input-group {
         position: relative;
-        top: 3px;
+        top: 1px;
         margin: 0.7em 0.3em 0 0.3em;
     }
 
@@ -150,7 +181,7 @@ $(document).ready(function () {
                 '</div>' +
             '</div>';
         });
-    }
+    };
 
     createCRUD({
         name: 'Thing',
@@ -204,26 +235,26 @@ $(document).ready(function () {
             }
         ],
 
-        instantFilter: true,
-        filterSchema: [
-            {
-                name: "Maximum_Awesome",
-                label: "Awesome",
-                type: 'select',
-                values: ['1', '2', '3'],
-                value: '3'
-            },
-            {
-                name: "Search_Textarea",
-                label: "Textarea",
-                type: 'text'
-            },
-            {
-                name: "fruit",
-                type: 'checkbox',
-                values: ['apple', 'orange']
-            }
-        ],
+        // instantFilter: true,
+        // filterSchema: [
+        //     {
+        //         name: "Maximum_Awesome",
+        //         label: "Awesome",
+        //         type: 'select',
+        //         values: ['1', '2', '3'],
+        //         value: '3'
+        //     },
+        //     {
+        //         name: "Search_Textarea",
+        //         label: "Textarea",
+        //         type: 'text'
+        //     },
+        //     {
+        //         name: "fruit",
+        //         type: 'checkbox',
+        //         values: ['apple', 'orange']
+        //     }
+        // ],
 
         createFormTemplate: function () {
             var that = this;
@@ -365,6 +396,9 @@ $(document).ready(function () {
             '</div>';
         }
     });
+    // setTimeout(function () {
+    //     alert($('.status').prop(':hover'));
+    // }, 500);
 });
 </script>
 </body>

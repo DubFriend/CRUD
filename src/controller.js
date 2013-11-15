@@ -379,7 +379,6 @@ var createPaginatorController = function (fig) {
     };
 
     that.render = function (pages) {
-        console.log('render');
         pages = pages || that.calculatePageRange();
         var error = that.model.validate();
         that.$().html(Mustache.render(that.template, {
@@ -595,15 +594,15 @@ var createFormController = function (fig) {
     var setNewModelVisibility = function () {
         var $newItemButton = that.$('.crud-new-item');
         if(that.model.isNew()) {
-            that.$('form').removeClass('crud-edit-form');
-            that.$('form').addClass('crud-create-form');
+            that.$('*').removeClass('crud-status-edit');
+            that.$('*').addClass('crud-status-create');
             if(!$newItemButton.is(':hidden')) {
                 $newItemButton.hide();
             }
         }
         else {
-            that.$('form').addClass('crud-edit-form');
-            that.$('form').removeClass('crud-create-form');
+            that.$('*').addClass('crud-status-edit');
+            that.$('*').removeClass('crud-status-create');
             if($newItemButton.is(':hidden')) {
                 $newItemButton.show();
             }
