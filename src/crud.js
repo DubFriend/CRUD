@@ -66,7 +66,8 @@ this.createCRUD = function (fig) {
         options = options || {};
         var itemController = createListItemController({
             model: model,
-            schema: schema,
+            // schema: schema,
+            schema: viewSchema,
             template: listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
@@ -146,7 +147,7 @@ this.createCRUD = function (fig) {
 
     var listItemTemplate = fig.createListItemTemplate ?
         fig.createListItemTemplate.apply({
-            schema: schema,
+            schema: viewSchema,
             id: id,
             deletable: deletable
         }) : createListItemTemplate(viewSchema, id, deletable);
@@ -232,7 +233,9 @@ this.createCRUD = function (fig) {
         filterController = createFilterController({
             el: '#' + name + '-crud-filter-container',
             model: filterModel,
-            filterSchema: filterSchema,
+            //filterSchema: filterSchema,
+            filterSchema: viewFilterSchema,
+
             isInstantFilter: isInstantFilter,
             template: filterTemplate
         });

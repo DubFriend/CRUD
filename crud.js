@@ -916,7 +916,8 @@ var createController = function (fig) {
             var type = schema[name].type;
             if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
                 var mappedValue = {};
-                foreach(schema[name].values, function (choice) {
+                foreach(schema[name].values, function (choiceObject) {
+                    var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
                     if(isSelected(choice, value, name)) {
                         mappedValue[choice] = true;
                     }
@@ -954,14 +955,26 @@ var createListItemController = function (fig) {
         return that.$('.crud-list-selected').prop('checked') ? true : false;
     };
 
+    //if value has an associated label then display that instead.
+    var mapToValueLabels = function (name, value) {
+        var item = that.schema[name];
+        var mappedValue;
+        foreach(that.schema[name].values, function (valueObject) {
+            if(valueObject.value === value) {
+                mappedValue = valueObject.label || valueObject.value;
+            }
+        });
+        return mappedValue;
+    };
+
     var parentMapModelToView = that.mapModelToView;
     that.mapModelToView = function (modelData) {
         return union(
             { id: that.model.id() },
-            map(parentMapModelToView(modelData), function (value, name) {
+            map(parentMapModelToView(modelData), function (value, itemName) {
                 if(isObject(value)) {
                     return mapToArray(value, function (isSelected, name) {
-                        return name;
+                        return mapToValueLabels(itemName, name);
                     }).join(', ');
                 }
                 else {
@@ -1556,7 +1569,8 @@ this.createCRUD = function (fig) {
         options = options || {};
         var itemController = createListItemController({
             model: model,
-            schema: schema,
+            // schema: schema,
+            schema: viewSchema,
             template: listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
@@ -1636,7 +1650,7 @@ this.createCRUD = function (fig) {
 
     var listItemTemplate = fig.createListItemTemplate ?
         fig.createListItemTemplate.apply({
-            schema: schema,
+            schema: viewSchema,
             id: id,
             deletable: deletable
         }) : createListItemTemplate(viewSchema, id, deletable);
@@ -1722,7 +1736,9 @@ this.createCRUD = function (fig) {
         filterController = createFilterController({
             el: '#' + name + '-crud-filter-container',
             model: filterModel,
-            filterSchema: filterSchema,
+            //filterSchema: filterSchema,
+            filterSchema: viewFilterSchema,
+
             isInstantFilter: isInstantFilter,
             template: filterTemplate
         });
