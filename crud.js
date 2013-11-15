@@ -1,4 +1,4 @@
-// crud version 0.3.1
+// crud version 0.3.2
 // (MIT) 14-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
@@ -1493,12 +1493,8 @@ this.createCRUD = function (fig) {
         name = fig.name,
         id = fig.id || false,
         isInstantFilter = fig.instantFilter || false,
-
-
         readOnly = fig.readOnly || false,
         deletable = readOnly ? false : (fig.deletable === false ? false : true),
-
-
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -1603,24 +1599,8 @@ this.createCRUD = function (fig) {
     };
 
 
-
-
-
     var requestModel = createRequestModel();
 
-
-
-
-
-
-
-// ########  ########  ##     ##  ########   ##           ###     ########  ########
-//    ##     ##        ###   ###  ##     ##  ##          ## ##       ##     ##
-//    ##     ##        #### ####  ##     ##  ##         ##   ##      ##     ##
-//    ##     ######    ## ### ##  ########   ##        ##     ##     ##     ######
-//    ##     ##        ##     ##  ##         ##        #########     ##     ##
-//    ##     ##        ##     ##  ##         ##        ##     ##     ##     ##
-//    ##     ########  ##     ##  ##         ########  ##     ##     ##     ########
 
     var listTemplate = fig.createListTemplate ?
         fig.createListTemplate.apply({
@@ -1632,7 +1612,6 @@ this.createCRUD = function (fig) {
             uniqueID: generateUniqueID
         }) : createListTemplate(schema, name, id, deletable);
 
-
     var listItemTemplate = fig.createListItemTemplate ?
         fig.createListItemTemplate.apply({
             schema: schema,
@@ -1640,57 +1619,15 @@ this.createCRUD = function (fig) {
             deletable: deletable
         }) : createListItemTemplate(schema, id, deletable);
 
-
-    // var formTemplate = fig.createFormTemplate ?
-    //     fig.createFormTemplate.apply({
-    //         schema: schema,
-    //         name: name,
-    //         createInput: createInput,
-    //         uniqueID: generateUniqueID
-    //     }) : createFormTemplate(schema, name);
-
-    // var filterTemplate = fig.createFilterTemplate ?
-    //     fig.createFilterTemplate.apply({
-    //         filterSchema: filterSchema,
-    //         name: name,
-    //         createInput: createInput,
-    //         isInstantFilter: isInstantFilter,
-    //         uniqueID: generateUniqueID
-    //     }) : createFilterTemplate(filterSchema, name, isInstantFilter);
-
     var paginatorTemplate = fig.createPaginatorTemplate ?
         fig.createPaginatorTemplate() : createPaginatorTemplate();
 
     var deleteConfirmationTemplate = fig.createDeleteConfirmationTemplate ?
         fig.createDeleteConfirmationTemplate() : createDeleteConfirmationTemplate();
 
-// ##     ##   #######   ########   ########  ##
-// ###   ###  ##     ##  ##     ##  ##        ##
-// #### ####  ##     ##  ##     ##  ##        ##
-// ## ### ##  ##     ##  ##     ##  ######    ##
-// ##     ##  ##     ##  ##     ##  ##        ##
-// ##     ##  ##     ##  ##     ##  ##        ##
-// ##     ##   #######   ########   ########  ########
 
-    // var requestModel = createRequestModel();
 
     var paginatorModel = createPaginatorModel({ requestModel: requestModel });
-
-    // var filterModel = createFilterModel({
-    //     requestModel: requestModel,
-    //     data: mapToObject(
-    //         filterSchema,
-    //         function (item) {
-    //             if(item.type === 'checkbox') {
-    //                 item.value = item.value || [];
-    //             }
-    //             return item.value === undefined ? null : item.value;
-    //         },
-    //         function (key, item) {
-    //             return item.name;
-    //         }
-    //     )
-    // });
 
     var orderModel = createOrderModel({
         data: map(
@@ -1711,21 +1648,7 @@ this.createCRUD = function (fig) {
         requestModel: requestModel
     });
 
-//  ######    #######   ##    ##  ########  ########    #######   ##        ##        ########  ########
-// ##    ##  ##     ##  ###   ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
-// ##        ##     ##  ####  ##     ##     ##     ##  ##     ##  ##        ##        ##        ##     ##
-// ##        ##     ##  ## ## ##     ##     ########   ##     ##  ##        ##        ######    ########
-// ##        ##     ##  ##  ####     ##     ##   ##    ##     ##  ##        ##        ##        ##   ##
-// ##    ##  ##     ##  ##   ###     ##     ##    ##   ##     ##  ##        ##        ##        ##    ##
-//  ######    #######   ##    ##     ##     ##     ##   #######   ########  ########  ########  ##     ##
 
-    // var filterController = createFilterController({
-    //     el: '#' + name + '-crud-filter-container',
-    //     model: filterModel,
-    //     filterSchema: filterSchema,
-    //     isInstantFilter: isInstantFilter,
-    //     template: filterTemplate
-    // });
 
     var paginatorController = createPaginatorController({
         el: '#' + name + '-crud-paginator-nav',
@@ -1743,22 +1666,6 @@ this.createCRUD = function (fig) {
         template: listTemplate,
         deleteConfirmationTemplate: deleteConfirmationTemplate
     });
-
-    // var formController = createFormController({
-    //     el: '#' + name + '-crud-container',
-    //     schema: schema,
-    //     createDefaultModel: function() {
-    //         return bindModel(createDefaultModel());
-    //     },
-    //     template: formTemplate
-    // });
-
-
-
-
-
-
-
 
 
 
@@ -1801,6 +1708,8 @@ this.createCRUD = function (fig) {
         filterModel.subscribe('change', newItem);
     }
 
+
+
     var formTemplate, formController;
     if(!readOnly) {
         formTemplate = fig.createFormTemplate ?
@@ -1829,20 +1738,6 @@ this.createCRUD = function (fig) {
 
 
 
-
-
-
-
-
-
-// ####  ##    ##  ####  ########
-//  ##   ###   ##   ##      ##
-//  ##   ####  ##   ##      ##
-//  ##   ## ## ##   ##      ##
-//  ##   ##  ####   ##      ##
-//  ##   ##   ###   ##      ##
-// ####  ##    ##  ####     ##
-
     requestModel.init({
         url: url,
         paginatorModel: paginatorModel,
@@ -1850,17 +1745,9 @@ this.createCRUD = function (fig) {
         orderModel: orderModel
     });
 
-    // formController.subscribe('new', function () {
-    //     listController.setSelected();
-    // });
-
     listController.renderNoError();
 
     requestModel.subscribe('load', load);
-
-    // paginatorModel.subscribe('change', newItem);
-
-    // filterModel.subscribe('change', newItem);
 
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);
