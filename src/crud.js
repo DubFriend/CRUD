@@ -100,6 +100,21 @@ this.createCRUD = function (fig) {
         };
     }());
 
+    var createBindPublish = function (controller, moduleName) {
+        return partial(that.publish, 'bind:' + moduleName, controller.$);
+    };
+
+    var subscribeWaitingPublish = function (model, moduleName) {
+        model.subscribe(
+            moduleName + ':waiting:start',
+            partial(that.publish, moduleName + ':waiting:start')
+        );
+        model.subscribe(
+            moduleName + ':waiting:end',
+            partial(that.publish, moduleName + ':waiting:end')
+        );
+    };
+
     var bindModel = function (model) {
         model.subscribe('saved', function (wasNew) {
             if(wasNew) {
@@ -116,6 +131,8 @@ this.createCRUD = function (fig) {
             newItem();
         });
 
+        subscribeWaitingPublish(model, 'form');
+
         return model;
     };
 
@@ -131,9 +148,7 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
-    var createBindPublish = function (controller, moduleName) {
-        return partial(that.publish, 'bind:' + moduleName, controller.$);
-    };
+
 
 
     var requestModel = createRequestModel();
@@ -245,10 +260,7 @@ this.createCRUD = function (fig) {
         });
 
         filterModel.subscribe('change', newItem);
-
-
         filterController.subscribe('bind', createBindPublish(filterController, 'filter'));
-
     }
 
 
@@ -296,6 +308,10 @@ this.createCRUD = function (fig) {
     paginatorController.subscribe('bind', createBindPublish(paginatorController, 'paginator'));
 
     requestModel.subscribe('load', load);
+
+    subscribeWaitingPublish(requestModel, 'filter');
+    subscribeWaitingPublish(requestModel, 'order');
+    subscribeWaitingPublish(requestModel, 'paginator');
 
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);

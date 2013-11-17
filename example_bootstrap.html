@@ -470,9 +470,14 @@ $(document).ready(function () {
         }
     });
 
-    crud.subscribe('bind:form', function ($) {
-        console.log('bind:form');
-    });
+    var debugSubscribe = function (eventName) {
+        crud.subscribe(eventName, function () {
+            console.log(eventName);
+        });
+    };
+
+    debugSubscribe('filter:waiting:start');
+    debugSubscribe('filter:waiting:end');
 
 });
 </script>
