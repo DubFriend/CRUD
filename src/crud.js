@@ -1,6 +1,6 @@
 this.createCRUD = function (fig) {
     fig = fig || {};
-    var that = {},
+    var that = mixinPubSub(),
         url = fig.url,
         name = fig.name,
         id = fig.id || false,
@@ -131,6 +131,10 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
+    var createBindPublish = function (controller) {
+        return partial(that.publish, 'bind', controller.$);
+    };
+
 
     var requestModel = createRequestModel();
 
@@ -241,6 +245,10 @@ this.createCRUD = function (fig) {
         });
 
         filterModel.subscribe('change', newItem);
+
+
+        filterController.subscribe('bind', createBindPublish(filterController));
+
     }
 
 
@@ -268,6 +276,8 @@ this.createCRUD = function (fig) {
             listController.setSelected();
         });
 
+        formController.subscribe('bind', createBindPublish(formController));
+
         paginatorModel.subscribe('change', newItem);
     }
 
@@ -281,6 +291,9 @@ this.createCRUD = function (fig) {
     });
 
     listController.renderNoError();
+
+    listController.subscribe('bind', createBindPublish(listController));
+    paginatorController.subscribe('bind', createBindPublish(paginatorController));
 
     requestModel.subscribe('load', load);
 

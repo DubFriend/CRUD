@@ -30,7 +30,7 @@ var serializeFormBySchema = function ($el, schema) {
 //  ######    #######   ##    ##     ##     ##     ##   #######   ########  ########  ########  ##     ##
 
 var createController = function (fig) {
-    var that = {},
+    var that = mixinPubSub(),
         el = fig.el,
         render = function (isRenderError, data, errors, extra) {
             data = data || that.model.get();
@@ -118,8 +118,7 @@ var createController = function (fig) {
 var createListItemController = function (fig) {
     fig = fig || {};
     fig.el = fig.el || '#crud-list-item-' + fig.model.id();
-    var that = mixinPubSub(createController(fig));
-
+    var that = createController(fig);
     that.isSelected = function () {
         return that.$('.crud-list-selected').prop('checked') ? true : false;
     };
@@ -180,6 +179,8 @@ var createListItemController = function (fig) {
         that.$().click(function () {
             that.publish('selected', that);
         });
+
+        that.publish('bind');
     };
 
     that.model.subscribe('saved', function (model) {
@@ -199,7 +200,7 @@ var createListItemController = function (fig) {
 
 var createListController = function (fig) {
     fig = fig || {};
-    var that = mixinPubSub(createController(fig)),
+    var that = createController(fig),
         items = [],
         isIDOrderable = fig.isIDOrderable === true ? true : false,
         orderIcon = {
@@ -257,6 +258,7 @@ var createListController = function (fig) {
                 e.preventDefault();
                 that.orderModel.toggle($(this).data('name'));
             });
+            that.publish('bind');
         };
 
     $('body').prepend(Mustache.render(deleteConfirmationTemplate));
@@ -384,6 +386,8 @@ var createPaginatorController = function (fig) {
                 $input.val('');
             }
         });
+
+        that.publish('bind');
     };
 
     that.setSelected = function (pageNumber) {
@@ -520,7 +524,7 @@ var createPaginatorController = function (fig) {
 
 var createFilterController = function (fig) {
     fig = fig || {};
-    var that = mixinPubSub(createController(fig)),
+    var that = createController(fig),
         filterSchema = that.mapSchema(fig.filterSchema),
         isInstantFilter = fig.isInstantFilter,
         serialize = function () {
@@ -580,7 +584,7 @@ var createFilterController = function (fig) {
 var createFormController = function (fig) {
     fig = fig || {};
     fig.model = fig.model || fig.createDefaultModel();
-    var that = mixinPubSub(createController(fig));
+    var that = createController(fig);
 
     that.serialize = function () {
         return serializeFormBySchema(that.$(), that.schema);
@@ -600,6 +604,8 @@ var createFormController = function (fig) {
             that.setModel(fig.createDefaultModel());
             that.publish('new');
         });
+
+        that.publish('bind');
     };
 
     bind();

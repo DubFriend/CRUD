@@ -219,7 +219,6 @@ $(document).ready(function () {
             {
                 name: 'fruit',
                 type: 'checkbox',
-                //values: ['apple', 'orange'],
                 values: [
                     { value: 'apple', label: 'La Pomme' },
                     { value: 'orange', label: 'L\'Orange' }
@@ -229,7 +228,6 @@ $(document).ready(function () {
             {
                 name: 'letter',
                 type: 'radio',
-                //values: ['a', 'b', 'c', 'd'],
                 values: [
                     { value: 'a', label: 'A' },
                     { value: 'b' },
@@ -242,7 +240,6 @@ $(document).ready(function () {
             {
                 name: 'awesome',
                 type: 'select',
-                //values: ['1', '2', '3']
                 values: [
                     { value: '1', label: 'One' },
                     { value: '2', label: 'Two' },
@@ -257,7 +254,6 @@ $(document).ready(function () {
                 name: "Maximum_Awesome",
                 label: "Awesome",
                 type: 'select',
-                //values: ['1', '2', '3'],
                 values: [
                     { value: '1', label: '<= One' },
                     { value: '2', label: '<= Two' },
@@ -273,13 +269,65 @@ $(document).ready(function () {
             {
                 name: "fruit",
                 type: 'checkbox',
-                //values: ['apple', 'orange']
                 values: [
                     { value: 'apple', label: 'pomme' },
                     { value: 'orange' }
                 ]
             }
         ],
+
+
+
+        create: {
+            before: function () {},
+            after: function () {}
+        },
+
+        destroy: {
+            before: function () {},
+            after: function () {}
+        },
+
+        pageChange: {
+            before: function () {},
+            after: function () {}
+        },
+
+        formToggleUpdateCreate: {
+            before: function () {},
+            after: function () {}
+        },
+
+        bind: {
+            filter: function () {},
+            form: function () {},
+            paginator: function () {},
+            list: function () {}
+        },
+
+        waiting: {
+            filter: {
+                before: function () {},
+                after: function () {}
+            },
+
+            form: {
+                before: function () {},
+                after: function () {}
+            },
+
+            paginator: {
+                before: function () {},
+                after: function () {}
+            },
+
+            list: {
+                before: function () {},
+                after: function () {}
+            }
+        },
+
+
 
         createFormTemplate: function () {
             var that = this;
@@ -421,9 +469,6 @@ $(document).ready(function () {
             '</div>';
         }
     });
-    // setTimeout(function () {
-    //     alert($('.status').prop(':hover'));
-    // }, 500);
 });
 </script>
 </body>
