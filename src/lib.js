@@ -110,7 +110,6 @@ var mapToObject = function (collection, callback, keyCallback) {
 };
 
 var appendKey = function (appendingString, collection) {
-    collection = collection || {};
     return map(collection, identity, function (key) {
         return appendingString + key;
     });

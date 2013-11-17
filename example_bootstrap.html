@@ -183,7 +183,7 @@ $(document).ready(function () {
         });
     };
 
-    createCRUD({
+    var crud = createCRUD({
         name: 'Thing',
         url: 'crud.php',
         validate: function (data) {
@@ -469,6 +469,11 @@ $(document).ready(function () {
             '</div>';
         }
     });
+
+    crud.subscribe('bind:form', function ($) {
+        console.log('bind:form');
+    });
+
 });
 </script>
 </body>

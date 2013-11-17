@@ -1,5 +1,5 @@
 // crud version 0.3.2
-// (MIT) 15-11-2013
+// (MIT) 17-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -116,7 +116,6 @@ var mapToObject = function (collection, callback, keyCallback) {
 };
 
 var appendKey = function (appendingString, collection) {
-    collection = collection || {};
     return map(collection, identity, function (key) {
         return appendingString + key;
     });
@@ -1640,8 +1639,8 @@ this.createCRUD = function (fig) {
         bindModel(defaultModel);
     };
 
-    var createBindPublish = function (controller) {
-        return partial(that.publish, 'bind', controller.$);
+    var createBindPublish = function (controller, moduleName) {
+        return partial(that.publish, 'bind:' + moduleName, controller.$);
     };
 
 
@@ -1756,7 +1755,7 @@ this.createCRUD = function (fig) {
         filterModel.subscribe('change', newItem);
 
 
-        filterController.subscribe('bind', createBindPublish(filterController));
+        filterController.subscribe('bind', createBindPublish(filterController, 'filter'));
 
     }
 
@@ -1785,7 +1784,7 @@ this.createCRUD = function (fig) {
             listController.setSelected();
         });
 
-        formController.subscribe('bind', createBindPublish(formController));
+        formController.subscribe('bind', createBindPublish(formController, 'form'));
 
         paginatorModel.subscribe('change', newItem);
     }
@@ -1801,13 +1800,17 @@ this.createCRUD = function (fig) {
 
     listController.renderNoError();
 
-    listController.subscribe('bind', createBindPublish(listController));
-    paginatorController.subscribe('bind', createBindPublish(paginatorController));
+    listController.subscribe('bind', createBindPublish(listController, 'list'));
+    paginatorController.subscribe('bind', createBindPublish(paginatorController, 'paginator'));
 
     requestModel.subscribe('load', load);
 
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);
+
+
+
+    return that;
 };
 
 }).call(this);
