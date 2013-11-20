@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Bootstrap 101 Template</title>
+<title>CRUD</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Bootstrap -->
 <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -39,22 +39,12 @@
     }
 
     legend span {
-       /* position: relative;
-        -moz-transition:width 0.3s ease, background-color 0.3s ease;
-        -webkit-transition:width 0.3s ease, background-color 0.3s ease;
-        -o-transition:width 0.3s ease, background-color 0.3s ease;
-        transition:width 0.3s ease, background-color 0.3s ease;*/
         background-color: rgba(94, 169, 235, 0.5);
         width: 130px;
     }
 
 
     legend span.crud-status-edit {
-        /*position: relative;
-        -moz-transition:width 0.3s ease, background-color 0.3s ease;
-        -webkit-transition:width 0.3s ease, background-color 0.3s ease;
-        -o-transition:width 0.3s ease, background-color 0.3s ease;
-        transition:width 0.3s ease, background-color 0.3s ease;*/
         background-color: rgba(107, 221, 107, 0.5);
         width: 130px;
     }
@@ -72,6 +62,15 @@
     .crud-pages li {
         list-style: none;
         float: left;
+    }
+
+    .crud-list-item-container {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
 
     .crud-pages a {
@@ -93,9 +92,17 @@
     }
 
     .modal {
+        overflow: hidden;
+    }
+
+    .crud-delete-modal {
         height: 125px;
         width: 250px;
-        overflow: hidden;
+    }
+
+    .crud-form-modal {
+        height: 500px;
+        width: 500px;
     }
 
     .btn {
@@ -119,7 +126,8 @@
     <h1>CRUD</h1>
     <hr/>
     <div class="row">
-        <div id="Thing-crud-container" class="col-sm-6"></div>
+        <!-- <div id="Thing-crud-container" class="col-sm-6"></div> -->
+        <div id="Thing-crud-new" class="col-sm-6"></div>
         <div id="Thing-crud-filter-container" class="col-sm-6"></div>
     </div>
     <div class="row">

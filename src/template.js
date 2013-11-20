@@ -130,9 +130,10 @@ var createFormTemplate = function (schema, crudName) {
                 '<label>&nbsp;</label>' +
                 '<div class="crud-input-group">' +
                     '<input type="submit" value="Save"/>' +
-                    '<button class="crud-new-item">' +
-                        'New ' + crudName +
-                    '</button>' +
+                    '<button class="crud-close-form">Close</button>' +
+                    // '<button class="crud-new-item">' +
+                    //     'New ' + crudName +
+                    // '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +

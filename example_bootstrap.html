@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Bootstrap 101 Template</title>
+<title>CRUD with Bootstrap Example</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Bootstrap -->
 <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -66,6 +66,15 @@
         padding: 0;
     }
 
+    .crud-list-item-container {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
     /*should not be given margin (messes up calculation to determine number
       of paginator pages to render)*/
     /*REQUIRED*/
@@ -88,9 +97,18 @@
     }
 
     .modal {
+        overflow: hidden;
+    }
+
+    .crud-delete-modal {
         height: 125px;
         width: 250px;
-        overflow: hidden;
+    }
+
+    .crud-form-modal {
+
+        height: 410px;
+        width: 600px;
     }
 
     .btn {
@@ -114,13 +132,16 @@
     <h1>CRUD</h1>
     <hr/>
     <div class="row">
-        <div id="Thing-crud-container" class="col-sm-6"></div>
+        <!-- <div id="Thing-crud-container" class="col-sm-6"></div> -->
+        <div id="Thing-crud-new" class="col-sm-6"></div>
         <div id="Thing-crud-filter-container" class="col-sm-6"></div>
     </div>
     <div class="row">
         <div id="Thing-crud-paginator-nav" class="col-sm-12"></div>
     </div>
+    <p>Double Click table rows to Edit.</p>
     <div class="row">
+
         <div id="Thing-crud-list-container" class="col-sm-12"></div>
     </div>
 </div>
@@ -276,58 +297,7 @@ $(document).ready(function () {
             }
         ],
 
-
-
-        create: {
-            before: function () {},
-            after: function () {}
-        },
-
-        destroy: {
-            before: function () {},
-            after: function () {}
-        },
-
-        pageChange: {
-            before: function () {},
-            after: function () {}
-        },
-
-        formToggleUpdateCreate: {
-            before: function () {},
-            after: function () {}
-        },
-
-        bind: {
-            filter: function () {},
-            form: function () {},
-            paginator: function () {},
-            list: function () {}
-        },
-
-        waiting: {
-            filter: {
-                before: function () {},
-                after: function () {}
-            },
-
-            form: {
-                before: function () {},
-                after: function () {}
-            },
-
-            paginator: {
-                before: function () {},
-                after: function () {}
-            },
-
-            list: {
-                before: function () {},
-                after: function () {}
-            }
-        },
-
-
+        newButtonHTML: '<button class="btn btn-lg btn-primary">Create New Thing</button>',
 
         createFormTemplate: function () {
             var that = this;
@@ -349,9 +319,10 @@ $(document).ready(function () {
                 '<div class="form-group">' +
                     '<div class="col-sm-offset-3 col-sm-9">' +
                         '<input type="submit" class="btn btn-lg btn-primary" value="Save"/>' +
-                        '<button class="crud-new-item btn btn-lg btn-success">' +
-                            'New ' + that.name +
-                        '</button>' +
+                        '<button class="crud-close-form btn btn-lg">Close</button>' +
+                        // '<button class="crud-new-item btn btn-lg btn-success">' +
+                        //     'New ' + that.name +
+                        // '</button>' +
                     '</div>' +
                 '</div>' +
             '</form>';
@@ -476,8 +447,8 @@ $(document).ready(function () {
         });
     };
 
-    debugSubscribe('filter:waiting:start');
-    debugSubscribe('filter:waiting:end');
+    debugSubscribe('paginator:waiting:start');
+    debugSubscribe('paginator:waiting:end');
 
 });
 </script>

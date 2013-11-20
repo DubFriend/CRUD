@@ -58,6 +58,7 @@ this.createCRUD = function (fig) {
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
         if(!readOnly) {
+            formController.open();
             setForm(itemController.model);
         }
     };
@@ -267,6 +268,24 @@ this.createCRUD = function (fig) {
 
     var formTemplate, formController;
     if(!readOnly) {
+        $('body').prepend('<div id="' + name + '-crud-container" class="crud-form-modal modal"></div>');
+        $('#' + name + '-crud-new').html(
+            fig.newButtonHTML || '<button>Create New ' + name + '</button>'
+        );
+        $('#' + name + '-crud-new').find('button').click(function () {
+            // formController.setModel(createDefaultModel());
+            newItem();
+            formController.publish('new');
+            formController.open();
+            // that.$('.crud-new-item').unbind();
+            // that.$('.crud-new-item').click(function (e) {
+            //     e.preventDefault();
+            //     that.setModel(fig.createDefaultModel());
+            //     that.publish('new');
+            // });
+        });
+
+
         formTemplate = fig.createFormTemplate ?
             fig.createFormTemplate.apply({
                 schema: viewSchema,
@@ -315,8 +334,6 @@ this.createCRUD = function (fig) {
 
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);
-
-
 
     return that;
 };

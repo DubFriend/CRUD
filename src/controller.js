@@ -176,7 +176,7 @@ var createListItemController = function (fig) {
             }
         );
 
-        that.$().click(function () {
+        that.$().dblclick(function () {
             that.publish('selected', that);
         });
 
@@ -584,10 +584,31 @@ var createFilterController = function (fig) {
 var createFormController = function (fig) {
     fig = fig || {};
     fig.model = fig.model || fig.createDefaultModel();
-    var that = createController(fig);
+
+    var that = createController(fig),
+        isOpen = false;
 
     that.serialize = function () {
         return serializeFormBySchema(that.$(), that.schema);
+    };
+
+    that.open = function () {
+        if(!isOpen) {
+            //$(".crud-delete-modal").modal({
+            that.$().modal({
+                fadeDuration: 200,
+                fadeDelay: 0,
+                showClose: false
+            });
+            isOpen = true;
+        }
+    };
+
+    that.close = function () {
+        if(isOpen) {
+            $.modal.close();
+            isOpen = false;
+        }
     };
 
     var bind = function () {
@@ -598,11 +619,17 @@ var createFormController = function (fig) {
             that.model.save();
         });
 
-        $('.crud-new-item').unbind();
-        $('.crud-new-item').click(function (e) {
+        // that.$('.crud-new-item').unbind();
+        // that.$('.crud-new-item').click(function (e) {
+        //     e.preventDefault();
+        //     that.setModel(fig.createDefaultModel());
+        //     that.publish('new');
+        // });
+
+        that.$('.crud-close-form').unbind();
+        that.$('.crud-close-form').click(function (e) {
             e.preventDefault();
-            that.setModel(fig.createDefaultModel());
-            that.publish('new');
+            that.close();
         });
 
         that.publish('bind');
@@ -611,20 +638,20 @@ var createFormController = function (fig) {
     bind();
 
     var setNewModelVisibility = function () {
-        var $newItemButton = that.$('.crud-new-item');
+        //var $newItemButton = that.$('.crud-new-item');
         if(that.model.isNew()) {
             that.$('*').removeClass('crud-status-edit');
             that.$('*').addClass('crud-status-create');
-            if(!$newItemButton.is(':hidden')) {
-                $newItemButton.hide();
-            }
+            // if(!$newItemButton.is(':hidden')) {
+            //     $newItemButton.hide();
+            // }
         }
         else {
             that.$('*').addClass('crud-status-edit');
             that.$('*').removeClass('crud-status-create');
-            if($newItemButton.is(':hidden')) {
-                $newItemButton.show();
-            }
+            // if($newItemButton.is(':hidden')) {
+            //     $newItemButton.show();
+            // }
         }
     };
 
@@ -648,7 +675,10 @@ var createFormController = function (fig) {
     };
 
     that.setModel = (function () {
-        var savedCallback = setNewModelVisibility;
+        var savedCallback = function () {
+            setNewModelVisibility();
+            that.close();
+        };
         var changeCallback = function (model) {
             that.render();
         };
