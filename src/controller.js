@@ -202,6 +202,7 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig),
         items = [],
+        modal = fig.modal,
         isIDOrderable = fig.isIDOrderable === true ? true : false,
         orderIcon = {
             ascending: '&#8679;',
@@ -211,15 +212,17 @@ var createListController = function (fig) {
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
 
         openDeleteConfirmation = function () {
-            $(".crud-delete-modal").modal({
-                fadeDuration: 200,
-                fadeDelay: 0,
-                showClose: false
-            });
+            modal.open($('.crud-delete-modal'));
+            // $(".crud-delete-modal").modal({
+            //     fadeDuration: 200,
+            //     fadeDelay: 0,
+            //     showClose: false
+            // });
         },
 
         closeDeleteConfirmation = function () {
-            $.modal.close();
+            modal.close($('.crud-delete-modal'));
+            //$.modal.close();
         },
 
         bindDeleteConfirmation = function () {
@@ -586,29 +589,25 @@ var createFormController = function (fig) {
     fig.model = fig.model || fig.createDefaultModel();
 
     var that = createController(fig),
-        isOpen = false;
+        isOpen = false,
+        modal = fig.modal;
 
     that.serialize = function () {
         return serializeFormBySchema(that.$(), that.schema);
     };
 
     that.open = function () {
-        if(!isOpen) {
-            //$(".crud-delete-modal").modal({
-            that.$().modal({
-                fadeDuration: 200,
-                fadeDelay: 0,
-                showClose: false
-            });
-            isOpen = true;
-        }
+        modal.open(that.$());
+        // that.$().modal({
+        //     fadeDuration: 200,
+        //     fadeDelay: 0,
+        //     showClose: false
+        // });
     };
 
     that.close = function () {
-        if(isOpen) {
-            $.modal.close();
-            isOpen = false;
-        }
+        modal.close(that.$());
+        //$.modal.close();
     };
 
     var bind = function () {
@@ -618,13 +617,6 @@ var createFormController = function (fig) {
             that.model.set(that.serialize(), { validate: false });
             that.model.save();
         });
-
-        // that.$('.crud-new-item').unbind();
-        // that.$('.crud-new-item').click(function (e) {
-        //     e.preventDefault();
-        //     that.setModel(fig.createDefaultModel());
-        //     that.publish('new');
-        // });
 
         that.$('.crud-close-form').unbind();
         that.$('.crud-close-form').click(function (e) {
@@ -638,20 +630,13 @@ var createFormController = function (fig) {
     bind();
 
     var setNewModelVisibility = function () {
-        //var $newItemButton = that.$('.crud-new-item');
         if(that.model.isNew()) {
             that.$('*').removeClass('crud-status-edit');
             that.$('*').addClass('crud-status-create');
-            // if(!$newItemButton.is(':hidden')) {
-            //     $newItemButton.hide();
-            // }
         }
         else {
             that.$('*').addClass('crud-status-edit');
             that.$('*').removeClass('crud-status-create');
-            // if($newItemButton.is(':hidden')) {
-            //     $newItemButton.show();
-            // }
         }
     };
 

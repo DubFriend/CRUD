@@ -7,6 +7,22 @@ this.createCRUD = function (fig) {
         isInstantFilter = fig.instantFilter || false,
         readOnly = fig.readOnly || false,
         deletable = readOnly ? false : (fig.deletable === false ? false : true),
+
+        modal = fig.modal || {
+            open: function ($elem) {
+                $elem.modal({
+                    fadeDuration: 200,
+                    fadeDelay: 0,
+                    showClose: false
+                });
+            },
+            close: function ($elem) {
+                //this particular implementation doesnt use
+                //$elem here, but others might
+                $.modal.close();
+            }
+        },
+
         setEmptyCheckboxes = function (item) {
             if(item.type === 'checkbox') {
                 item.value = item.value || [];
@@ -152,7 +168,6 @@ this.createCRUD = function (fig) {
 
 
 
-    var requestModel = createRequestModel();
 
 
     var listTemplate = fig.createListTemplate ?
@@ -179,6 +194,9 @@ this.createCRUD = function (fig) {
         fig.createDeleteConfirmationTemplate() : createDeleteConfirmationTemplate();
 
 
+
+
+    var requestModel = createRequestModel();
 
     var paginatorModel = createPaginatorModel({ requestModel: requestModel });
 
@@ -212,6 +230,7 @@ this.createCRUD = function (fig) {
     var listController = createListController({
         el: '#' + name + '-crud-list-container',
         schema: schema,
+        modal: modal,
         isIDOrderable: id && id.orderable ? true : false,
         model: createDefaultModel(),
         orderModel: orderModel,
@@ -268,23 +287,20 @@ this.createCRUD = function (fig) {
 
     var formTemplate, formController;
     if(!readOnly) {
-        $('body').prepend('<div id="' + name + '-crud-container" class="crud-form-modal modal"></div>');
+
+        // $('body').prepend(
+        //     '<div id="' + name + '-crud-container" class="crud-form-modal modal"></div>'
+        // );
+
         $('#' + name + '-crud-new').html(
             fig.newButtonHTML || '<button>Create New ' + name + '</button>'
         );
+
         $('#' + name + '-crud-new').find('button').click(function () {
-            // formController.setModel(createDefaultModel());
             newItem();
             formController.publish('new');
             formController.open();
-            // that.$('.crud-new-item').unbind();
-            // that.$('.crud-new-item').click(function (e) {
-            //     e.preventDefault();
-            //     that.setModel(fig.createDefaultModel());
-            //     that.publish('new');
-            // });
         });
-
 
         formTemplate = fig.createFormTemplate ?
             fig.createFormTemplate.apply({
@@ -297,6 +313,7 @@ this.createCRUD = function (fig) {
         formController = createFormController({
             el: '#' + name + '-crud-container',
             schema: schema,
+            modal: modal,
             createDefaultModel: function() {
                 return bindModel(createDefaultModel());
             },
