@@ -176,8 +176,16 @@ var createListItemController = function (fig) {
             }
         );
 
-        that.$().dblclick(function () {
+        that.$().click(function () {
             that.publish('selected', that);
+        });
+
+        that.$().dblclick(function () {
+            that.publish('edit', that);
+        });
+
+        that.$('.crud-edit-button').click(function () {
+            that.publish('edit', that);
         });
 
         that.publish('bind');
@@ -213,16 +221,10 @@ var createListController = function (fig) {
 
         openDeleteConfirmation = function () {
             modal.open($('.crud-delete-modal'));
-            // $(".crud-delete-modal").modal({
-            //     fadeDuration: 200,
-            //     fadeDelay: 0,
-            //     showClose: false
-            // });
         },
 
         closeDeleteConfirmation = function () {
             modal.close($('.crud-delete-modal'));
-            //$.modal.close();
         },
 
         bindDeleteConfirmation = function () {
@@ -249,7 +251,6 @@ var createListController = function (fig) {
 
             that.$('.crud-delete-selected').unbind();
             that.$('.crud-delete-selected').click(openDeleteConfirmation);
-
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {
@@ -598,16 +599,10 @@ var createFormController = function (fig) {
 
     that.open = function () {
         modal.open(that.$());
-        // that.$().modal({
-        //     fadeDuration: 200,
-        //     fadeDelay: 0,
-        //     showClose: false
-        // });
     };
 
     that.close = function () {
         modal.close(that.$());
-        //$.modal.close();
     };
 
     var bind = function () {

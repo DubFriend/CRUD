@@ -74,9 +74,14 @@ this.createCRUD = function (fig) {
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
         if(!readOnly) {
-            formController.open();
+            //formController.open();
             setForm(itemController.model);
         }
+    };
+
+    var editCallback = function (itemController) {
+        selectedCallback(itemController);
+        formController.open();
     };
 
     var addItem = function (model, options) {
@@ -88,6 +93,7 @@ this.createCRUD = function (fig) {
             template: listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
+        itemController.subscribe('edit', editCallback);
         listController.add(itemController, options);
         listController.setSelected(itemController);
         bindModel(model);

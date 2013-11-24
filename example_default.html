@@ -4,7 +4,7 @@
 <title>CRUD</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Bootstrap -->
-<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<!-- <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet"> -->
 <link rel="stylesheet" type="text/css" href="jquery-modal/jquery.modal.css">
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -13,6 +13,11 @@
   <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
 <![endif]-->
 <style>
+    body {
+       font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+       font-weight: 300;
+    }
+
     .container .selected {
         background-color: #A7EBBF;
     }
@@ -77,6 +82,11 @@
         padding: 0.5em;
     }
 
+    .crud-pages li {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+    }
+
     .crud-goto-page-form {
         float: right;
     }
@@ -91,19 +101,11 @@
         margin: 0.7em 0.3em 0 0.3em;
     }
 
-    .modal {
-        overflow: hidden;
-    }
-
     .crud-delete-modal {
         height: 125px;
         width: 250px;
     }
 
-    .crud-form-modal {
-        height: 500px;
-        width: 500px;
-    }
 
     .btn {
         margin: 0.2em;
@@ -125,21 +127,25 @@
 <div class="container">
     <h1>CRUD</h1>
     <hr/>
+
+    <div id="Thing-crud-container" class="modal crud-form-modal"></div>
+
     <div class="row">
-        <!-- <div id="Thing-crud-container" class="col-sm-6"></div> -->
         <div id="Thing-crud-new" class="col-sm-6"></div>
         <div id="Thing-crud-filter-container" class="col-sm-6"></div>
     </div>
+
     <div class="row">
         <div id="Thing-crud-paginator-nav" class="col-sm-12"></div>
     </div>
+
     <div class="row">
         <div id="Thing-crud-list-container" class="col-sm-12"></div>
     </div>
 </div>
 
 <script src="lib/jquery-1.10.2.js"></script>
-<script src="bootstrap/js/bootstrap.min.js"></script>
+<!-- <script src="bootstrap/js/bootstrap.min.js"></script> -->
 <script src="lib/mustache.js"></script>
 <script src="jquery-modal/jquery.modal.js"></script>
 <script src="crud.js"></script>

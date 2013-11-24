@@ -1,5 +1,5 @@
 // crud version 0.3.2
-// (MIT) 22-11-2013
+// (MIT) 23-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -651,9 +651,6 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="crud-input-group">' +
                     '<input type="submit" value="Save"/>' +
                     '<button class="crud-close-form">Close</button>' +
-                    // '<button class="crud-new-item">' +
-                    //     'New ' + crudName +
-                    // '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -695,12 +692,22 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema, id, deletable) {
+var createListItemTemplate = function (schema, id, deletable, readOnly) {
     return '' +
     (
-        deletable ?
-            '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
+        deletable || readOnly ?
+        '<td>' +
+            (deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
+            (readOnly ? '' : '<input type="button" class="crud-edit-button" value="Edit"/>') +
+        '</td>' : ''
     ) +
+    // (
+    //     deletable ?
+    //         '<td>' +
+    //             '<input type="checkbox" class="crud-list-selected"/>' +
+    //             '<input type="button" class="crud-edit-button" value="Edit"/>' +
+    //         '</td>' : ''
+    // ) +
     (function () {
         if(id) {
             return '<td name="id">{{id}}</td>';
@@ -1011,8 +1018,16 @@ var createListItemController = function (fig) {
             }
         );
 
-        that.$().dblclick(function () {
+        that.$().click(function () {
             that.publish('selected', that);
+        });
+
+        that.$().dblclick(function () {
+            that.publish('edit', that);
+        });
+
+        that.$('.crud-edit-button').click(function () {
+            that.publish('edit', that);
         });
 
         that.publish('bind');
@@ -1048,16 +1063,10 @@ var createListController = function (fig) {
 
         openDeleteConfirmation = function () {
             modal.open($('.crud-delete-modal'));
-            // $(".crud-delete-modal").modal({
-            //     fadeDuration: 200,
-            //     fadeDelay: 0,
-            //     showClose: false
-            // });
         },
 
         closeDeleteConfirmation = function () {
             modal.close($('.crud-delete-modal'));
-            //$.modal.close();
         },
 
         bindDeleteConfirmation = function () {
@@ -1084,7 +1093,6 @@ var createListController = function (fig) {
 
             that.$('.crud-delete-selected').unbind();
             that.$('.crud-delete-selected').click(openDeleteConfirmation);
-
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {
@@ -1433,16 +1441,10 @@ var createFormController = function (fig) {
 
     that.open = function () {
         modal.open(that.$());
-        // that.$().modal({
-        //     fadeDuration: 200,
-        //     fadeDelay: 0,
-        //     showClose: false
-        // });
     };
 
     that.close = function () {
         modal.close(that.$());
-        //$.modal.close();
     };
 
     var bind = function () {
@@ -1602,9 +1604,14 @@ this.createCRUD = function (fig) {
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
         if(!readOnly) {
-            formController.open();
+            //formController.open();
             setForm(itemController.model);
         }
+    };
+
+    var editCallback = function (itemController) {
+        selectedCallback(itemController);
+        formController.open();
     };
 
     var addItem = function (model, options) {
@@ -1616,6 +1623,7 @@ this.createCRUD = function (fig) {
             template: listItemTemplate
         });
         itemController.subscribe('selected', selectedCallback);
+        itemController.subscribe('edit', editCallback);
         listController.add(itemController, options);
         listController.setSelected(itemController);
         bindModel(model);

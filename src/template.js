@@ -131,9 +131,6 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="crud-input-group">' +
                     '<input type="submit" value="Save"/>' +
                     '<button class="crud-close-form">Close</button>' +
-                    // '<button class="crud-new-item">' +
-                    //     'New ' + crudName +
-                    // '</button>' +
                 '</div>' +
             '</div>' +
         '</fieldset>' +
@@ -175,12 +172,22 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
 // ##         ##   ##    ##     ##          ##      ##     ##        ##     ##
 // ########  ####   ######      ##         ####     ##     ########  ##     ##
 
-var createListItemTemplate = function (schema, id, deletable) {
+var createListItemTemplate = function (schema, id, deletable, readOnly) {
     return '' +
     (
-        deletable ?
-            '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
+        deletable || readOnly ?
+        '<td>' +
+            (deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
+            (readOnly ? '' : '<input type="button" class="crud-edit-button" value="Edit"/>') +
+        '</td>' : ''
     ) +
+    // (
+    //     deletable ?
+    //         '<td>' +
+    //             '<input type="checkbox" class="crud-list-selected"/>' +
+    //             '<input type="button" class="crud-edit-button" value="Edit"/>' +
+    //         '</td>' : ''
+    // ) +
     (function () {
         if(id) {
             return '<td name="id">{{id}}</td>';
