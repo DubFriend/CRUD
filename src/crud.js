@@ -74,7 +74,6 @@ this.createCRUD = function (fig) {
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
         if(!readOnly) {
-            //formController.open();
             setForm(itemController.model);
         }
     };
@@ -88,7 +87,6 @@ this.createCRUD = function (fig) {
         options = options || {};
         var itemController = createListItemController({
             model: model,
-            // schema: schema,
             schema: viewSchema,
             template: listItemTemplate
         });
@@ -182,6 +180,7 @@ this.createCRUD = function (fig) {
             name: name,
             id: id,
             deletable: deletable,
+            readOnly: readOnly,
             orderable: orderable,
             uniqueID: generateUniqueID
         }) : createListTemplate(viewSchema, name, id, deletable);
@@ -191,7 +190,7 @@ this.createCRUD = function (fig) {
             schema: viewSchema,
             id: id,
             deletable: deletable
-        }) : createListItemTemplate(viewSchema, id, deletable);
+        }) : createListItemTemplate(viewSchema, id, deletable, readOnly);
 
     var paginatorTemplate = fig.createPaginatorTemplate ?
         fig.createPaginatorTemplate() : createPaginatorTemplate();

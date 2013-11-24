@@ -695,27 +695,13 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
 var createListItemTemplate = function (schema, id, deletable, readOnly) {
     return '' +
     (
-        deletable || readOnly ?
+        deletable || !readOnly ?
         '<td>' +
             (deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
             (readOnly ? '' : '<input type="button" class="crud-edit-button" value="Edit"/>') +
         '</td>' : ''
     ) +
-    // (
-    //     deletable ?
-    //         '<td>' +
-    //             '<input type="checkbox" class="crud-list-selected"/>' +
-    //             '<input type="button" class="crud-edit-button" value="Edit"/>' +
-    //         '</td>' : ''
-    // ) +
-    (function () {
-        if(id) {
-            return '<td name="id">{{id}}</td>';
-        }
-        else {
-            return '';
-        }
-    }()) +
+    (id ? '<td name="id">{{id}}</td>' : '') +
     reduce(schema, function (acc, item) {
         return (acc || '') +
         '<td name="' + item.name + '">{{' + item.name + '}}</td>';
@@ -1051,14 +1037,20 @@ var createListItemController = function (fig) {
 var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig),
+
+        selectedItem,
         items = [],
-        modal = fig.modal,
+
         isIDOrderable = fig.isIDOrderable === true ? true : false,
+
         orderIcon = {
             ascending: '&#8679;',
             descending: '&#8681;',
             neutral: '&#8691;'
         },
+
+        modal = fig.modal,
+
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
 
         openDeleteConfirmation = function () {
@@ -1105,6 +1097,22 @@ var createListController = function (fig) {
                 that.orderModel.toggle($(this).data('name'));
             });
             that.publish('bind');
+        },
+
+        setNextSelected = function () {
+            var selectedIndex = items.indexOf(selectedItem);
+            if(selectedIndex !== -1 && selectedIndex + 1 < items.length) {
+                var controller = items[selectedIndex + 1];
+                controller.publish('selected', controller);
+            }
+        },
+
+        setPreviousSelected = function () {
+            var selectedIndex = items.indexOf(selectedItem);
+            if(selectedIndex > 0) {
+                var controller = items[selectedIndex - 1];
+                controller.publish('selected', controller);
+            }
         };
 
     $('body').prepend(Mustache.render(deleteConfirmationTemplate));
@@ -1156,6 +1164,7 @@ var createListController = function (fig) {
         if(selectedItemController) {
             selectedItemController.select();
         }
+        selectedItem = selectedItemController;
     };
 
     that.setSelectAll = function (isSelected) {
@@ -1195,6 +1204,28 @@ var createListController = function (fig) {
                 orderIcon[values(newData)[0]] +
             '</span>'
         );
+    });
+
+    $(document).keydown(function (e) {
+        //e.preventDefault();
+        if(that.$().is(':hover')) {
+            switch(e.keyCode) {
+                case 38: //up arrow key
+                    e.preventDefault();
+                    setPreviousSelected();
+                    break;
+                case 40: //down arrow key
+                    e.preventDefault();
+                    setNextSelected();
+                    break;
+                case 13: //enter key
+                    if(selectedItem) {
+                        e.preventDefault();
+                        selectedItem.publish('edit', selectedItem);
+                    }
+                    break;
+            }
+        }
     });
 
     return that;
@@ -1604,7 +1635,6 @@ this.createCRUD = function (fig) {
     var selectedCallback = function (itemController) {
         listController.setSelected(itemController);
         if(!readOnly) {
-            //formController.open();
             setForm(itemController.model);
         }
     };
@@ -1618,7 +1648,6 @@ this.createCRUD = function (fig) {
         options = options || {};
         var itemController = createListItemController({
             model: model,
-            // schema: schema,
             schema: viewSchema,
             template: listItemTemplate
         });
@@ -1712,6 +1741,7 @@ this.createCRUD = function (fig) {
             name: name,
             id: id,
             deletable: deletable,
+            readOnly: readOnly,
             orderable: orderable,
             uniqueID: generateUniqueID
         }) : createListTemplate(viewSchema, name, id, deletable);
@@ -1721,7 +1751,7 @@ this.createCRUD = function (fig) {
             schema: viewSchema,
             id: id,
             deletable: deletable
-        }) : createListItemTemplate(viewSchema, id, deletable);
+        }) : createListItemTemplate(viewSchema, id, deletable, readOnly);
 
     var paginatorTemplate = fig.createPaginatorTemplate ?
         fig.createPaginatorTemplate() : createPaginatorTemplate();

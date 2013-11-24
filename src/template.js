@@ -175,27 +175,13 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
 var createListItemTemplate = function (schema, id, deletable, readOnly) {
     return '' +
     (
-        deletable || readOnly ?
+        deletable || !readOnly ?
         '<td>' +
             (deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
             (readOnly ? '' : '<input type="button" class="crud-edit-button" value="Edit"/>') +
         '</td>' : ''
     ) +
-    // (
-    //     deletable ?
-    //         '<td>' +
-    //             '<input type="checkbox" class="crud-list-selected"/>' +
-    //             '<input type="button" class="crud-edit-button" value="Edit"/>' +
-    //         '</td>' : ''
-    // ) +
-    (function () {
-        if(id) {
-            return '<td name="id">{{id}}</td>';
-        }
-        else {
-            return '';
-        }
-    }()) +
+    (id ? '<td name="id">{{id}}</td>' : '') +
     reduce(schema, function (acc, item) {
         return (acc || '') +
         '<td name="' + item.name + '">{{' + item.name + '}}</td>';
