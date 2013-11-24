@@ -357,5 +357,37 @@ this.createCRUD = function (fig) {
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);
 
+
+    $(document).keydown(function (e) {
+        if(listController.$().is(':hover') || paginatorController.$().is(':hover')) {
+            switch(e.keyCode) {
+                case 37: //left arrow key
+                    e.preventDefault();
+                    paginatorController.setPreviousPage();
+                    break;
+                case 38: //up arrow key
+                    e.preventDefault();
+                    listController.setPreviousSelected();
+                    break;
+                case 39: //right arrow key
+                    e.preventDefault();
+                    paginatorController.setNextPage();
+                    break;
+                case 40: //down arrow key
+                    e.preventDefault();
+                    listController.setNextSelected();
+                    break;
+                case 13: //enter key
+                    if(listController.selectedItem) {
+                        e.preventDefault();
+                        listController.selectedItem.publish(
+                            'edit', listController.selectedItem
+                        );
+                    }
+                    break;
+            }
+        }
+    });
+
     return that;
 };

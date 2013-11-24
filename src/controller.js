@@ -269,23 +269,9 @@ var createListController = function (fig) {
                 that.orderModel.toggle($(this).data('name'));
             });
             that.publish('bind');
-        },
-
-        setNextSelected = function () {
-            var selectedIndex = items.indexOf(selectedItem);
-            if(selectedIndex !== -1 && selectedIndex + 1 < items.length) {
-                var controller = items[selectedIndex + 1];
-                controller.publish('selected', controller);
-            }
-        },
-
-        setPreviousSelected = function () {
-            var selectedIndex = items.indexOf(selectedItem);
-            if(selectedIndex > 0) {
-                var controller = items[selectedIndex - 1];
-                controller.publish('selected', controller);
-            }
         };
+
+
 
     $('body').prepend(Mustache.render(deleteConfirmationTemplate));
     bindDeleteConfirmation();
@@ -336,7 +322,23 @@ var createListController = function (fig) {
         if(selectedItemController) {
             selectedItemController.select();
         }
-        selectedItem = selectedItemController;
+        that.selectedItem = selectedItemController;
+    };
+
+    that.setNextSelected = function () {
+        var selectedIndex = items.indexOf(that.selectedItem || items[0]);
+        if(selectedIndex !== -1 && selectedIndex + 1 < items.length) {
+            var controller = items[selectedIndex + 1];
+            controller.publish('selected', controller);
+        }
+    };
+
+    that.setPreviousSelected = function () {
+        var selectedIndex = items.indexOf(that.selectedItem || items[1]);
+        if(selectedIndex > 0) {
+            var controller = items[selectedIndex - 1];
+            controller.publish('selected', controller);
+        }
     };
 
     that.setSelectAll = function (isSelected) {
@@ -378,27 +380,7 @@ var createListController = function (fig) {
         );
     });
 
-    $(document).keydown(function (e) {
-        //e.preventDefault();
-        if(that.$().is(':hover')) {
-            switch(e.keyCode) {
-                case 38: //up arrow key
-                    e.preventDefault();
-                    setPreviousSelected();
-                    break;
-                case 40: //down arrow key
-                    e.preventDefault();
-                    setNextSelected();
-                    break;
-                case 13: //enter key
-                    if(selectedItem) {
-                        e.preventDefault();
-                        selectedItem.publish('edit', selectedItem);
-                    }
-                    break;
-            }
-        }
-    });
+
 
     return that;
 };
@@ -459,6 +441,20 @@ var createPaginatorController = function (fig) {
     that.setPage = function (pageNumber) {
         that.model.set({ pageNumber: pageNumber });
     };
+
+    that.setNextPage = throttle(300, function () {
+        var currentPage = that.model.get('pageNumber');
+        if(currentPage + 1 <= that.model.get('numberOfPages')) {
+            that.setPage(currentPage + 1);
+        }
+    });
+
+    that.setPreviousPage = throttle(300, function () {
+        var currentPage = that.model.get('pageNumber');
+        if(currentPage > 1) {
+            that.setPage(currentPage - 1);
+        }
+    });
 
     //determines how many page list items to render based on width of the list
     //template by default.

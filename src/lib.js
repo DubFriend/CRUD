@@ -174,6 +174,21 @@ var union = function () {
     return united;
 };
 
+//execute callback immediately and at most one time on the minimumInterval,
+//ignore block attempts
+var throttle = function (minimumInterval, callback) {
+    var timeout = null;
+    return function () {
+        var that = this, args = arguments;
+        if(timeout === null) {
+            timeout = setTimeout(function () {
+                timeout = null;
+            }, minimumInterval);
+            callback.apply(that, args);
+        }
+    };
+};
+
 //execute callback at most one time on the minimumInterval
 var debounce = function (minimumInterval, callback, isImmediate) {
     var timeout = null;
