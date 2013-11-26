@@ -1,5 +1,5 @@
 // crud version 0.3.2
-// (MIT) 23-11-2013
+// (MIT) 26-11-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -533,6 +533,7 @@ var createRequestModel = function () {
 
     return that;
 };
+
 var createInput = function (fig) {
 
     var item = fig.item;
@@ -710,7 +711,7 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
 var createListItemTemplate = function (schema, id, deletable, readOnly) {
     return '' +
     (
-        deletable || !readOnly ?
+        !readOnly ?
         '<td>' +
             (deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
             (readOnly ? '' : '<input type="button" class="crud-edit-button" value="Edit"/>') +
@@ -750,18 +751,21 @@ var orderable = function (name) {
     '{{/orderable.' + name + '}}';
 };
 
-var createListTemplate = function (schema, crudName, id, deletable) {
+var createListTemplate = function (schema, crudName, id, deletable, readOnly) {
     var ID = generateUniqueID();
     return '' +
     '<table>' +
         '<thead>' +
             '<tr>' +
                 (
-                    deletable ?
+                    !readOnly  ?
                     '<th>' +
-                        '<label for="' + ID + '-crud-list-select-all">All</label>' +
-                        '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
-                               'class="crud-list-select-all"/>' +
+                        (
+                            deletable ?
+                            '<label for="' + ID + '-crud-list-select-all">All</label>' +
+                            '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
+                               'class="crud-list-select-all"/>': ''
+                        ) +
                     '</th>' : ''
                 ) +
                 (
@@ -1222,8 +1226,6 @@ var createListController = function (fig) {
             '</span>'
         );
     });
-
-
 
     return that;
 };
@@ -1755,13 +1757,14 @@ this.createCRUD = function (fig) {
             readOnly: readOnly,
             orderable: orderable,
             uniqueID: generateUniqueID
-        }) : createListTemplate(viewSchema, name, id, deletable);
+        }) : createListTemplate(viewSchema, name, id, deletable, readOnly);
 
     var listItemTemplate = fig.createListItemTemplate ?
         fig.createListItemTemplate.apply({
             schema: viewSchema,
             id: id,
-            deletable: deletable
+            deletable: deletable,
+            readOnly: readOnly
         }) : createListItemTemplate(viewSchema, id, deletable, readOnly);
 
     var paginatorTemplate = fig.createPaginatorTemplate ?
@@ -1849,7 +1852,6 @@ this.createCRUD = function (fig) {
         filterController = createFilterController({
             el: '#' + name + '-crud-filter-container',
             model: filterModel,
-            //filterSchema: filterSchema,
             filterSchema: viewFilterSchema,
 
             isInstantFilter: isInstantFilter,
@@ -1864,10 +1866,6 @@ this.createCRUD = function (fig) {
 
     var formTemplate, formController;
     if(!readOnly) {
-
-        // $('body').prepend(
-        //     '<div id="' + name + '-crud-container" class="crud-form-modal modal"></div>'
-        // );
 
         $('#' + name + '-crud-new').html(
             fig.newButtonHTML || '<button>Create New ' + name + '</button>'
@@ -1905,6 +1903,13 @@ this.createCRUD = function (fig) {
 
         paginatorModel.subscribe('change', newItem);
     }
+    else {
+        //null form Controller
+        formController = {
+            open: function () {},
+            close: function () {}
+        };
+    }
 
 
 
@@ -1929,12 +1934,13 @@ this.createCRUD = function (fig) {
     //kicks off an ajax load event, rendering the paginator, list items, and form
     paginatorController.setPage(1);
 
-
+    //keybindings for list navigation only if mouse is hovering over the list or paginator.
     $(document).keydown(function (e) {
         if(listController.$().is(':hover') || paginatorController.$().is(':hover')) {
             switch(e.keyCode) {
                 case 37: //left arrow key
                     e.preventDefault();
+                    formController.close();
                     paginatorController.setPreviousPage();
                     break;
                 case 38: //up arrow key
@@ -1943,6 +1949,7 @@ this.createCRUD = function (fig) {
                     break;
                 case 39: //right arrow key
                     e.preventDefault();
+                    formController.close();
                     paginatorController.setNextPage();
                     break;
                 case 40: //down arrow key

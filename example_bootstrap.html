@@ -44,26 +44,14 @@
     }
 
     legend span {
-       /* position: relative;
-        -moz-transition:width 0.3s ease, background-color 0.3s ease;
-        -webkit-transition:width 0.3s ease, background-color 0.3s ease;
-        -o-transition:width 0.3s ease, background-color 0.3s ease;
-        transition:width 0.3s ease, background-color 0.3s ease;*/
         background-color: rgba(94, 169, 235, 0.5);
         width: 130px;
     }
 
-
     legend span.crud-status-edit {
-        /*position: relative;
-        -moz-transition:width 0.3s ease, background-color 0.3s ease;
-        -webkit-transition:width 0.3s ease, background-color 0.3s ease;
-        -o-transition:width 0.3s ease, background-color 0.3s ease;
-        transition:width 0.3s ease, background-color 0.3s ease;*/
         background-color: rgba(107, 221, 107, 0.5);
         width: 130px;
     }
-
 
     .crud-pages {
         display:block;
@@ -100,20 +88,6 @@
         top: 1px;
         margin: 0.7em 0.3em 0 0.3em;
     }
-
-    /*.modal {
-        overflow: hidden;
-    }
-
-    .crud-delete-modal {
-        height: 125px;
-        width: 250px;
-    }
-
-    .crud-form-modal {
-        height: 410px;
-        width: 600px;
-    }*/
 
     .btn {
         margin: 0.2em;
@@ -166,7 +140,6 @@
 <script src="lib/jquery-1.10.2.js"></script>
 <script src="bootstrap/js/bootstrap.min.js"></script>
 <script src="lib/mustache.js"></script>
-<!-- <script src="jquery-modal/jquery.modal.js"></script> -->
 <script src="crud.js"></script>
 <script>
 $(document).ready(function () {
@@ -383,11 +356,14 @@ $(document).ready(function () {
                 '<thead>' +
                     '<tr>' +
                         (
-                            that.deletable ?
+                            !that.readOnly ?
                             '<th>' +
-                                '<label for="' + ID + '-crud-list-select-all">All</label>' +
-                                '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
-                                       'class="crud-list-select-all"/>' +
+                                (
+                                    that.deletable ?
+                                        '<label for="' + ID + '-crud-list-select-all">All</label>' +
+                                        '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
+                                        'class="crud-list-select-all"/>' : ''
+                                ) +
                             '</th>' : ''
                         ) +
                         (
@@ -419,8 +395,12 @@ $(document).ready(function () {
         createListItemTemplate: function () {
             var that = this;
             return '' +
-            (that.deletable ?
-                '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
+            (
+             !that.readOnly ?
+                '<td>' +
+                (that.deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
+                '<input type="button" class="crud-edit-button pull-right btn btn-default btn-xs" value="Edit"/>' +
+                '</td>' : ''
             ) +
             (that.id ? '<td>{{id}}</td>' : '') +
             reduce(that.schema, function (acc, item) {
@@ -472,31 +452,17 @@ $(document).ready(function () {
                     '</div><!-- /.modal-content -->' +
                 '</div><!-- /.modal-dialog -->' +
             '</div><!-- /.modal -->';
-
-
-            // return '' +
-            // '<div class="crud-delete-modal modal">' +
-            //     '<center>' +
-            //         '<p>Sure you want to delete the checked items?</p>' +
-                    // '<button class="crud-confirm-delete btn btn-danger">' +
-                    //     'Delete' +
-                    // '</button>' +
-                    // '<button class="crud-cancel-delete btn">' +
-                    //     'Cancel' +
-                    // '</button>' +
-            //     '</center>' +
-            // '</div>';
         }
     });
 
-    var debugSubscribe = function (eventName) {
-        crud.subscribe(eventName, function () {
-            console.log(eventName);
-        });
-    };
+    // var debugSubscribe = function (eventName) {
+    //     crud.subscribe(eventName, function () {
+    //         console.log(eventName);
+    //     });
+    // };
 
-    debugSubscribe('paginator:waiting:start');
-    debugSubscribe('paginator:waiting:end');
+    // debugSubscribe('paginator:waiting:start');
+    // debugSubscribe('paginator:waiting:end');
 
 });
 </script>

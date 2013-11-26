@@ -380,8 +380,6 @@ var createListController = function (fig) {
         );
     });
 
-
-
     return that;
 };
 

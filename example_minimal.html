@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>CRUD</title>
@@ -94,34 +95,17 @@
             background-color: pink;
         }
 
-        #thing-crud-container {
-            width: 50%;
-            float: left;
-        }
-
-        .table-column {
-            width: 50%;
-            float: left;
-        }
-
         .crud-goto-page-form {
-            /*width: 220px;*/
             float: right;
         }
 
         .crud-goto-page-form .number-of-pages {
-            /*width: 120px;*/
             padding: 0.5em;
             position: relative;
             top: 2px;
         }
 
-        .crud-goto-page-form input[type="text"] {
-            /*width: 58px;*/
-        }
-
         .crud-goto-page-form input[type="submit"] {
-            /*width: 40px;*/
             padding: 1px;
             margin: 0;
         }
@@ -154,237 +138,262 @@
     <link rel="stylesheet" type="text/css" href="jquery-modal/jquery.modal.css">
 </head>
 <body>
-    <h1>CRUD</h1>
+<h1>CRUD</h1>
 
-    <div id="Thing-crud-filter-container"></div>
-    <div id="Thing-crud-container"></div>
-    <div class="table-column">
-        <div id="Thing-crud-paginator-nav"></div>
-        <div id="Thing-crud-list-container"></div>
-    </div>
+<div id="Thing-crud-container" class="modal"></div>
+<div id="Thing-crud-new"></div>
+<div id="Thing-crud-filter-container"></div>
+<div id="Thing-crud-paginator-nav"></div>
+<div id="Thing-crud-list-container"></div>
 
-    <script src="lib/jquery-1.10.2.js"></script>
-    <script src="lib/mustache.js"></script>
-    <script src="jquery-modal/jquery.modal.js"></script>
-    <script src="crud.js"></script>
-    <script>
+<script src="lib/jquery-1.10.2.js"></script>
+<script src="lib/mustache.js"></script>
+<script src="jquery-modal/jquery.modal.js"></script>
+<script src="crud.js"></script>
+<script>
+$(document).ready(function () {
+    'use strict';
 
-        //utility function to help with building html strings from objects.
-        var reduce = function (collection, callback) {
-            var accumulation, key;
-            for(key in collection) {
-                if(collection.hasOwnProperty(key)) {
-                    accumulation = callback(accumulation, collection[key], key, collection);
-                }
+    //utility function to help with building html strings from objects.
+    var reduce = function (collection, callback) {
+        var accumulation, key;
+        for(key in collection) {
+            if(collection.hasOwnProperty(key)) {
+                accumulation = callback(accumulation, collection[key], key, collection);
             }
-            return accumulation;
-        };
+        }
+        return accumulation;
+    };
 
-        createCRUD({
-            name: 'Thing',
-            url: 'crud.php',
-            validate: function (data) {
-                var error = {};
-                if(data.text !== 'default') {
-                    error.text = 'text error';
-                }
-                return error;
-            },
-
-            //deletable: false,
-
-            id: {
-                orderable: true,
-                order: 'ascending',
-                label: 'id label'
-            },
-
-            schema: [
-                {
-                    name: 'text',
-                    label: 'label yo',
-                    type: 'text',
-                    value: 'default'
-                },
-                {
-                    name: 'textarea',
-                    type: 'textarea',
-                    orderable: true,
-                    order: 'ascending'
-                },
-                {
-                    name: 'fruit',
-                    type: 'checkbox',
-                    values: ['apple', 'orange'],
-                    value: ['apple', 'orange']
-                },
-                {
-                    name: 'letter',
-                    type: 'radio',
-                    values: ['a', 'b', 'c', 'd'],
-                    value: 'c',
-                    orderable: true
-                },
-                {
-                    name: 'awesome',
-                    type: 'select',
-                    values: ['1', '2', '3']
-                }
-            ],
-
-            instantFilter: true,
-            filterSchema: [
-                {
-                    name: "Maximum_Awesome",
-                    label: "Select Maximum Awesome",
-                    type: 'select',
-                    values: ['1', '2', '3'],
-                    value: '3'
-                },
-                {
-                    name: "Search_Textarea",
-                    type: 'text'
-                },
-                {
-                    name: "fruit",
-                    type: 'checkbox',
-                    values: ['apple', 'orange']
-                }
-            ],
-
-            createFormTemplate: function () {
-                var that = this;
-                var ID = that.uniqueID();
-                return '' +
-                '<form>' +
-                    '<legend>Custom ' + that.name + '</legend>' +
-                    '<p>{{status}}</p>' +
-                    reduce(that.schema, function (acc,item) {
-                        return (acc || '') +
-                        '<label for="' + ID + '-' + that.name + '-' + item.name + '">' +
-                            (item.label || item.name) +
-                        '</label>' +
-                        that.createInput({
-                            item: item,
-                            name: that.name,
-                            class: 'foo',
-                            ID: ID
-                        }) +
-                        '{{' + item.name + 'Help}}';
-                    }) +
-                    '<input type="submit" value="Save"/>' +
-                    '<button class="crud-new-item">' +
-                        'New ' + that.name +
-                    '</button>' +
-                '</form>';
-            },
-
-            createFilterTemplate: function () {
-                var that = this;
-                var ID = that.uniqueID();
-                return '' +
-                '<form>' +
-                    '<legend>Custom Search ' + that.name + '</legend>' +
-                    reduce(that.filterSchema, function (acc, item) {
-                        return (acc || '') +
-                        '<label for="' + ID + '-' + that.name + '-' + item.name + '">' +
-                            (item.label || item.name) +
-                        '</label>' +
-                        that.createInput({
-                            item: item,
-                            name: that.name,
-                            class: 'foo',
-                            ID: ID
-                        });
-                    }) +
-                    (
-                        that.isInstantFilter ?
-                            '' : '<input type="submit" value="Search"/>'
-                    ) +
-                '</form>';
-            },
-
-            createListTemplate: function () {
-                var that = this;
-                var ID = that.uniqueID();
-                return '' +
-                '<table>' +
-                    '<thead>' +
-                        '<tr>' +
-                            (
-                                that.deletable ?
-                                '<th>' +
-                                    '<label for="' + ID + '-crud-list-select-all">All</label>' +
-                                    '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
-                                           'class="crud-list-select-all"/>' +
-                                '</th>' : ''
-                            ) +
-                            (
-                                that.id ?
-                                '<th>' +
-                                    that.orderable('id') +
-                                    '<span class="crud-th-content">' +
-                                        (that.id.label || 'id') +
-                                    '</span>' +
-                                '</th>' : ''
-                            ) +
-
-                            reduce(that.schema, function (acc, item) {
-                                return (acc || '') +
-                                '<th>' +
-                                    that.orderable(item.name) +
-                                    (item.label || item.name) +
-                                '</th>';
-                            }) +
-                        '</tr>' +
-                    '</thead>' +
-                    '<tbody class="crud-list-item-container"></tbody>' +
-                '</table>' +
-                (that.deletable ?
-                    '<button class="crud-delete-selected">' +
-                        'Delete Selected' +
-                    '</button>' : '');
-            },
-
-            createListItemTemplate: function () {
-                var that = this;
-                return '' +
-                (that.deletable ?
-                    '<td><input type="checkbox" class="crud-list-selected"/></td>' : ''
-                ) +
-                (that.id ? '<td>{{id}}</td>' : '') +
-                reduce(that.schema, function (acc, item) {
-                    return (acc || '') + '<td>{{' + item.name + '}}</td>';
-                });
-            },
-
-            createPaginatorTemplate: function () {
-                return '' +
-                '<ol class="crud-pages">' +
-                    '{{#pages}}' +
-                        '<li><a data-page-number="{{.}}" href="#">{{.}}</a></li>' +
-                    '{{/pages}}' +
-                '</ol>' +
-                '<form class="crud-goto-page-form">' +
-                    '{{numberOfPages}}' +
-                    '<input type="text" name="goto-page"/>' +
-                    '<input type="submit" value="Go"/>' +
-                '</form>';
-            },
-
-            createDeleteConfirmationTemplate: function () {
-                return '' +
-                '<div class="crud-delete-modal modal">' +
-                    'Sure you want to delete?' +
-                    '<button class="crud-confirm-delete">' +
-                        'Delete' +
-                    '</button>' +
-                    '<button class="crud-cancel-delete">' +
-                        'Cancel' +
-                    '</button>' +
-                '</div>';
-            }
+    var reduceSchemaToForm = function (fig) {
+        return reduce(fig.schema, function (acc, item) {
+            return (acc || '') +
+                '<label for="' + fig.ID + '-' + fig.name + '-' + item.name + '">' +
+                    (item.label || item.name) +
+                '</label>' +
+                fig.createInput({
+                    item: item,
+                    name: fig.name,
+                    ID: fig.ID
+                }) +
+                '{{' + item.name + 'Help}}';
         });
-    </script>
+    };
+
+    createCRUD({
+        name: 'Thing',
+        url: 'crud.php',
+        validate: function (data) {
+            var error = {};
+            if(data.text !== 'default') {
+                error.text = 'text error';
+            }
+            return error;
+        },
+
+        //deletable: false,
+        //readOnly: true,
+
+        id: {
+            orderable: true,
+            order: 'ascending',
+            label: 'id'
+        },
+
+        schema: [
+            {
+                name: 'text',
+                label: 'label yo',
+                type: 'text',
+                value: 'default'
+            },
+            {
+                name: 'textarea',
+                type: 'textarea',
+                orderable: true,
+                order: 'ascending'
+            },
+            {
+                name: 'fruit',
+                type: 'checkbox',
+                values: [
+                    { value: 'apple', label: 'La Pomme' },
+                    { value: 'orange', label: 'L\'Orange' }
+                ],
+                value: ['orange']
+            },
+            {
+                name: 'letter',
+                type: 'radio',
+                values: [
+                    { value: 'a', label: 'A' },
+                    { value: 'b' },
+                    { value: 'c' },
+                    { value: 'd', label: 'D' }
+                ],
+                value: 'b',
+                orderable: true
+            },
+            {
+                name: 'awesome',
+                type: 'select',
+                values: [
+                    { value: '1', label: 'One' },
+                    { value: '2', label: 'Two' },
+                    { value: '3', label: 'Three' }
+                ]
+            }
+        ],
+
+        instantFilter: true,
+        filterSchema: [
+            {
+                name: "Maximum_Awesome",
+                label: "Awesome",
+                type: 'select',
+                values: [
+                    { value: '1', label: '<= One' },
+                    { value: '2', label: '<= Two' },
+                    { value: '3', label: '<= Three' }
+                ],
+                value: '3'
+            },
+            {
+                name: "Search_Textarea",
+                label: "Textarea",
+                type: 'text'
+            },
+            {
+                name: "fruit",
+                type: 'checkbox',
+                values: [
+                    { value: 'apple', label: 'pomme' },
+                    { value: 'orange' }
+                ]
+            }
+        ],
+
+        //newButtonHTML:,
+
+        createFormTemplate: function () {
+            var that = this;
+            var ID = that.uniqueID();
+            return '' +
+            '<form>' +
+                '<legend>' + that.name + '</legend>' +
+                '<p>{{status}}</p>' +
+                reduceSchemaToForm({
+                    schema: that.schema,
+                    createInput: that.createInput,
+                    ID: ID
+                }) +
+                '<input type="submit" value="Save"/>' +
+                '<button class="crud-close-form">Close</button>' +
+            '</form>';
+        },
+
+        createFilterTemplate: function () {
+            var that = this;
+            var ID = that.uniqueID();
+            return '' +
+            '<form>' +
+                '<legend>Custom Search ' + that.name + '</legend>' +
+                reduceSchemaToForm({
+                    schema: that.filterSchema,
+                    createInput: that.createInput,
+                    ID: ID
+                }) +
+                (
+                    that.isInstantFilter ?
+                        '' : '<input type="submit" value="Search"/>'
+                ) +
+            '</form>';
+        },
+
+        createListTemplate: function () {
+            var that = this;
+            var ID = that.uniqueID();
+            return '' +
+            '<table>' +
+                '<thead>' +
+                    '<tr>' +
+                        (
+                            !that.readOnly ?
+                            '<th>' +
+                                (
+                                    that.deletable ?
+                                        '<label for="' + ID + '-crud-list-select-all">All</label>' +
+                                        '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
+                                        'class="crud-list-select-all"/>' : ''
+                                ) +
+                            '</th>' : ''
+                        ) +
+                        (
+                            that.id ?
+                            '<th>' +
+                                that.orderable('id') +
+                                '<span class="crud-th-content">' +
+                                    (that.id.label || 'id') +
+                                '</span>' +
+                            '</th>' : ''
+                        ) +
+                        reduce(that.schema, function (acc, item) {
+                            return (acc || '') +
+                            '<th>' +
+                                that.orderable(item.name) +
+                                (item.label || item.name) +
+                            '</th>';
+                        }) +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody class="crud-list-item-container"></tbody>' +
+            '</table>' +
+            (that.deletable ?
+                '<button class="crud-delete-selected">' +
+                    'Delete Selected' +
+                '</button>' : '');
+        },
+
+        createListItemTemplate: function () {
+            var that = this;
+            return '' +
+            (
+             !that.readOnly ?
+                '<td>' +
+                    (that.deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
+                    '<input type="button" class="crud-edit-button" value="Edit"/>' +
+                '</td>' : ''
+            ) +
+            (that.id ? '<td>{{id}}</td>' : '') +
+            reduce(that.schema, function (acc, item) {
+                return (acc || '') + '<td>{{' + item.name + '}}</td>';
+            });
+        },
+
+        createPaginatorTemplate: function () {
+            return '' +
+            '<ol class="crud-pages">' +
+                '{{#pages}}' +
+                    '<li><a data-page-number="{{.}}" href="#">{{.}}</a></li>' +
+                '{{/pages}}' +
+            '</ol>' +
+            '<form class="crud-goto-page-form">' +
+                '{{numberOfPages}}' +
+                '<input type="text" name="goto-page"/>' +
+                '<input type="submit" value="Go"/>' +
+            '</form>';
+        },
+
+        createDeleteConfirmationTemplate: function () {
+            return '' +
+            '<div class="crud-delete-modal modal">' +
+                'Sure you want to delete?' +
+                '<button class="crud-confirm-delete">Delete</button>' +
+                '<button class="crud-cancel-delete">Cancel</button>' +
+            '</div>';
+        }
+    });
+});
+</script>
 </body>
 </html>

@@ -175,7 +175,7 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
 var createListItemTemplate = function (schema, id, deletable, readOnly) {
     return '' +
     (
-        deletable || !readOnly ?
+        !readOnly ?
         '<td>' +
             (deletable ? '<input type="checkbox" class="crud-list-selected"/>' : '') +
             (readOnly ? '' : '<input type="button" class="crud-edit-button" value="Edit"/>') +
@@ -215,18 +215,21 @@ var orderable = function (name) {
     '{{/orderable.' + name + '}}';
 };
 
-var createListTemplate = function (schema, crudName, id, deletable) {
+var createListTemplate = function (schema, crudName, id, deletable, readOnly) {
     var ID = generateUniqueID();
     return '' +
     '<table>' +
         '<thead>' +
             '<tr>' +
                 (
-                    deletable ?
+                    !readOnly  ?
                     '<th>' +
-                        '<label for="' + ID + '-crud-list-select-all">All</label>' +
-                        '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
-                               'class="crud-list-select-all"/>' +
+                        (
+                            deletable ?
+                            '<label for="' + ID + '-crud-list-select-all">All</label>' +
+                            '<input type="checkbox" id="' + ID + '-crud-list-select-all" ' +
+                               'class="crud-list-select-all"/>': ''
+                        ) +
                     '</th>' : ''
                 ) +
                 (
