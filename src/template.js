@@ -1,13 +1,9 @@
 var createInput = function (fig) {
 
     var item = fig.item;
-
     var name = item.name;
-
     var crudName = fig.name;
-
     var className = fig.class || '';
-
     var ID = fig.ID ? fig.ID + '-' : generateUniqueID() + '-';
 
     var input = function (checked, value) {
@@ -136,6 +132,28 @@ var createFormTemplate = function (schema, crudName) {
         '</fieldset>' +
     '</form>';
 };
+
+
+var createFormListTemplate = function (schema, crudName, deletable) {
+    return '' +
+    '<form>' +
+        '<fieldset>' +
+            '<legend>' + crudName + '</legend>' +
+            '<span class="crud-status">{{status}}</span>' +
+            reduceFormSchema(schema, crudName) +
+            '<div class="crud-control-set">' +
+                '<label>&nbsp;</label>' +
+                '<div class="crud-input-group">' +
+                    '<input type="submit" value="Save"/>' +
+                    (deletable ? '<button class="crud-delete">Delete</button>' : '') +
+                '</div>' +
+            '</div>' +
+        '</fieldset>' +
+    '</form>';
+};
+
+
+
 
 // ########  ####  ##        ########  ########  ########
 // ##         ##   ##           ##     ##        ##     ##

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CRUD formList</title>
+
+<style>
+    body {
+       font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+       font-weight: 300;
+    }
+
+    .error {
+        color: red;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>CRUD formList</h1>
+<hr/>
+
+<div id="Thing-crud-new"></div>
+<div id="Thing-crud-form-list"></div>
+
+<script src="lib/jquery-1.10.2.js"></script>
+<script src="lib/mustache.js"></script>
+<!-- <script src="crud.js"></script> -->
+<script src="src/lib.js"></script>
+<script src="src/model.js"></script>
+<script src="src/template.js"></script>
+<script src="src/controller.js"></script>
+<script src="src/crud.js"></script>
+
+<script>
+$(document).ready(function () {
+    'use strict';
+
+    CRUD.formList({
+        name: 'Thing',
+        url: 'crud.php',
+        validate: function (data) {
+            var error = {};
+            if(data.text.length < 3) {
+                error.text = '3 character minimum';
+            }
+            return error;
+        },
+
+        //deletable: false,
+        //readOnly: true,
+
+        schema: [
+            {
+                name: 'text',
+                label: 'label yo',
+                type: 'text',
+                value: 'default'
+            },
+            {
+                name: 'textarea',
+                type: 'textarea',
+                orderable: true,
+                order: 'ascending'
+            },
+            {
+                name: 'fruit',
+                type: 'checkbox',
+                values: [
+                    { value: 'apple', label: 'La Pomme' },
+                    { value: 'orange', label: 'L\'Orange' }
+                ],
+                value: ['orange']
+            },
+            {
+                name: 'letter',
+                type: 'radio',
+                values: [
+                    { value: 'a', label: 'A' },
+                    { value: 'b' },
+                    { value: 'c' },
+                    { value: 'd', label: 'D' }
+                ],
+                value: 'b',
+                orderable: true
+            },
+            {
+                name: 'awesome',
+                type: 'select',
+                values: [
+                    { value: '1', label: 'One' },
+                    { value: '2', label: 'Two' },
+                    { value: '3', label: 'Three' }
+                ]
+            }
+        ]
+    });
+});
+</script>
+</body>
+</html>

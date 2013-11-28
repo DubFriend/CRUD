@@ -47,7 +47,7 @@ require 'sequel.php';
 $sql = new Sequel(new PDO(
     'mysql:dbname=crud_demo;host=localhost',
     'root',
-    'P0l.ar-B3ar'
+    'password'
 ));
 
 function getID() {

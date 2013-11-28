@@ -624,12 +624,14 @@ var createFilterController = function (fig) {
 // ##        ##     ##  ##    ##   ##     ##
 // ##         #######   ##     ##  ##     ##
 
-var createFormController = function (fig) {
+var createFormController = function (fig, my) {
     fig = fig || {};
+    my = my || {};
+
     fig.model = fig.model || fig.createDefaultModel();
 
     var that = createController(fig),
-        isOpen = false,
+        //isOpen = false,
         modal = fig.modal;
 
     that.serialize = function () {
@@ -644,7 +646,8 @@ var createFormController = function (fig) {
         modal.close(that.$());
     };
 
-    var bind = function () {
+    // var bind = function () {
+    my.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {
             e.preventDefault();
@@ -661,7 +664,7 @@ var createFormController = function (fig) {
         that.publish('bind');
     };
 
-    bind();
+    my.bind();
 
     var setNewModelVisibility = function () {
         if(that.model.isNew()) {
@@ -680,7 +683,7 @@ var createFormController = function (fig) {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
         setNewModelVisibility();
-        bind();
+        my.bind();
     };
 
     var parentRenderNoError = that.renderNoError;
@@ -690,7 +693,7 @@ var createFormController = function (fig) {
         });
         that.$('.crud-new-item').hide();
         setNewModelVisibility();
-        bind();
+        my.bind();
     };
 
     that.setModel = (function () {
@@ -721,6 +724,25 @@ var createFormController = function (fig) {
             }
         };
     }());
+
+    return that;
+};
+
+//extension of formController (only minor changes needed)
+var createFormListController = function (fig) {
+    var my = {};
+    var that = createFormController(fig, my);
+
+    var parentBind = my.bind;
+    my.bind = function () {
+        that.$('.crud-delete').unbind();
+        that.$('.crud-delete').click(function (e) {
+            e.preventDefault();
+            that.model.delete();
+            //that.close();
+        });
+        parentBind();
+    };
 
     return that;
 };
