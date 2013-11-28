@@ -23,7 +23,7 @@ function getRandomName($names, $numberOfNames = null) {
 $sql = new Sequel(new PDO(
     'mysql:dbname=crud_demo;host=localhost',
     'root',
-    'P0l.ar-B3ar'
+    'password'
 ));
 
 for($i = 0; $i < NUMBER_OF_ROWS_TO_GENERATE; $i += 1) {
