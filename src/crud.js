@@ -42,6 +42,21 @@ var createDefaultModelBase = function (that, data, id) {
     });
 };
 
+var defaultModal = {
+    open: function ($elem) {
+        $elem.modal({
+            fadeDuration: 200,
+            fadeDelay: 0,
+            showClose: false
+        });
+    },
+    close: function ($elem) {
+        //this particular implementation doesnt use
+        //$elem here, but others might
+        $.modal.close();
+    }
+};
+
 return {
     full: function (fig) {
         fig = fig || {};
@@ -53,20 +68,7 @@ return {
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
-            modal = fig.modal || {
-                open: function ($elem) {
-                    $elem.modal({
-                        fadeDuration: 200,
-                        fadeDelay: 0,
-                        showClose: false
-                    });
-                },
-                close: function ($elem) {
-                    //this particular implementation doesnt use
-                    //$elem here, but others might
-                    $.modal.close();
-                }
-            },
+            modal = fig.modal || defaultModal,
 
             // setEmptyCheckboxes = function (item) {
             //     if(item.type === 'checkbox') {
@@ -463,7 +465,8 @@ return {
                 validate: validate
             }),
             formListTemplate,
-            formController;
+            formController,
+            modal = fig.modal || defaultModal;
 
 
 
@@ -491,10 +494,7 @@ return {
                 //null modal (not needed for the formList)
                 //maybe this could be repurposed for some sort of accordian
                 //animation, etc?
-                modal: {
-                    open: function () {},
-                    close: function () {}
-                },
+                modal: modal,
                 createDefaultModel: function() {
                     return bindModel(createDefaultModel());
                 },

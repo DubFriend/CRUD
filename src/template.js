@@ -136,6 +136,8 @@ var createFormTemplate = function (schema, crudName) {
 
 var createFormListTemplate = function (schema, crudName, deletable) {
     return '' +
+    //each form list template gets its own delete confirmation template
+    createDeleteConfirmationTemplate() +
     '<form>' +
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
