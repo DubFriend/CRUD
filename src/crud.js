@@ -387,8 +387,6 @@ return {
             };
         }
 
-
-
         requestModel.init({
             url: url,
             paginatorModel: paginatorModel,
@@ -491,11 +489,11 @@ return {
             return model;
         };
 
-        var newItem = function () {
+        var newItem = function (model) {
             var elID = name + '-crud-item-' + generateUniqueID()
             $('#' + name + '-crud-form-list').prepend('<div id="' + elID + '"></div>');
 
-            var model = createDefaultModel();
+            model = model || createDefaultModel();
 
             var controller = createFormListController({
                 el: '#' + elID,
@@ -520,7 +518,9 @@ return {
             fig.newButtonHTML || '<button>Create New ' + name + '</button>'
         );
 
-        $('#' + name + '-crud-new').find('button').click(newItem);
+        $('#' + name + '-crud-new').find('button').click(function () {
+            newItem();
+        });
 
         formListTemplate = fig.createFormListTemplate ?
             fig.createFormListTemplate.apply({
@@ -530,6 +530,29 @@ return {
                 uniqueID: generateUniqueID,
                 deletable: deletable
             }) : createFormListTemplate(viewSchema, name, deletable);
+
+
+        $.ajax({
+            method: 'GET',
+            url: url,
+            dataType: 'json',
+            success: function (response) {
+                console.log('ajax response', response);
+                foreach(response.data, function (item) {
+                    var id = item.id;
+                    delete item.id;
+                    newItem(createSchemaModel({
+                        data: item,
+                        url: url,
+                        validate: validate,
+                        id: id
+                    }));
+                });
+            },
+            error: function () {
+                console.error('ajax error', arguments);
+            }
+        });
 
         return that;
     }

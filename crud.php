@@ -55,7 +55,14 @@ function getID() {
 }
 
 function getPageNO() {
-    return explode('/', $_SERVER['PATH_INFO'])[2];
+    //default to page 1 if none are given.
+    if(isset($_SERVER['PATH_INFO'])) {
+        $pieces = explode('/', $_SERVER['PATH_INFO']);
+        return count($pieces) === 3 ? $pieces[2] : '1';
+    }
+    else {
+        return '1';
+    }
 }
 
 $requestData = json_decode(file_get_contents('php://input'), true);
