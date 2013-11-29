@@ -466,11 +466,18 @@ return {
             }),
             formListTemplate,
             formController,
-            modal = fig.modal || defaultModal;
+            modal = fig.modal || defaultModal,
+            addItemAction = fig.addItemAction || function ($elem, finished) {
+                $elem.hide();
+                $elem.slideDown(300, finished);
+            },
+            removeItemAction = fig.removeItemAction || function ($elem, finished) {
+                $elem.slideUp(300, finished);
+            };
 
 
 
-        var bindModel = function (model) {
+        var bind = function (model, controller) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
                  
@@ -478,7 +485,7 @@ return {
             });
 
             model.subscribe('destroyed', function (id) {
-                
+                removeItemAction(controller.$(), function () { controller.$().remove(); });
             });
 
             return model;
@@ -488,18 +495,25 @@ return {
             var elID = name + '-crud-item-' + generateUniqueID()
             $('#' + name + '-crud-form-list').prepend('<div id="' + elID + '"></div>');
 
-            createFormListController({
+            var model = createDefaultModel();
+
+            var controller = createFormListController({
                 el: '#' + elID,
                 schema: schema,
                 //null modal (not needed for the formList)
                 //maybe this could be repurposed for some sort of accordian
                 //animation, etc?
                 modal: modal,
-                createDefaultModel: function() {
-                    return bindModel(createDefaultModel());
-                },
+                
+                model: model,
+                // createDefaultModel: function() {
+                //     return bindModel(createDefaultModel());
+                // },
                 template: formListTemplate
-            }).render();
+            })
+            controller.render();
+            bind(model, controller);
+            addItemAction(controller.$());
         };
         
         $('#' + name + '-crud-new').html(

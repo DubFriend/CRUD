@@ -149,6 +149,9 @@ var createFormListTemplate = function (schema, crudName, deletable) {
                     '<input type="submit" value="Save"/>' +
                     (deletable ? '<button class="crud-delete">Delete</button>' : '') +
                 '</div>' +
+                '<div class="success">' +
+                    '{{successMessage}}' +
+                '</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';

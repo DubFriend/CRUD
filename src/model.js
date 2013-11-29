@@ -125,6 +125,7 @@ var createSchemaModel = function (fig) {
             });
         }
         else {
+            that.publish('destroyed');
             that.clear();
         }
     };

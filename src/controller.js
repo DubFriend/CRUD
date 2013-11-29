@@ -678,10 +678,10 @@ var createFormController = function (fig, my) {
     };
 
     var parentRender = that.render;
-    that.render = function (data, errors) {
-        parentRender(data, errors, {
+    that.render = function (data, errors, extra) {
+        parentRender(data, errors, union({
             status: (that.model.isNew() ? 'Create' : 'Edit')
-        });
+        }, extra));
         setNewModelVisibility();
         my.bind();
     };
@@ -741,6 +741,17 @@ var createFormListController = function (fig) {
             modal.close(that.$('.crud-delete-modal'));
         };
 
+        // remove = fig.remove || function ($elem, finished) {
+        //     $elem.slideUp(300, finished);
+        // };
+
+    that.model.subscribe('saved', function () {
+        that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
+    });
+
+    // that.model.subscribe('destroyed', function () {
+    //     remove(that.$(), function() { that.$().remove(); });
+    // });
 
     var parentBind = my.bind;
     my.bind = function () {
@@ -748,10 +759,7 @@ var createFormListController = function (fig) {
         that.$('.crud-delete').click(function (e) {
             e.preventDefault();
             openDeleteConfirmation();
-            //that.model.delete();
-            //that.close();
         });
-        parentBind();
 
         that.$('.crud-confirm-delete').unbind();
         that.$('.crud-confirm-delete').click(function (e) {
@@ -765,6 +773,8 @@ var createFormListController = function (fig) {
             e.preventDefault();
             modal.close(that.$('.crud-delete-modal'));
         });
+
+        parentBind();
     };
 
     return that;
