@@ -502,13 +502,10 @@ return {
                 //maybe this could be repurposed for some sort of accordian
                 //animation, etc?
                 modal: modal,
-                
                 model: model,
-                // createDefaultModel: function() {
-                //     return bindModel(createDefaultModel());
-                // },
                 template: formListTemplate
-            })
+            });
+            //controller.setModel(model);
             controller.render();
             bind(model, controller);
             addItemAction(controller.$());
@@ -555,6 +552,10 @@ return {
         });
 
         return that;
+    },
+
+    form: function (fig) {
+
     }
 };
 

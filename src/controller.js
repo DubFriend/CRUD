@@ -741,17 +741,11 @@ var createFormListController = function (fig) {
             modal.close(that.$('.crud-delete-modal'));
         };
 
-        // remove = fig.remove || function ($elem, finished) {
-        //     $elem.slideUp(300, finished);
-        // };
-
     that.model.subscribe('saved', function () {
         that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
     });
 
-    // that.model.subscribe('destroyed', function () {
-    //     remove(that.$(), function() { that.$().remove(); });
-    // });
+    that.setModel(that.model);
 
     var parentBind = my.bind;
     my.bind = function () {
@@ -765,7 +759,7 @@ var createFormListController = function (fig) {
         that.$('.crud-confirm-delete').click(function (e) {
             e.preventDefault();
             that.model.delete();
-            modal.close(that.$('.crud-delete-modal'));
+            closeDeleteConfirmation();
         });
 
         that.$('.crud-cancel-delete').unbind();
