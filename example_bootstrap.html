@@ -204,6 +204,9 @@ $(document).ready(function () {
     var crud = CRUD.full({
         name: 'Thing',
         url: 'crud.php',
+
+        //isSoftREST: true,
+
         validate: function (data) {
             var error = {};
             if(data.text !== 'default') {

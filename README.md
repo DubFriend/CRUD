@@ -16,6 +16,11 @@ CRUD.full({
     
     //the url that crud will make ajax requests to
     url: 'users.php',
+
+    //for servers that do not support PUT or DELETE methods.
+    //if set to true, POST, PUT, and DELETE requests will all be
+    //POST requests with a url method parameter set to POST, PUT or DELETE.
+    isSoftREST: false,
     
     //client side validation.
     validate: function (data) {

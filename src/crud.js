@@ -29,6 +29,7 @@ var createDefaultModelBase = function (that, data, id) {
     return createSchemaModel({
         id: id,
         url: that.url,
+        isSoftREST: that.isSoftREST,
         data: data || mapToObject(
             that.schema,
             function (item) {
@@ -68,28 +69,9 @@ return {
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
+            isSoftREST = fig.isSoftREST || false,
+
             modal = fig.modal || defaultModal,
-
-            // setEmptyCheckboxes = function (item) {
-            //     if(item.type === 'checkbox') {
-            //         item.value = item.value || [];
-            //     }
-            //     return item;
-            // },
-
-            // mapSchema = function (schema) {
-            //     return map(schema, function (itemRef) {
-            //         var item = copy(itemRef);
-            //         switch(item.type) {
-            //             case 'radio':
-            //             case 'checkbox':
-            //             case 'select':
-            //                 item.values = map(item.values, partial(dot, 'value'));
-            //                 break;
-            //         }
-            //         return item;
-            //     });
-            // },
 
             viewSchema = map(fig.schema, setEmptyCheckboxes),
             viewFilterSchema = map(fig.filterSchema, setEmptyCheckboxes),
@@ -101,28 +83,10 @@ return {
 
             createDefaultModel = partial(createDefaultModelBase, {
                 url: url,
+                isSoftREST: isSoftREST,
                 schema: schema,
                 validate: validate
             });
-
-            // createDefaultModel = function (data, id) {
-            //     return createSchemaModel({
-            //         id: id,
-            //         url: url,
-            //         data: data || mapToObject(
-            //             schema,
-            //             function (item) {
-            //                 return item.value || null;
-            //             },
-            //             function (key, item) {
-            //                 return item.name;
-            //             }
-            //         ),
-            //         validate: validate
-            //     });
-            // };
-
-
 
         var selectedCallback = function (itemController) {
             listController.setSelected(itemController);

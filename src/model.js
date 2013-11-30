@@ -64,12 +64,31 @@ var createSchemaModel = function (fig) {
     var that = createModel(fig, my),
         id = fig.id,
         deletable = fig.deletable,
+
+        isSoftREST = fig.isSoftREST,
+
         ajax = fig.ajax || function (fig) {
+            var url = that.isNew() ? my.url : my.url + '/' + that.id(),
+                method, data;
+
+            if(isSoftREST) {
+                url += '?method=' + fig.method;
+                method = 'POST';
+                data = my.data;
+            }
+            else {
+                method = fig.method;
+                data = fig.method === 'PUT' || fig.method === 'DELETE' ?
+                        JSON.stringify(my.data) : my.data;
+            }
             $.ajax({
-                url: that.isNew() ? my.url : my.url + '/' + that.id(),
-                method: fig.method,
-                data: fig.method === 'PUT' || fig.method === 'DELETE' ?
-                        JSON.stringify(my.data) : my.data,
+                //url: that.isNew() ? my.url : my.url + '/' + that.id(),
+                //method: fig.method,
+                url: url,
+                method: method,
+                data: data,
+                // data: fig.method === 'PUT' || fig.method === 'DELETE' ?
+                //         JSON.stringify(my.data) : my.data,
                 dataType: 'json',
                 beforeSend: partial(that.publish, 'form:waiting:start'),
                 success: fig.success,
