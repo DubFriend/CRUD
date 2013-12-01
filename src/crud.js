@@ -418,12 +418,16 @@ return {
             name = fig.name,
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
+
+            isSoftREST = fig.isSoftREST || false,
+
             viewSchema = map(fig.schema, setEmptyCheckboxes),
             schema = mapSchema(viewSchema),
             validate = fig.validate,
             createDefaultModel = partial(createDefaultModelBase, {
                 url: url,
                 schema: schema,
+                isSoftREST: isSoftREST,
                 validate: validate
             }),
             formListTemplate,
@@ -436,7 +440,6 @@ return {
             removeItemAction = fig.removeItemAction || function ($elem, finished) {
                 $elem.slideUp(300, finished);
             };
-
 
 
         var bind = function (model, controller) {
@@ -463,13 +466,10 @@ return {
                 el: '#' + elID,
                 schema: schema,
                 //null modal (not needed for the formList)
-                //maybe this could be repurposed for some sort of accordian
-                //animation, etc?
                 modal: modal,
                 model: model,
                 template: formListTemplate
             });
-            //controller.setModel(model);
             controller.render();
             bind(model, controller);
             addItemAction(controller.$());

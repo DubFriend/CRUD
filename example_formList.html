@@ -42,6 +42,9 @@ $(document).ready(function () {
     CRUD.formList({
         name: 'Thing',
         url: 'crud.php',
+
+        //isSoftREST: true,
+
         validate: function (data) {
             var error = {};
             if(data.text.length < 3) {
