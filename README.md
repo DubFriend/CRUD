@@ -15,7 +15,7 @@ CRUD.full({
     name: 'Thing',
     
     //the url that crud will make ajax requests to
-    url: 'users.php',
+    url: 'users.php',khkjh
 
     //for servers that do not support PUT or DELETE methods.
     //if set to true, POST, PUT, and DELETE requests will all be
@@ -199,3 +199,85 @@ for example crud.php/5 should delete the data item with an id of 5.
 
 Return true if the delete request is successfull.
 Return an error object with an HTTP response code of 409 if the item cannot be deleted.
+
+
+##formList
+
+CRUD.full({...}) creates a fully featured interface, with search and ordering features.  Sometimes however, you know that you'll only ever have a few data items to deal with, and need a much lighter weight interface.  CRUD.formList({...}) provides a list of forms that can be Created, Read, Updated and Deleted.
+
+###Example Usage
+
+The Configuration is the same as CRUD.full({}) only their are no filterSchema, id, or order fields.
+
+```javascript
+CRUD.formList({
+    name: 'Thing',
+    url: 'crud.php',
+
+    //isSoftREST: true,
+
+    validate: function (data) {
+        var error = {};
+        if(data.text.length < 3) {
+            error.text = '3 character minimum';
+        }
+        return error;
+    },
+
+    //deletable: false,
+    //readOnly: true,
+
+    schema: [
+        {
+            name: 'text',
+            label: 'label yo',
+            type: 'text',
+            value: 'default'
+        },
+        {
+            name: 'textarea',
+            type: 'textarea',
+            orderable: true,
+            order: 'ascending'
+        },
+        {
+            name: 'fruit',
+            type: 'checkbox',
+            values: [
+                { value: 'apple', label: 'La Pomme' },
+                { value: 'orange', label: 'L\'Orange' }
+            ],
+            value: ['orange']
+        },
+        {
+            name: 'letter',
+            type: 'radio',
+            values: [
+                { value: 'a', label: 'A' },
+                { value: 'b' },
+                { value: 'c' },
+                { value: 'd', label: 'D' }
+            ],
+            value: 'b',
+            orderable: true
+        },
+        {
+            name: 'awesome',
+            type: 'select',
+            values: [
+                { value: '1', label: 'One' },
+                { value: '2', label: 'Two' },
+                { value: '3', label: 'Three' }
+            ]
+        }
+    ]
+});
+```
+
+###GET
+A single GET request is made to the supplied url after being initiated.  Unlike CRUD.full(),
+ the GET request is not paginated.  The server should respond by sending the appropriate data items using the same JSON format as in CRUD.full() (The "pages" field will be unecessary though).
+
+###PUT, POST, DELETE
+Follow the same format as in CRUD.full()
+ 
