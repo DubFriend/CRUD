@@ -517,7 +517,7 @@ return {
         var addItemToList = function (model) {
             var elID = name + '-crud-item-' + generateUniqueID();
             $('#' + name + '-crud-form-list')
-                .prepend('<div id="' + elID + '"></div>');
+                .prepend('<div class="crud-form-list-item" id="' + elID + '"></div>');
 
             var controller = createFormListController({
                 el: '#' + elID,

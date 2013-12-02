@@ -108,24 +108,25 @@
         top: 2px;
         margin: 0.3em;
     }
+
 </style>
 </head>
 
 <body>
 
-<h1>CRUD formList</h1>
-<hr/>
-
-<div class="modal fade">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div id="Thing-crud-container" class="modal-body"></div>
+<div class="container">
+    <h1>CRUD formList</h1>
+    <hr/>
+    <div class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div id="Thing-crud-container" class="modal-body"></div>
+            </div>
         </div>
     </div>
+    <div id="Thing-crud-new"></div>
+    <div id="Thing-crud-form-list"></div>
 </div>
-<div id="Thing-crud-new"></div>
-<div id="Thing-crud-form-list"></div>
-
 <script src="../lib/jquery-1.10.2.js"></script>
 <script src="../lib/mustache.js"></script>
 <script src="../lib/bootstrap/js/bootstrap.min.js"></script>
@@ -306,8 +307,8 @@ $(document).ready(function () {
                 '<div class="modal-footer">' +
                     '<div class="form-group">' +
                         '<div class="col-sm-offset-3 col-sm-9">' +
-                            '<input type="submit" class="btn btn-lg btn-primary" value="Save"/>' +
-                            '<button class="crud-close-form btn btn-lg">Close</button>' +
+                            '<input type="submit" class="btn btn-lg btn-success" value="Create"/>' +
+                            '<button class="crud-close-form btn btn-lg btn-default">Close</button>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -320,38 +321,23 @@ $(document).ready(function () {
             return '' +
             //each form list template gets its own delete confirmation template
             that.createDeleteConfirmationTemplate() +
-            '<form class="form-horizontal" role="form">' +
+            '<form class="form-horizontal well" role="form">' +
                 '<fieldset>' +
-                    '<legend>' + this.name + '</legend>' +
+                    // '<legend>' + this.name + '</legend>' +
                     reduceSchemaToForm({
                         schema: that.schema,
                         createInput: that.createInput,
                         ID: ID
                     }) +
-
-
                     '<div class="form-group">' +
                         '<div class="col-sm-offset-3 col-sm-9">' +
-                            '<input type="submit" class="btn btn-lg btn-primary" value="Save"/>' +
-                            (that.deletable ? '<button class="crud-delete btn btn-lg btn-danger">Delete</button>' : '') +
-                        '</div>' +
-                        '<div class="success">' +
-                            '{{successMessage}}' +
+                            '<input type="submit" class="btn btn-lg btn-success" value="Save"/>' +
+                            (that.deletable ? '<button class="crud-delete btn btn-lg btn-default">Delete</button>' : '') +
+                            '<div class="success">' +
+                                '{{successMessage}}' +
+                            '</div>' +
                         '</div>' +
                     '</div>' +
-
-                    // '<div class="crud-control-set">' +
-                    //     '<label>&nbsp;</label>' +
-                    //     '<div class="crud-input-group">' +
-                    //         '<input type="submit" value="Save"/>' +
-                    //         (that.deletable ? '<button class="crud-delete">Delete</button>' : '') +
-                    //     '</div>' +
-                    //     '<div class="success">' +
-                    //         '{{successMessage}}' +
-                    //     '</div>' +
-                    // '</div>' +
-
-
                 '</fieldset>' +
             '</form>';
         },
@@ -372,7 +358,7 @@ $(document).ready(function () {
                             '<button class="crud-confirm-delete btn btn-danger">' +
                                 'Delete' +
                             '</button>' +
-                            '<button class="crud-cancel-delete btn">' +
+                            '<button class="crud-cancel-delete btn btn-default">' +
                                 'Cancel' +
                             '</button>' +
                         '</div>' +

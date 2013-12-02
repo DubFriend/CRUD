@@ -1061,6 +1061,9 @@ var createFormListController = function (fig) {
 
     that.model.subscribe('saved', function () {
         that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
+        setTimeout(function () {
+            that.render(that.model.get(), {});
+        }, 5000);
     });
 
     that.setModel(that.model);
@@ -2037,7 +2040,7 @@ return {
         var addItemToList = function (model) {
             var elID = name + '-crud-item-' + generateUniqueID();
             $('#' + name + '-crud-form-list')
-                .prepend('<div id="' + elID + '"></div>');
+                .prepend('<div class="crud-form-list-item" id="' + elID + '"></div>');
 
             var controller = createFormListController({
                 el: '#' + elID,
