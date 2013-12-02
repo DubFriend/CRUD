@@ -25,20 +25,24 @@ var mapSchema = function (schema) {
     });
 };
 
+var mapSchemaToModelData = function (schema) {
+    return mapToObject(
+        schema,
+        function (item) {
+            return item.value || null;
+        },
+        function (key, item) {
+            return item.name;
+        }
+    );
+};
+
 var createDefaultModelBase = function (that, data, id) {
     return createSchemaModel({
         id: id,
         url: that.url,
         isSoftREST: that.isSoftREST,
-        data: data || mapToObject(
-            that.schema,
-            function (item) {
-                return item.value || null;
-            },
-            function (key, item) {
-                return item.name;
-            }
-        ),
+        data: data || mapSchemaToModelData(that.schema),
         validate: that.validate
     });
 };
@@ -567,6 +571,48 @@ return {
             error: function () {
                 console.error('ajax error', arguments);
             }
+        });
+
+        return that;
+    },
+
+
+
+    //Just a regular form.  Makes POST requests only.
+    forminator: function (fig) {
+        fig = fig || {};
+        var that = mixinPubSub(),
+            url = fig.url,
+            name = fig.name,
+            viewSchema = map(fig.schema, setEmptyCheckboxes),
+            schema = mapSchema(viewSchema),
+            validate = fig.validate,
+            model = createForminatorModel({
+                url: url,
+                data: mapSchemaToModelData(fig.schema),
+                validate: validate
+            }),
+            controller = createForminatorController({
+                el: '#' + name + '-forminator',
+                schema: schema,
+                model: model,
+                template: fig.createForminatorTemplate ?
+                    fig.createForminatorTemplate.apply({
+                        schema: viewSchema,
+                        name: name,
+                        createInput: createInput,
+                        uniqueID: generateUniqueID
+                    }) : createForminatorTemplate(viewSchema, name)
+            });
+
+        model.subscribe('posted', function (response) {
+            console.log('posted');
+            controller.render(model.get(), {}, {
+                successMessage: fig.successMessage || 'Submit Success.'
+            });
+            setTimeout(function () {
+                controller.render(model.get(), {});
+            }, 5000);
         });
 
         return that;

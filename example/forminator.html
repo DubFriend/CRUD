@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>CRUD form</title>
-
-<link rel="stylesheet" type="text/css" href="../lib/jquery-modal/jquery.modal.css">
+<title>Forminator</title>
 
 <style>
     body {
@@ -11,8 +9,12 @@
        font-weight: 300;
     }
 
-    .error {
+    .crud-help {
         color: red;
+    }
+
+    .success {
+        color: green;
     }
 </style>
 
@@ -20,22 +22,30 @@
 
 <body>
 
-<h1>CRUD form</h1>
+<h1>Forminator</h1>
 <hr/>
 
-<div id="Thing-crud-new"></div>
-<div id="Thing-crud-form-list"></div>
+<div id="Thing-forminator"></div>
 
 <script src="../lib/jquery-1.10.2.js"></script>
 <script src="../lib/mustache.js"></script>
-<script src="../lib/jquery-modal/jquery.modal.js"></script>
+
+<!-- <script src="../src/lib.js"></script>
+<script src="../src/model/base.js"></script>
+<script src="../src/model/forminator.js"></script>
+<script src="../src/view/base.js"></script>
+<script src="../src/view/forminator.js"></script>
+<script src="../src/controller/base.js"></script>
+<script src="../src/controller/forminator.js"></script>
+<script src="../src/crud.js"></script> -->
+
 <script src="../crud.js"></script>
 
 <script>
 $(document).ready(function () {
     'use strict';
 
-    CRUD.form({
+    CRUD.forminator({
         name: 'Thing',
         url: '../crud_form.php',
         validate: function (data) {
@@ -45,7 +55,6 @@ $(document).ready(function () {
             }
             return error;
         },
-
         schema: [
             {
                 name: 'text',
@@ -55,9 +64,7 @@ $(document).ready(function () {
             },
             {
                 name: 'textarea',
-                type: 'textarea',
-                orderable: true,
-                order: 'ascending'
+                type: 'textarea'
             },
             {
                 name: 'fruit',
@@ -77,8 +84,7 @@ $(document).ready(function () {
                     { value: 'c' },
                     { value: 'd', label: 'D' }
                 ],
-                value: 'b',
-                orderable: true
+                value: 'b'
             },
             {
                 name: 'awesome',

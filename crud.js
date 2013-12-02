@@ -1,5 +1,5 @@
-// crud version 0.3.2
-// (MIT) 01-12-2013
+// crud version 0.4.0
+// (MIT) 02-12-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -506,6 +506,41 @@ var createPaginatorModel = function (fig) {
     return that;
 };
 
+var createForminatorModel = function (fig) {
+    fig = fig || {};
+    var my = {};
+    var that = createModel(fig, my);
+
+    that.set = partial(that.set, function () {});
+
+    that.clear = function () {
+        my.data = {};
+        that.publish('change', that);
+    };
+
+    that.submit = function () {
+        var errors = that.validate(that.get());
+        if(isEmpty(errors)) {
+            $.ajax({
+                url: my.url,
+                method: 'POST',
+                data: my.data,
+                dataType: 'json',
+                beforeSend: partial(that.publish, 'waiting:start'),
+                success: function (response) {
+                    console.log('success', response);
+                    that.publish('posted', response);
+                },
+                error: partial(ajaxErrorResponse, that),
+                complete: partial(that.publish, 'waiting:end')
+            });
+        }
+        that.publish('error', errors);
+    };
+
+    return that;
+};
+
 var createInput = function (fig) {
 
     var item = fig.item;
@@ -788,6 +823,24 @@ var createPaginatorTemplate = function () {
     '</div>';
 };
 
+var createForminatorTemplate = function (schema, crudName) {
+    return '' +
+    '<form>' +
+        '<fieldset>' +
+            '<legend>' + crudName + '</legend>' +
+            reduceFormSchema(schema, crudName) +
+            '<div class="crud-control-set">' +
+                '<label>&nbsp;</label>' +
+                '<div class="crud-input-group">' +
+                    '<input type="submit" value="Submit"/>' +
+                '</div>' +
+                '<div class="success">' +
+                    '{{successMessage}}' +
+                '</div>' +
+            '</div>' +
+        '</fieldset>' +
+    '</form>';
+};
 var serializeFormBySchema = function ($el, schema) {
     return map(schema, function (item, name) {
         var getValue = function (pseudo) {
@@ -1521,6 +1574,48 @@ var createPaginatorController = function (fig) {
     return that;
 };
 
+var createForminatorController = function (fig) {
+    fig = fig || {};
+    var that = createController(fig);
+
+    that.serialize = function () {
+        return serializeFormBySchema(that.$(), that.schema);
+    };
+
+    var bind = function () {
+        that.$().unbind();
+        that.$().submit(function (e) {
+            e.preventDefault();
+            that.model.set(that.serialize(), { validate: false });
+            that.model.submit();
+        });
+        that.publish('bind');
+    };
+
+    bind();
+
+    var parentRender = that.render;
+    that.render = function (data, errors, extra) {
+        parentRender(data, errors, extra);
+        bind();
+    };
+
+    var parentRenderNoError = that.renderNoError;
+    that.renderNoError = function (data) {
+        parentRenderNoError(data);
+        bind();
+    };
+
+    that.model.subscribe('change', that.render);
+    that.model.subscribe('error', function (errors) {
+        that.render(that.model.get(), errors);
+    });
+
+    that.renderNoError();
+
+    return that;
+};
+
 this.CRUD = (function () {
 
 var isDeletable = function (deletable, readOnly) {
@@ -1548,20 +1643,24 @@ var mapSchema = function (schema) {
     });
 };
 
+var mapSchemaToModelData = function (schema) {
+    return mapToObject(
+        schema,
+        function (item) {
+            return item.value || null;
+        },
+        function (key, item) {
+            return item.name;
+        }
+    );
+};
+
 var createDefaultModelBase = function (that, data, id) {
     return createSchemaModel({
         id: id,
         url: that.url,
         isSoftREST: that.isSoftREST,
-        data: data || mapToObject(
-            that.schema,
-            function (item) {
-                return item.value || null;
-            },
-            function (key, item) {
-                return item.name;
-            }
-        ),
+        data: data || mapSchemaToModelData(that.schema),
         validate: that.validate
     });
 };
@@ -2090,6 +2189,48 @@ return {
             error: function () {
                 console.error('ajax error', arguments);
             }
+        });
+
+        return that;
+    },
+
+
+
+    //Just a regular form.  Makes POST requests only.
+    forminator: function (fig) {
+        fig = fig || {};
+        var that = mixinPubSub(),
+            url = fig.url,
+            name = fig.name,
+            viewSchema = map(fig.schema, setEmptyCheckboxes),
+            schema = mapSchema(viewSchema),
+            validate = fig.validate,
+            model = createForminatorModel({
+                url: url,
+                data: mapSchemaToModelData(fig.schema),
+                validate: validate
+            }),
+            controller = createForminatorController({
+                el: '#' + name + '-forminator',
+                schema: schema,
+                model: model,
+                template: fig.createForminatorTemplate ?
+                    fig.createForminatorTemplate.apply({
+                        schema: viewSchema,
+                        name: name,
+                        createInput: createInput,
+                        uniqueID: generateUniqueID
+                    }) : createForminatorTemplate(viewSchema, name)
+            });
+
+        model.subscribe('posted', function (response) {
+            console.log('posted');
+            controller.render(model.get(), {}, {
+                successMessage: fig.successMessage || 'Submit Success.'
+            });
+            setTimeout(function () {
+                controller.render(model.get(), {});
+            }, 5000);
         });
 
         return that;

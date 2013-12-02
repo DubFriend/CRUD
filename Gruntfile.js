@@ -23,6 +23,7 @@ module.exports = function (grunt) {
                     'src/model/filter.js',
                     'src/model/order.js',
                     'src/model/paginator.js',
+                    'src/model/forminator.js',
 
                     'src/view/base.js',
                     'src/view/delete.js',
@@ -32,6 +33,7 @@ module.exports = function (grunt) {
                     'src/view/list.js',
                     'src/view/list_item.js',
                     'src/view/paginator.js',
+                    'src/view/forminator.js',
 
                     'src/controller/base.js',
                     'src/controller/filter.js',
@@ -40,6 +42,7 @@ module.exports = function (grunt) {
                     'src/controller/list.js',
                     'src/controller/list_item.js',
                     'src/controller/paginator.js',
+                    'src/controller/forminator.js',
 
                     'src/crud.js',
                     'src/outro.js'
