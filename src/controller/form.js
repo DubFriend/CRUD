@@ -5,7 +5,6 @@ var createFormController = function (fig, my) {
     fig.model = fig.model || fig.createDefaultModel();
 
     var that = createController(fig),
-        //isOpen = false,
         modal = fig.modal;
 
     that.serialize = function () {
@@ -20,7 +19,6 @@ var createFormController = function (fig, my) {
         modal.close(that.$());
     };
 
-    // var bind = function () {
     my.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {

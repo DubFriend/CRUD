@@ -35,7 +35,8 @@ var createFormListController = function (fig) {
         that.$('.crud-cancel-delete').unbind();
         that.$('.crud-cancel-delete').click(function (e) {
             e.preventDefault();
-            modal.close(that.$('.crud-delete-modal'));
+            closeDeleteConfirmation();
+            // modal.close(that.$('.crud-delete-modal'));
         });
 
         parentBind();

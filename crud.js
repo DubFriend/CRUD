@@ -827,6 +827,10 @@ var createController = function (fig) {
             )));
         };
 
+    that.setEl = function (newEl) {
+        el = newEl;
+    };
+
     that.mapErrorData = function (errorData) {
         return map(errorData, identity, function (key) {
             return key + 'Help';
@@ -947,7 +951,6 @@ var createFormController = function (fig, my) {
     fig.model = fig.model || fig.createDefaultModel();
 
     var that = createController(fig),
-        //isOpen = false,
         modal = fig.modal;
 
     that.serialize = function () {
@@ -962,7 +965,6 @@ var createFormController = function (fig, my) {
         modal.close(that.$());
     };
 
-    // var bind = function () {
     my.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {
@@ -1081,7 +1083,8 @@ var createFormListController = function (fig) {
         that.$('.crud-cancel-delete').unbind();
         that.$('.crud-cancel-delete').click(function (e) {
             e.preventDefault();
-            modal.close(that.$('.crud-delete-modal'));
+            closeDeleteConfirmation();
+            // modal.close(that.$('.crud-delete-modal'));
         });
 
         parentBind();
@@ -1817,7 +1820,10 @@ return {
             });
 
             filterModel.subscribe('change', newItem);
-            filterController.subscribe('bind', createBindPublish(filterController, 'filter'));
+            filterController.subscribe(
+                'bind',
+                createBindPublish(filterController, 'filter')
+            );
         }
 
 
@@ -1857,7 +1863,10 @@ return {
                 listController.setSelected();
             });
 
-            formController.subscribe('bind', createBindPublish(formController, 'form'));
+            formController.subscribe(
+                'bind',
+                createBindPublish(formController, 'form')
+            );
 
             paginatorModel.subscribe('change', newItem);
         }
@@ -1878,8 +1887,14 @@ return {
 
         listController.renderNoError();
 
-        listController.subscribe('bind', createBindPublish(listController, 'list'));
-        paginatorController.subscribe('bind', createBindPublish(paginatorController, 'paginator'));
+        listController.subscribe(
+            'bind',
+            createBindPublish(listController, 'list')
+        );
+        paginatorController.subscribe(
+            'bind',
+            createBindPublish(paginatorController, 'paginator')
+        );
 
         requestModel.subscribe('load', load);
 
@@ -1887,12 +1902,16 @@ return {
         subscribeWaitingPublish(requestModel, 'order');
         subscribeWaitingPublish(requestModel, 'paginator');
 
-        //kicks off an ajax load event, rendering the paginator, list items, and form
+        //kicks off an ajax load event
         paginatorController.setPage(1);
 
-        //keybindings for list navigation only if mouse is hovering over the list or paginator.
+        //keybindings for list navigation only if mouse is
+        //hovering over the list or paginator.
         $(document).keydown(function (e) {
-            if(listController.$().is(':hover') || paginatorController.$().is(':hover')) {
+            if(
+                listController.$().is(':hover') ||
+                paginatorController.$().is(':hover')
+            ) {
                 switch(e.keyCode) {
                     case 37: //left arrow key
                         e.preventDefault();
@@ -1948,8 +1967,6 @@ return {
                 isSoftREST: isSoftREST,
                 validate: validate
             }),
-            //formListTemplate,
-            formController,
             modal = fig.modal || defaultModal,
             addItemAction = fig.addItemAction || function ($elem, finished) {
                 $elem.hide();
@@ -1957,49 +1974,34 @@ return {
             },
             removeItemAction = fig.removeItemAction || function ($elem, finished) {
                 $elem.slideUp(300, finished);
-            };
+            },
+
+            formController;
 
 
         var bind = function (model, controller) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
 
+
+                    // var elID = name + '-crud-item-' + generateUniqueID();
+                    // $('#' + name + '-crud-form-list')
+                    //     .prepend('<div id="' + elID + '"></div>');
+
+
+
                 }
             });
 
             model.subscribe('destroyed', function (id) {
-                removeItemAction(controller.$(), function () { controller.$().remove(); });
+                removeItemAction(controller.$(), function () {
+                    controller.$().remove();
+                });
             });
 
             return model;
         };
 
-        var newItem = function (model) {
-            var elID = name + '-crud-item-' + generateUniqueID()
-            $('#' + name + '-crud-form-list').prepend('<div id="' + elID + '"></div>');
-
-            model = model || createDefaultModel();
-
-            var controller = createFormListController({
-                el: '#' + elID,
-                schema: schema,
-                //null modal (not needed for the formList)
-                modal: modal,
-                model: model,
-                template: buildFormListTemplate()//formListTemplate
-            });
-            controller.render();
-            bind(model, controller);
-            addItemAction(controller.$());
-        };
-
-        $('#' + name + '-crud-new').html(
-            fig.newButtonHTML || '<button>Create New ' + name + '</button>'
-        );
-
-        $('#' + name + '-crud-new').find('button').click(function () {
-            newItem();
-        });
 
         var buildFormListTemplate = function () {
             return fig.createFormListTemplate ?
@@ -2012,15 +2014,113 @@ return {
                 }) : createFormListTemplate(viewSchema, name, deletable);
         };
 
-        // formListTemplate = fig.createFormListTemplate ?
-        //     fig.createFormListTemplate.apply({
-        //         schema: viewSchema,
-        //         name: name,
-        //         createInput: createInput,
-        //         uniqueID: generateUniqueID,
-        //         deletable: deletable
-        //     }) : createFormListTemplate(viewSchema, name, deletable);
+        var buildFormTemplate = function () {
+            return fig.createFormTemplate ?
+                fig.createFormTemplate.apply({
+                    schema: viewSchema,
+                    name: name,
+                    createInput: createInput,
+                    uniqueID: generateUniqueID
+                }) : createFormTemplate(viewSchema, name);
+        };
 
+        var buildNewFormController = function () {
+            // var formTemplate = fig.createFormTemplate ?
+            //     fig.createFormTemplate.apply({
+            //         schema: viewSchema,
+            //         name: name,
+            //         createInput: createInput,
+            //         uniqueID: generateUniqueID
+            //     }) : createFormTemplate(viewSchema, name);
+
+            var formController = createFormController({
+                el: '#' + name + '-crud-container',
+                schema: schema,
+                modal: modal,
+                model: createDefaultModel(),
+                // createDefaultModel: function() {
+                //     return bindModel(createDefaultModel());
+                // },
+                template: buildFormTemplate()
+            });
+
+            formController.render();
+
+            formController.model.subscribe('saved', function () {
+                addItemToList(formController.model);
+                formController.close();
+            });
+
+            return formController;
+
+            // formController.subscribe('new', function () {
+            //     listController.setSelected();
+            // });
+        };
+
+        var newItem = function (model) {
+            if(!formController) {
+                formController = buildNewFormController();
+                formController.model.subscribe('saved', function () {
+                    formController = null;
+                });
+            }
+            formController.open();
+
+            // var elID = name + '-crud-item-' + generateUniqueID();
+            // $('#' + name + '-crud-form-list')
+            //     .prepend('<div id="' + elID + '"></div>');
+
+            // model = model || createDefaultModel();
+
+            // var controller = createFormListController({
+            //     el: '#' + elID,
+            //     schema: schema,
+            //     modal: modal,
+            //     model: model,
+            //     template: buildFormListTemplate()
+            // });
+
+            // controller.render();
+            // bind(model, controller);
+            // addItemAction(controller.$());
+        };
+
+        var addItemToList = function (model) {
+            var elID = name + '-crud-item-' + generateUniqueID();
+            $('#' + name + '-crud-form-list')
+                .prepend('<div id="' + elID + '"></div>');
+
+            // model = model || createDefaultModel();
+
+            var controller = createFormListController({
+                el: '#' + elID,
+                schema: schema,
+                modal: modal,
+                model: model,
+                template: buildFormListTemplate()
+            });
+
+            controller.setEl('#' + elID);
+            controller.render();
+
+            //bind(model, controller);
+            model.subscribe('destroyed', function (id) {
+                removeItemAction(controller.$(), function () {
+                    controller.$().remove();
+                });
+            });
+
+            addItemAction(controller.$());
+        };
+
+        $('#' + name + '-crud-new').html(
+            fig.newButtonHTML || '<button>Create New ' + name + '</button>'
+        );
+
+        $('#' + name + '-crud-new').find('button').click(function () {
+            newItem();
+        });
 
         $.ajax({
             method: 'GET',
@@ -2031,7 +2131,9 @@ return {
                 foreach(response.data, function (item) {
                     var id = item.id;
                     delete item.id;
-                    newItem(createSchemaModel({
+
+                    //newItem(createSchemaModel({
+                    addItemToList(createSchemaModel({
                         data: item,
                         url: url,
                         validate: validate,

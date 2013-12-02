@@ -37,6 +37,10 @@ var createController = function (fig) {
             )));
         };
 
+    that.setEl = function (newEl) {
+        el = newEl;
+    };
+
     that.mapErrorData = function (errorData) {
         return map(errorData, identity, function (key) {
             return key + 'Help';
