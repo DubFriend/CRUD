@@ -1084,7 +1084,6 @@ var createFormListController = function (fig) {
         that.$('.crud-cancel-delete').click(function (e) {
             e.preventDefault();
             closeDeleteConfirmation();
-            // modal.close(that.$('.crud-delete-modal'));
         });
 
         parentBind();
@@ -1976,31 +1975,10 @@ return {
                 $elem.slideUp(300, finished);
             },
 
-            formController;
+            formController,
 
-
-        var bind = function (model, controller) {
-            model.subscribe('saved', function (wasNew) {
-                if(wasNew) {
-
-
-                    // var elID = name + '-crud-item-' + generateUniqueID();
-                    // $('#' + name + '-crud-form-list')
-                    //     .prepend('<div id="' + elID + '"></div>');
-
-
-
-                }
-            });
-
-            model.subscribe('destroyed', function (id) {
-                removeItemAction(controller.$(), function () {
-                    controller.$().remove();
-                });
-            });
-
-            return model;
-        };
+            createDeleteConfirmationTemplate = fig.createDeleteConfirmationTemplate ||
+                createDeleteConfirmationTemplate;
 
 
         var buildFormListTemplate = function () {
@@ -2010,7 +1988,8 @@ return {
                     name: name,
                     createInput: createInput,
                     uniqueID: generateUniqueID,
-                    deletable: deletable
+                    deletable: deletable,
+                    createDeleteConfirmationTemplate: createDeleteConfirmationTemplate,
                 }) : createFormListTemplate(viewSchema, name, deletable);
         };
 
@@ -2025,37 +2004,24 @@ return {
         };
 
         var buildNewFormController = function () {
-            // var formTemplate = fig.createFormTemplate ?
-            //     fig.createFormTemplate.apply({
-            //         schema: viewSchema,
-            //         name: name,
-            //         createInput: createInput,
-            //         uniqueID: generateUniqueID
-            //     }) : createFormTemplate(viewSchema, name);
-
             var formController = createFormController({
                 el: '#' + name + '-crud-container',
                 schema: schema,
                 modal: modal,
                 model: createDefaultModel(),
-                // createDefaultModel: function() {
-                //     return bindModel(createDefaultModel());
-                // },
                 template: buildFormTemplate()
             });
 
             formController.render();
 
-            formController.model.subscribe('saved', function () {
-                addItemToList(formController.model);
-                formController.close();
+            formController.model.subscribe('saved', function (wasNew) {
+                if(wasNew) {
+                    addItemToList(formController.model);
+                    formController.close();
+                }
             });
 
             return formController;
-
-            // formController.subscribe('new', function () {
-            //     listController.setSelected();
-            // });
         };
 
         var newItem = function (model) {
@@ -2066,32 +2032,12 @@ return {
                 });
             }
             formController.open();
-
-            // var elID = name + '-crud-item-' + generateUniqueID();
-            // $('#' + name + '-crud-form-list')
-            //     .prepend('<div id="' + elID + '"></div>');
-
-            // model = model || createDefaultModel();
-
-            // var controller = createFormListController({
-            //     el: '#' + elID,
-            //     schema: schema,
-            //     modal: modal,
-            //     model: model,
-            //     template: buildFormListTemplate()
-            // });
-
-            // controller.render();
-            // bind(model, controller);
-            // addItemAction(controller.$());
         };
 
         var addItemToList = function (model) {
             var elID = name + '-crud-item-' + generateUniqueID();
             $('#' + name + '-crud-form-list')
                 .prepend('<div id="' + elID + '"></div>');
-
-            // model = model || createDefaultModel();
 
             var controller = createFormListController({
                 el: '#' + elID,
@@ -2104,7 +2050,6 @@ return {
             controller.setEl('#' + elID);
             controller.render();
 
-            //bind(model, controller);
             model.subscribe('destroyed', function (id) {
                 removeItemAction(controller.$(), function () {
                     controller.$().remove();
@@ -2131,8 +2076,6 @@ return {
                 foreach(response.data, function (item) {
                     var id = item.id;
                     delete item.id;
-
-                    //newItem(createSchemaModel({
                     addItemToList(createSchemaModel({
                         data: item,
                         url: url,
@@ -2147,10 +2090,6 @@ return {
         });
 
         return that;
-    },
-
-    form: function (fig) {
-
     }
 };
 
