@@ -16,9 +16,31 @@ module.exports = function (grunt) {
                 src: [
                     'src/intro.js',
                     'src/lib.js',
-                    'src/model.js',
-                    'src/template.js',
-                    'src/controller.js',
+
+                    'src/model/base.js',
+                    'src/model/schema.js',
+                    'src/model/request.js',
+                    'src/model/filter.js',
+                    'src/model/order.js',
+                    'src/model/paginator.js',
+
+                    'src/view/base.js',
+                    'src/view/delete.js',
+                    'src/view/filter.js',
+                    'src/view/form.js',
+                    'src/view/form_list.js',
+                    'src/view/list.js',
+                    'src/view/list_item.js',
+                    'src/view/paginator.js',
+
+                    'src/controller/base.js',
+                    'src/controller/filter.js',
+                    'src/controller/form.js',
+                    'src/controller/form_list.js',
+                    'src/controller/list.js',
+                    'src/controller/list_item.js',
+                    'src/controller/paginator.js',
+
                     'src/crud.js',
                     'src/outro.js'
                 ],

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>CRUD formList</title>
+<title>CRUD form</title>
 
-<link rel="stylesheet" type="text/css" href="jquery-modal/jquery.modal.css">
+<link rel="stylesheet" type="text/css" href="../lib/jquery-modal/jquery.modal.css">
 
 <style>
     body {
@@ -15,36 +15,29 @@
         color: red;
     }
 </style>
+
 </head>
 
 <body>
 
-<h1>CRUD formList</h1>
+<h1>CRUD form</h1>
 <hr/>
 
 <div id="Thing-crud-new"></div>
 <div id="Thing-crud-form-list"></div>
 
-<script src="lib/jquery-1.10.2.js"></script>
-<script src="lib/mustache.js"></script>
-<script src="jquery-modal/jquery.modal.js"></script>
-<!-- <script src="crud.js"></script> -->
-<script src="src/lib.js"></script>
-<script src="src/model.js"></script>
-<script src="src/template.js"></script>
-<script src="src/controller.js"></script>
-<script src="src/crud.js"></script>
+<script src="../lib/jquery-1.10.2.js"></script>
+<script src="../lib/mustache.js"></script>
+<script src="../lib/jquery-modal/jquery.modal.js"></script>
+<script src="../crud.js"></script>
 
 <script>
 $(document).ready(function () {
     'use strict';
 
-    CRUD.formList({
+    CRUD.form({
         name: 'Thing',
-        url: 'crud.php',
-
-        //isSoftREST: true,
-
+        url: '../crud_form.php',
         validate: function (data) {
             var error = {};
             if(data.text.length < 3) {
@@ -52,9 +45,6 @@ $(document).ready(function () {
             }
             return error;
         },
-
-        //deletable: false,
-        //readOnly: true,
 
         schema: [
             {
@@ -101,6 +91,7 @@ $(document).ready(function () {
             }
         ]
     });
+
 });
 </script>
 </body>

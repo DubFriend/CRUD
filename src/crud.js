@@ -430,7 +430,7 @@ return {
                 isSoftREST: isSoftREST,
                 validate: validate
             }),
-            formListTemplate,
+            //formListTemplate,
             formController,
             modal = fig.modal || defaultModal,
             addItemAction = fig.addItemAction || function ($elem, finished) {
@@ -445,7 +445,7 @@ return {
         var bind = function (model, controller) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
-                 
+
                 }
             });
 
@@ -468,13 +468,13 @@ return {
                 //null modal (not needed for the formList)
                 modal: modal,
                 model: model,
-                template: formListTemplate
+                template: buildFormListTemplate()//formListTemplate
             });
             controller.render();
             bind(model, controller);
             addItemAction(controller.$());
         };
-        
+
         $('#' + name + '-crud-new').html(
             fig.newButtonHTML || '<button>Create New ' + name + '</button>'
         );
@@ -483,14 +483,25 @@ return {
             newItem();
         });
 
-        formListTemplate = fig.createFormListTemplate ?
-            fig.createFormListTemplate.apply({
-                schema: viewSchema,
-                name: name,
-                createInput: createInput,
-                uniqueID: generateUniqueID,
-                deletable: deletable
-            }) : createFormListTemplate(viewSchema, name, deletable);
+        var buildFormListTemplate = function () {
+            return fig.createFormListTemplate ?
+                fig.createFormListTemplate.apply({
+                    schema: viewSchema,
+                    name: name,
+                    createInput: createInput,
+                    uniqueID: generateUniqueID,
+                    deletable: deletable
+                }) : createFormListTemplate(viewSchema, name, deletable);
+        };
+
+        // formListTemplate = fig.createFormListTemplate ?
+        //     fig.createFormListTemplate.apply({
+        //         schema: viewSchema,
+        //         name: name,
+        //         createInput: createInput,
+        //         uniqueID: generateUniqueID,
+        //         deletable: deletable
+        //     }) : createFormListTemplate(viewSchema, name, deletable);
 
 
         $.ajax({

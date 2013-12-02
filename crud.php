@@ -44,17 +44,20 @@ error_reporting(E_STRICT|E_ALL);
 
 require 'sequel.php';
 
+define('ROWS_PER_PAGE', 10);
+
 $sql = new Sequel(new PDO(
     'mysql:dbname=crud_demo;host=localhost',
     'root',
-    'password'
+    'P0l.ar-B3ar'
 ));
 
 function getID() {
     return explode('/', $_SERVER['PATH_INFO'])[1];
 }
 
-function getPageNO() {
+//gets page number off of url with format, base_url/page/5
+function getPageNumber() {
     //default to page 1 if none are given.
     if(isset($_SERVER['PATH_INFO'])) {
         $pieces = explode('/', $_SERVER['PATH_INFO']);
@@ -65,9 +68,6 @@ function getPageNO() {
     }
 }
 
-$requestData = json_decode(file_get_contents('php://input'), true);
-$rowsPerPage = 10;
-
 function doesStartWith($start, $string) {
     return substr($string, 0, strlen($start)) === $start;
 }
@@ -75,8 +75,8 @@ function doesStartWith($start, $string) {
 //example: array('order_a' => 3, 'filter_b' => 'foo') -> array('a' => 3, 'b' => 'foo')
 function stripLabelFromKeys($startsWith, array $array) {
     $stripped = array();
-    foreach($array as $key => $value) {
-        $stripped[substr($key, strlen($startsWith))] = $value;
+    foreach($array as $label => $value) {
+        $stripped[substr($label, strlen($startsWith))] = $value;
     }
     return $stripped;
 }
@@ -147,19 +147,19 @@ function buildWhereSQL(array $request) {
 $response = null;
 switch($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        $pageNumber = getPageNO();
         $results = $sql->query(
             "SELECT * FROM crud " .
             buildWhereSQL($_GET) . ' ' .
             buildOrderBySQL($_GET) . ' ' .
-            'LIMIT ' . (($pageNumber - 1) * $rowsPerPage) . ', ' . $rowsPerPage
+            'LIMIT ' . ((getPageNumber() - 1) * ROWS_PER_PAGE) . ', ' . ROWS_PER_PAGE
         );
         $response = array(
-            'pages' => ceil($results->count() / $rowsPerPage),
+            'pages' => ceil($results->count() / ROWS_PER_PAGE),
             'data' => $results->toArray()
         );
         break;
     case 'PUT':
+        $requestData = json_decode(file_get_contents('php://input'), true);
         if($requestData['letter'] === 'a') {
             http_response_code(409);
             $response = array(

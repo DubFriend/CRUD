@@ -1,9 +1,9 @@
 #CRUD
 ##For when you need to get some serious crud done.
 
-CRUD was inspired by the repetitive nature of building admin interfaces.  I repeatedly find myself building an interface to Create, Read, Update, and Delete a list of data items.  To do this properly using AJAX quickly becomes non-trivial, resulting in hundreds if not thousands of lines of javascript to do essentially the same thing over and over.
+CRUD generates a full featured ajax interface for Creating, Reading, Updating and Deleting Data.
 
-Using CRUD, you simply provide a schema and the front end interface is generated for you.  CRUD will make restfull GET, PUT, POST, and DELETE requests to the URL you specify.  You will need to implement the backend for these requests and your done!
+CRUD makes RESTful AJAX requests to the url of your choosing, and makes no assumptions about the backend implementation.  The example backend implementation here is written in PHP, but you are free to use any server side language or framework that you wish.
 
 By default, CRUD will generate a flexible HTML markup, however you can also override these templates with your own custom template generators. (see example_bootstrap.html for a completely overriden example, as well as example_minimal.html as a starting point for building your own custom templates.)
 
@@ -13,7 +13,7 @@ By default, CRUD will generate a flexible HTML markup, however you can also over
 CRUD.full({
 	//The name you are giving to this data collection (should be a single word)
     name: 'Thing',
-    
+
     //the url that crud will make ajax requests to
     url: 'users.php',khkjh
 
@@ -21,7 +21,7 @@ CRUD.full({
     //if set to true, POST, PUT, and DELETE requests will all be
     //POST requests with a url method parameter set to POST, PUT or DELETE.
     isSoftREST: false,
-    
+
     //client side validation.
     validate: function (data) {
         var error = {};
@@ -154,17 +154,25 @@ All get requests are paginated, urls are of the format crud.php/page/page#?(orde
 
 for example to get the 3rd page of results where "Textarea" is equal to "foo", and the results are ordered by 'letter', ascending, the request would be:
 
-crud.php/page/3?filter_Textarea=foo&order_letter=ascending
+####Some example URL's
+items/page/2
+items/page/5?filter_foo=val1&filter_bar=val2
+items/page/1?order_foo=ascending&order_bar=descending
+items/page/7?filter_favorite_color=green&order_username=ascending
+
+
+####GET Response
 
 Responses to a get request must be a json response of the form:
 ```json
 {
-	pages: (number of pages of results for the given request),
-	data: (rows of the returned data (each row must include a field named "id"))
+	"pages": "number of pages of results for the given request",
+	"data": "rows of the returned data (each row must include a field named "id")"
 }
 ```
+Note that all rows must return a unique identifier of the name "id".
 
-for example
+Example:
 ```json
 {
 	"pages": 7,
@@ -203,7 +211,7 @@ Return an error object with an HTTP response code of 409 if the item cannot be d
 
 ##formList
 
-CRUD.full({...}) creates a fully featured interface, with search and ordering features.  Sometimes however, you know that you'll only ever have a few data items to deal with, and need a much lighter weight interface.  CRUD.formList({...}) provides a list of forms that can be Created, Read, Updated and Deleted.
+CRUD.full({...}) creates a fully featured interface, with search and ordering features.  Sometimes however, you know that you'll only ever have a few data items to deal with, and need a much lighter weight interface.
 
 ###Example Usage
 
@@ -280,4 +288,3 @@ A single GET request is made to the supplied url after being initiated.  Unlike 
 
 ###PUT, POST, DELETE
 Follow the same format as in CRUD.full()
- 

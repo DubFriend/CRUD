@@ -4,7 +4,7 @@
 <title>CRUD with Bootstrap Example</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Bootstrap -->
-<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="../lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 <!-- <link rel="stylesheet" type="text/css" href="jquery-modal/jquery.modal.css"> -->
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -137,16 +137,38 @@
     </div>
 </div>
 
-<script src="lib/jquery-1.10.2.js"></script>
-<script src="bootstrap/js/bootstrap.min.js"></script>
-<script src="lib/mustache.js"></script>
+<script src="../lib/jquery-1.10.2.js"></script>
+<script src="../lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="../lib/mustache.js"></script>
 
-<!-- <script src="crud.js"></script> -->
-<script src="src/lib.js"></script>
-<script src="src/model.js"></script>
-<script src="src/template.js"></script>
-<script src="src/controller.js"></script>
-<script src="src/crud.js"></script>
+<!-- <script src="src/lib.js"></script>
+
+<script src="src/model/base.js"></script>
+<script src="src/model/schema.js"></script>
+<script src="src/model/filter.js"></script>
+<script src="src/model/order.js"></script>
+<script src="src/model/paginator.js"></script>
+<script src="src/model/request.js"></script>
+
+<script src="src/view/base.js"></script>
+<script src="src/view/delete.js"></script>
+<script src="src/view/filter.js"></script>
+<script src="src/view/form.js"></script>
+<script src="src/view/form_list.js"></script>
+<script src="src/view/list.js"></script>
+<script src="src/view/paginator.js"></script>
+
+<script src="src/controller/base.js"></script>
+<script src="src/controller/list.js"></script>
+<script src="src/controller/list_item.js"></script>
+<script src="src/controller/paginator.js"></script>
+<script src="src/controller/filter.js"></script>
+<script src="src/controller/form.js"></script>
+<script src="src/controller/form_list.js"></script>
+
+<script src="src/crud.js"></script> -->
+
+<script src="../crud.js"></script>
 
 <script>
 $(document).ready(function () {
@@ -203,7 +225,7 @@ $(document).ready(function () {
 
     var crud = CRUD.full({
         name: 'Thing',
-        url: 'crud.php',
+        url: '../crud.php',
 
         //isSoftREST: true,
 
