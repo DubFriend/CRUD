@@ -605,8 +605,9 @@ return {
                     }) : createForminatorTemplate(viewSchema, name)
             });
 
+
+
         model.subscribe('posted', function (response) {
-            console.log('posted');
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });
@@ -614,6 +615,9 @@ return {
                 controller.render(model.get(), {});
             }, 5000);
         });
+        model.subscribe('waiting:start', partial(that.publish, 'waiting:start'));
+        model.subscribe('waiting:end', partial(that.publish, 'waiting:end'));
+        controller.subscribe('bind', partial(that.publish, 'bind'));
 
         return that;
     }

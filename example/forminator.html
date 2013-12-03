@@ -45,7 +45,7 @@
 $(document).ready(function () {
     'use strict';
 
-    CRUD.forminator({
+    var forminator = CRUD.forminator({
         name: 'Thing',
         url: '../crud_form.php',
         validate: function (data) {
@@ -98,6 +98,20 @@ $(document).ready(function () {
         ]
     });
 
+    //Events.  Can Subscribe to forminator events
+    var logPubSub = function (message) {
+        forminator.subscribe(message, function (data) {
+            console.log('subscribe:' + message, data);
+        });
+    };
+    //forminator uses templates to rerender the html whenever changes occur.
+    //Therefore, if you are using a datepicker for example, you will need to rebind
+    //these elements to the dom at every bind event.
+    logPubSub('bind');
+    //fired at the start of an ajax event
+    logPubSub('waiting:start');
+    //fired at the completion of an ajax event (success or failure)
+    logPubSub('waiting:end');
 });
 </script>
 </body>

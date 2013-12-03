@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Forminator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<!-- <link rel="stylesheet" type="text/css" href="jquery-modal/jquery.modal.css"> -->
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+<![endif]-->
+<style>
+    body {
+       font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+       font-weight: 300;
+    }
+
+    .error {
+        color: rgb(236, 37, 37);
+    }
+
+    .success {
+        color: green;
+    }
+
+    input[type="checkbox"], input[type="radio"] {
+        position: relative;
+        top: 1px;
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+    }
+</style>
+
+</head>
+
+<body>
+<div class="container">
+    <h1>Forminator</h1>
+    <hr/>
+    <div id="Thing-forminator"></div>
+</div>
+
+<script src="../lib/jquery-1.10.2.js"></script>
+<script src="../lib/mustache.js"></script>
+
+<!-- <script src="../src/lib.js"></script>
+<script src="../src/model/base.js"></script>
+<script src="../src/model/forminator.js"></script>
+<script src="../src/view/base.js"></script>
+<script src="../src/view/forminator.js"></script>
+<script src="../src/controller/base.js"></script>
+<script src="../src/controller/forminator.js"></script>
+<script src="../src/crud.js"></script> -->
+
+<script src="../crud.js"></script>
+
+<script>
+$(document).ready(function () {
+    'use strict';
+
+    //utility function to help with building html strings from objects.
+    var reduce = function (collection, callback) {
+        var accumulation, key;
+        for(key in collection) {
+            if(collection.hasOwnProperty(key)) {
+                accumulation = callback(accumulation, collection[key], key, collection);
+            }
+        }
+        return accumulation;
+    };
+
+    var reduceSchemaToForm = function (fig) {
+        return reduce(fig.schema, function (acc, item) {
+            var className = '';
+            switch(item.type) {
+                case 'text':
+                case 'textarea':
+                case 'password':
+                case 'select':
+                    className = "form-control";
+                    break;
+                case 'radio':
+                case 'checkbox':
+                    className = "crud-input-group";
+                    break;
+                default:
+                    throw "invalid input type: " + item.type;
+            }
+            return (acc || '') +
+            '<div class="form-group">' +
+                '<label for="' + fig.ID + '-' + fig.name + '-' + item.name + '"' +
+                       'class="col-sm-3 control-label">' +
+                    (item.label || item.name) +
+                '</label>' +
+                '<div class="col-sm-6">' +
+                    fig.createInput({
+                        item: item,
+                        name: fig.name,
+                        class: className,
+                        ID: fig.ID
+                    }) +
+                '</div>' +
+                '<div class="col-sm-3 error">' +
+                    '{{' + item.name + 'Help}}' +
+                '</div>' +
+            '</div>';
+        });
+    };
+
+    var forminator = CRUD.forminator({
+        name: 'Thing',
+        url: '../crud_form.php',
+        validate: function (data) {
+            var error = {};
+            if(data.text.length < 3) {
+                error.text = '3 character minimum';
+            }
+            return error;
+        },
+        schema: [
+            {
+                name: 'text',
+                label: 'label yo',
+                type: 'text',
+                value: 'default'
+            },
+            {
+                name: 'textarea',
+                type: 'textarea'
+            },
+            {
+                name: 'fruit',
+                type: 'checkbox',
+                values: [
+                    { value: 'apple', label: 'La Pomme' },
+                    { value: 'orange', label: 'L\'Orange' }
+                ],
+                value: ['orange']
+            },
+            {
+                name: 'letter',
+                type: 'radio',
+                values: [
+                    { value: 'a', label: 'A' },
+                    { value: 'b' },
+                    { value: 'c' },
+                    { value: 'd', label: 'D' }
+                ],
+                value: 'b'
+            },
+            {
+                name: 'awesome',
+                type: 'select',
+                values: [
+                    { value: '1', label: 'One' },
+                    { value: '2', label: 'Two' },
+                    { value: '3', label: 'Three' }
+                ]
+            }
+        ],
+        createForminatorTemplate: function () {
+            return '' +
+            '<form class="form-horizontal well" role="form">' +
+                '<fieldset>' +
+                    '<legend>' + this.name + '</legend>' +
+                    reduceSchemaToForm({
+                        schema: this.schema,
+                        createInput: this.createInput,
+                        ID: this.uniqueID()
+                    }) +
+                    '<div class="form-group">' +
+                        '<div class="col-sm-offset-3 col-sm-2">' +
+                            '<input type="submit" class="btn btn-primary btn-lg btn-block" value="Submit"/>' +
+                            '<p class="success">' +
+                                '{{successMessage}}' +
+                            '</p>' +
+                        '</div>' +
+                    '</div>' +
+                '</fieldset>' +
+            '</form>';
+        }
+    });
+
+    //Events.  Can Subscribe to forminator events
+    var logPubSub = function (message) {
+        forminator.subscribe(message, function (data) {
+            console.log('subscribe:' + message, data);
+        });
+    };
+    //forminator uses templates to rerender the html whenever changes occur.
+    //Therefore, if you are using a datepicker for example, you will need to rebind
+    //these elements to the dom at every bind event.
+    logPubSub('bind');
+    //fired at the start of an ajax event
+    logPubSub('waiting:start');
+    //fired at the completion of an ajax event (success or error)
+    logPubSub('waiting:end');
+
+});
+</script>
+</body>
+</html>
