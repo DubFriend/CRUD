@@ -34,7 +34,8 @@ var createPaginatorController = function (fig) {
     that.render = function (pages) {
         pages = pages || that.calculatePageRange();
         var error = that.model.validate();
-        that.$().html(Mustache.render(that.template, {
+        //that.$().html(Mustache.render(that.template, {
+        that.$().html(fig.render(that.template, {
             pages: pages,
             numberOfPages: that.model.get('numberOfPages'),
             error: error

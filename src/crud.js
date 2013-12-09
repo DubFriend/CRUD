@@ -73,6 +73,10 @@ return {
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
+            render = fig.render || function (template, data) {
+                return Mustache.render(template, data);
+            },
+
             isSoftREST = fig.isSoftREST || false,
 
             modal = fig.modal || defaultModal,
@@ -109,7 +113,8 @@ return {
             var itemController = createListItemController({
                 model: model,
                 schema: viewSchema,
-                template: listItemTemplate
+                template: listItemTemplate,
+                render: render
             });
             itemController.subscribe('selected', selectedCallback);
             itemController.subscribe('edit', editCallback);
@@ -248,7 +253,8 @@ return {
         var paginatorController = createPaginatorController({
             el: '#' + name + '-crud-paginator-nav',
             model: paginatorModel,
-            template: paginatorTemplate
+            template: paginatorTemplate,
+            render: render
         });
 
         var listController = createListController({
@@ -260,7 +266,8 @@ return {
             orderModel: orderModel,
             createModel: createDefaultModel,
             template: listTemplate,
-            deleteConfirmationTemplate: deleteConfirmationTemplate
+            deleteConfirmationTemplate: deleteConfirmationTemplate,
+            render: render
         });
 
 
@@ -299,7 +306,8 @@ return {
                 filterSchema: viewFilterSchema,
 
                 isInstantFilter: isInstantFilter,
-                template: filterTemplate
+                template: filterTemplate,
+                render: render
             });
 
             filterModel.subscribe('change', newItem);
@@ -339,7 +347,8 @@ return {
                 createDefaultModel: function() {
                     return bindModel(createDefaultModel());
                 },
-                template: formTemplate
+                template: formTemplate,
+                render: render
             });
 
             formController.subscribe('new', function () {
@@ -441,6 +450,10 @@ return {
 
             isSoftREST = fig.isSoftREST || false,
 
+            render = fig.render || function (template, data) {
+                return Mustache.render(template, data);
+            },
+
             viewSchema = map(fig.schema, setEmptyCheckboxes),
             schema = mapSchema(viewSchema),
             validate = fig.validate,
@@ -493,7 +506,8 @@ return {
                 schema: schema,
                 modal: modal,
                 model: createDefaultModel(),
-                template: buildFormTemplate()
+                template: buildFormTemplate(),
+                render: render
             });
 
             formController.render();
@@ -528,7 +542,8 @@ return {
                 schema: schema,
                 modal: modal,
                 model: model,
-                template: buildFormListTemplate()
+                template: buildFormListTemplate(),
+                render: render
             });
 
             controller.setEl('#' + elID);
@@ -587,6 +602,11 @@ return {
             viewSchema = map(fig.schema, setEmptyCheckboxes),
             schema = mapSchema(viewSchema),
             validate = fig.validate,
+
+            render = fig.render || function (template, data) {
+                return Mustache.render(template, data);
+            },
+
             model = createForminatorModel({
                 url: url,
                 data: mapSchemaToModelData(fig.schema),
@@ -602,9 +622,9 @@ return {
                         name: name,
                         createInput: createInput,
                         uniqueID: generateUniqueID
-                    }) : createForminatorTemplate(viewSchema, name)
+                    }) : createForminatorTemplate(viewSchema, name),
+                render: render
             });
-
 
 
         model.subscribe('posted', function (response) {

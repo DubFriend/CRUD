@@ -65,7 +65,10 @@ var createListController = function (fig) {
 
 
 
-    $('body').prepend(Mustache.render(deleteConfirmationTemplate));
+    // $('body').prepend(Mustache.render(deleteConfirmationTemplate));
+    $('body').prepend(fig.render(deleteConfirmationTemplate));
+
+
     bindDeleteConfirmation();
 
     that.orderModel = fig.orderModel;

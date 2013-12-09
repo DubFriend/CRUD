@@ -32,7 +32,7 @@ var createController = function (fig) {
             else {
                 errors = {};
             }
-            that.$().html(Mustache.render(that.template, union(
+            that.$().html(fig.render(that.template, union(
                 that.mapModelToView(data), errors, (extra || {})
             )));
         };
