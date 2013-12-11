@@ -593,14 +593,24 @@ return {
 
 
 
+
     //Just a regular form.  Makes POST requests only.
     forminator: function (fig) {
         fig = fig || {};
         var that = mixinPubSub(),
             url = fig.url,
             name = fig.name,
-            viewSchema = map(fig.schema, setEmptyCheckboxes),
-            schema = mapSchema(viewSchema),
+
+            schema = mapSchema(map(fig.schema, setEmptyCheckboxes)),
+            actionSchema = fig.actions,
+
+            viewSchema = {
+                form: map(fig.schema, setEmptyCheckboxes),
+                actions: map(actionSchema, function (action) {
+                    return subSet(action, ['type', 'class', 'label']);
+                })
+            },
+
             validate = fig.validate,
 
             render = fig.render || function (template, data) {
@@ -612,6 +622,7 @@ return {
                 data: mapSchemaToModelData(fig.schema),
                 validate: validate
             }),
+
             controller = createForminatorController({
                 el: '#' + name + '-forminator',
                 schema: schema,

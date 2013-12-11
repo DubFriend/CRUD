@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 09-12-2013
+// (MIT) 11-12-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -178,6 +178,18 @@ var union = function () {
         });
     });
     return united;
+};
+
+var subSet = function (object, subsetKeys) {
+    return filter(object, function (value, key) {
+        return subsetKeys.indexOf(key) !== -1;
+    });
+};
+
+var excludedSet = function (object, excludedKeys) {
+    return filter(object, function (value, key) {
+        return excludedKeys.indexOf(key) === -1;
+    });
 };
 
 //execute callback immediately and at most one time on the minimumInterval,
@@ -824,15 +836,21 @@ var createPaginatorTemplate = function () {
 };
 
 var createForminatorTemplate = function (schema, crudName) {
+    'use strict';
     return '' +
     '<form>' +
         '<fieldset>' +
             '<legend>' + crudName + '</legend>' +
-            reduceFormSchema(schema, crudName) +
+            reduceFormSchema(schema.form, crudName) +
             '<div class="crud-control-set">' +
                 '<label>&nbsp;</label>' +
                 '<div class="crud-input-group">' +
-                    '<input type="submit" value="Submit"/>' +
+                    reduce(schema.actions, function (acc, action) {
+                        return (acc || '') +
+                        '<input type="' + action.type + '" ' +
+                               'class="' + action.class + '" ' +
+                               'value="' + action.label + '"/>';
+                    }) +
                 '</div>' +
                 '<div class="success">' +
                     '{{successMessage}}' +
@@ -2216,14 +2234,24 @@ return {
 
 
 
+
     //Just a regular form.  Makes POST requests only.
     forminator: function (fig) {
         fig = fig || {};
         var that = mixinPubSub(),
             url = fig.url,
             name = fig.name,
-            viewSchema = map(fig.schema, setEmptyCheckboxes),
-            schema = mapSchema(viewSchema),
+
+            schema = mapSchema(map(fig.schema, setEmptyCheckboxes)),
+            actionSchema = fig.actions,
+
+            viewSchema = {
+                form: map(fig.schema, setEmptyCheckboxes),
+                actions: map(actionSchema, function (action) {
+                    return subSet(action, ['type', 'class', 'label']);
+                })
+            },
+
             validate = fig.validate,
 
             render = fig.render || function (template, data) {
@@ -2235,6 +2263,7 @@ return {
                 data: mapSchemaToModelData(fig.schema),
                 validate: validate
             }),
+
             controller = createForminatorController({
                 el: '#' + name + '-forminator',
                 schema: schema,

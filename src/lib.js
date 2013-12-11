@@ -174,6 +174,18 @@ var union = function () {
     return united;
 };
 
+var subSet = function (object, subsetKeys) {
+    return filter(object, function (value, key) {
+        return subsetKeys.indexOf(key) !== -1;
+    });
+};
+
+var excludedSet = function (object, excludedKeys) {
+    return filter(object, function (value, key) {
+        return excludedKeys.indexOf(key) === -1;
+    });
+};
+
 //execute callback immediately and at most one time on the minimumInterval,
 //ignore block attempts
 var throttle = function (minimumInterval, callback) {

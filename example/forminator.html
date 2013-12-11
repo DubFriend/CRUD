@@ -50,50 +50,86 @@ $(document).ready(function () {
         url: '../crud_form.php',
         validate: function (data) {
             var error = {};
-            if(data.text.length < 3) {
-                error.text = '3 character minimum';
+            if(data.story.length === 'Once upon a time...') {
+                error.story = 'Tell a story.';
             }
             return error;
         },
+
         schema: [
             {
-                name: 'text',
-                label: 'label yo',
-                type: 'text',
-                value: 'default'
+                name: 'name',
+                label: 'Name',
+                type: 'text'
             },
             {
-                name: 'textarea',
-                type: 'textarea'
+                name: 'story',
+                label: 'Life Story',
+                type: 'textarea',
+                value: 'Once upon a time...'
             },
             {
-                name: 'fruit',
+                name: 'sex',
+                label: 'Sex',
                 type: 'checkbox',
                 values: [
-                    { value: 'apple', label: 'La Pomme' },
-                    { value: 'orange', label: 'L\'Orange' }
-                ],
-                value: ['orange']
+                    { value: 'm', label: 'Male' },
+                    { value: 'f', label: 'Female' }
+                ]
             },
             {
-                name: 'letter',
+                name: 'skill',
+                label: 'Samurai Skill',
                 type: 'radio',
                 values: [
-                    { value: 'a', label: 'A' },
-                    { value: 'b' },
-                    { value: 'c' },
-                    { value: 'd', label: 'D' }
+                    { value: '1', label: 'Bad' },
+                    { value: '2', label: 'Fair' },
+                    { value: '3', label: 'Ninja' }
                 ],
-                value: 'b'
+                value: '2'
             },
             {
-                name: 'awesome',
+                name: 'animal',
+                value: 'Favorite Animal',
                 type: 'select',
                 values: [
-                    { value: '1', label: 'One' },
-                    { value: '2', label: 'Two' },
-                    { value: '3', label: 'Three' }
+                    { value: 'lion', label: 'Lion' },
+                    { value: 'giraffe', label: 'Giraffe' },
+                    { value: 'zebra', label: 'Zebra' }
                 ]
+            }
+        ],
+
+        actions: [
+            {
+                label: "Publish",
+                type: "submit",
+                class: "btn-primary",
+                method: "PUT",
+                before: function () {
+                    // this : {
+                    //     $, set, get
+                    // }
+                    console.log('before', { arguments: arguments, this: this });
+                },
+                success: function (response) {
+                    console.log('success', { arguments: arguments, this: this });
+                },
+                error: function (jqXHR) {
+                    console.log('error', { arguments: arguments, this: this });
+                },
+                complete: function (response, jqXHR) {
+                    console.log('complete', { arguments: arguments, this: this });
+                }
+            },
+            {
+                label: "Change The Begining",
+                type: "button",
+                class: "btn-default",
+                //$ is scoped to this form
+                action: function () {
+                    console.log('action', { arguments: arguments, this: this });
+                }
             }
         ]
     });
