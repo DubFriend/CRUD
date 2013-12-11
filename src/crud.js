@@ -602,11 +602,11 @@ return {
             name = fig.name,
 
             schema = mapSchema(map(fig.schema, setEmptyCheckboxes)),
-            actionSchema = fig.actions,
+            actions = fig.actions,
 
             viewSchema = {
                 form: map(fig.schema, setEmptyCheckboxes),
-                actions: map(actionSchema, function (action) {
+                actions: map(actions, function (action) {
                     return subSet(action, ['type', 'class', 'label']);
                 })
             },
@@ -626,6 +626,7 @@ return {
             controller = createForminatorController({
                 el: '#' + name + '-forminator',
                 schema: schema,
+                actions: actions,
                 model: model,
                 template: fig.createForminatorTemplate ?
                     fig.createForminatorTemplate.apply({

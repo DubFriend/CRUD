@@ -173,18 +173,15 @@ $(document).ready(function () {
             }
         ],
 
-
+        // callbacks are bound to { $, set, get }
         actions: [
             {
                 label: "Publish",
                 type: "submit",
                 class: "btn-primary",
                 method: "PUT",
-                before: function () {
-                    // this : {
-                    //     $, set, get
-                    // }
-                    console.log('before', { arguments: arguments, this: this });
+                beforeSend: function () {
+                    console.log('beforeSend', { arguments: arguments, this: this });
                 },
                 success: function (response) {
                     console.log('success', { arguments: arguments, this: this });
@@ -192,7 +189,7 @@ $(document).ready(function () {
                 error: function (jqXHR) {
                     console.log('error', { arguments: arguments, this: this });
                 },
-                complete: function (response, jqXHR) {
+                complete: function (jqXHR) {
                     console.log('complete', { arguments: arguments, this: this });
                 }
             },

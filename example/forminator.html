@@ -107,9 +107,6 @@ $(document).ready(function () {
                 class: "btn-primary",
                 method: "PUT",
                 before: function () {
-                    // this : {
-                    //     $, set, get
-                    // }
                     console.log('before', { arguments: arguments, this: this });
                 },
                 success: function (response) {
