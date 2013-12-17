@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 11-12-2013
+// (MIT) 16-12-2013
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -525,12 +525,8 @@ var createForminatorModel = function (fig) {
 
     that.set = partial(that.set, function () {});
 
-    that.clear = function () {
-        my.data = {};
-        that.publish('change', that);
-    };
-
     that.submit = function (action) {
+
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             $.ajax({
@@ -538,26 +534,23 @@ var createForminatorModel = function (fig) {
                 method: action.method || 'POST',
                 data: my.data,
                 dataType: 'json',
-                //beforeSend: partial(that.publish, 'waiting:start'),
                 beforeSend: function () {
                     that.publish('waiting:start');
                     action.beforeSend();
                 },
                 success: function (response) {
                     console.log('success', response);
+                    that.publish('posted', response);
                     action.success(response);
-                    //that.publish('posted', response);
                 },
                 error: function (jqXHR) {
-                    action.error(jqXHR);
                     ajaxErrorResponse(that, jqXHR);
+                    action.error(jqXHR);
                 },
                 complete: function (jqXHR) {
-                    action.complete(jqXHR);
                     that.publish('waiting:end', jqXHR);
+                    action.complete(jqXHR);
                 }
-                // error: partial(ajaxErrorResponse, that),
-                // complete: partial(that.publish, 'waiting:end')
             });
         }
         that.publish('error', errors);
@@ -1619,9 +1612,21 @@ var createForminatorController = function (fig) {
         return serializeFormBySchema(that.$(), that.schema);
     };
 
+    that.clear = function () {
+        that.model.set(map(that.model.get(), function (value) {
+            return isArray(value) ? [] : '';
+        }), { validate: false, silent: true });
+        that.renderNoError();
+    };
+
     var bind = function () {
         var actionThis = {
-            $: that.$, set: that.model.set, get: that.model.get
+            $: that.$,
+            render: that.render,
+            renderNoError: that.renderNoError,
+            set: that.model.set,
+            get: that.model.get,
+            clear: that.clear
         };
 
         var getAction = function (actionObject, actionName) {
@@ -1661,13 +1666,6 @@ var createForminatorController = function (fig) {
             }
         });
 
-
-        // that.$().unbind();
-        // that.$().submit(function (e) {
-        //     e.preventDefault();
-        //     that.model.set(that.serialize(), { validate: false });
-        //     that.model.submit();
-        // });
         that.publish('bind');
     };
 
@@ -1675,13 +1673,14 @@ var createForminatorController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
+        //console.log('RENDER', data, errors, extra);
         parentRender(data, errors, extra);
         bind();
     };
 
     var parentRenderNoError = that.renderNoError;
-    that.renderNoError = function (data) {
-        parentRenderNoError(data);
+    that.renderNoError = function (data, extra) {
+        parentRenderNoError(data, {}, extra);
         bind();
     };
 
@@ -2337,12 +2336,13 @@ return {
 
 
         model.subscribe('posted', function (response) {
+            console.log('posted', response);
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });
-            setTimeout(function () {
-                controller.render(model.get(), {});
-            }, 5000);
+            // setTimeout(function () {
+            //     controller.renderNoError(model.get(), {});
+            // }, 5000);
         });
         model.subscribe('waiting:start', partial(that.publish, 'waiting:start'));
         model.subscribe('waiting:end', partial(that.publish, 'waiting:end'));

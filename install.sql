@@ -6,4 +6,3 @@ CREATE TABLE crud (
 	letter CHAR(1),
 	awesome CHAR(1)
 );
-

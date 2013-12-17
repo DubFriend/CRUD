@@ -7,9 +7,21 @@ var createForminatorController = function (fig) {
         return serializeFormBySchema(that.$(), that.schema);
     };
 
+    that.clear = function () {
+        that.model.set(map(that.model.get(), function (value) {
+            return isArray(value) ? [] : '';
+        }), { validate: false, silent: true });
+        that.renderNoError();
+    };
+
     var bind = function () {
         var actionThis = {
-            $: that.$, set: that.model.set, get: that.model.get
+            $: that.$,
+            render: that.render,
+            renderNoError: that.renderNoError,
+            set: that.model.set,
+            get: that.model.get,
+            clear: that.clear
         };
 
         var getAction = function (actionObject, actionName) {
@@ -49,13 +61,6 @@ var createForminatorController = function (fig) {
             }
         });
 
-
-        // that.$().unbind();
-        // that.$().submit(function (e) {
-        //     e.preventDefault();
-        //     that.model.set(that.serialize(), { validate: false });
-        //     that.model.submit();
-        // });
         that.publish('bind');
     };
 
@@ -63,13 +68,14 @@ var createForminatorController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
+        //console.log('RENDER', data, errors, extra);
         parentRender(data, errors, extra);
         bind();
     };
 
     var parentRenderNoError = that.renderNoError;
-    that.renderNoError = function (data) {
-        parentRenderNoError(data);
+    that.renderNoError = function (data, extra) {
+        parentRenderNoError(data, {}, extra);
         bind();
     };
 

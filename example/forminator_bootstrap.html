@@ -184,6 +184,11 @@ $(document).ready(function () {
                     console.log('beforeSend', { arguments: arguments, this: this });
                 },
                 success: function (response) {
+                    this.clear();
+                    this.renderNoError(this.get(), {
+                        successMessage: 'Thank you.  Your application is being ' +
+                                        'reviewed by Ninjas.'
+                    });
                     console.log('success', { arguments: arguments, this: this });
                 },
                 error: function (jqXHR) {
@@ -203,6 +208,8 @@ $(document).ready(function () {
                 }
             }
         ],
+
+        successMessage: 'Your application is being reviewed by Ninja\'s.',
 
 
         createForminatorTemplate: function () {

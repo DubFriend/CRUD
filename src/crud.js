@@ -640,12 +640,13 @@ return {
 
 
         model.subscribe('posted', function (response) {
+            console.log('posted', response);
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });
-            setTimeout(function () {
-                controller.render(model.get(), {});
-            }, 5000);
+            // setTimeout(function () {
+            //     controller.renderNoError(model.get(), {});
+            // }, 5000);
         });
         model.subscribe('waiting:start', partial(that.publish, 'waiting:start'));
         model.subscribe('waiting:end', partial(that.publish, 'waiting:end'));
