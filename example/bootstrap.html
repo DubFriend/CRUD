@@ -231,7 +231,10 @@ $(document).ready(function () {
 
         validate: function (data) {
             var error = {};
-            if(data.text !== 'default') {
+            if(data.text.length < 3) {
+                error.text = 'must be longer than 3 characters';
+            }
+            else if(data.text !== 'default') {
                 error.text = 'text error';
             }
             return error;
@@ -251,7 +254,7 @@ $(document).ready(function () {
                 name: 'text',
                 label: 'label yo',
                 type: 'text',
-                value: 'default'
+                value: 'de'
             },
             {
                 name: 'textarea',

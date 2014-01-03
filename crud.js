@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 16-12-2013
+// (MIT) 02-01-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -1075,6 +1075,7 @@ var createFormController = function (fig, my) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
+        console.log('render');
         parentRender(data, errors, union({
             status: (that.model.isNew() ? 'Create' : 'Edit')
         }, extra));
@@ -1084,6 +1085,7 @@ var createFormController = function (fig, my) {
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
+        console.log('renderNoError');
         parentRenderNoError(data, undefined, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -2206,7 +2208,9 @@ return {
                 render: render
             });
 
-            formController.render();
+            formController.renderNoError();
+
+            formController.setModel(formController.model);
 
             formController.model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
@@ -2340,9 +2344,6 @@ return {
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });
-            // setTimeout(function () {
-            //     controller.renderNoError(model.get(), {});
-            // }, 5000);
         });
         model.subscribe('waiting:start', partial(that.publish, 'waiting:start'));
         model.subscribe('waiting:end', partial(that.publish, 'waiting:end'));

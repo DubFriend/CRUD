@@ -51,6 +51,7 @@ var createFormController = function (fig, my) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
+        console.log('render');
         parentRender(data, errors, union({
             status: (that.model.isNew() ? 'Create' : 'Edit')
         }, extra));
@@ -60,6 +61,7 @@ var createFormController = function (fig, my) {
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
+        console.log('renderNoError');
         parentRenderNoError(data, undefined, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });

@@ -226,6 +226,9 @@ $(document).ready(function () {
             if(data.text.length < 3) {
                 error.text = '3 character minimum';
             }
+            else if(data.text.length > 7) {
+                error.text = '7 character maximum';
+            }
             return error;
         },
 
@@ -237,7 +240,7 @@ $(document).ready(function () {
                 name: 'text',
                 label: 'label yo',
                 type: 'text',
-                value: 'default'
+                value: 'de'
             },
             {
                 name: 'textarea',

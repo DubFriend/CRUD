@@ -510,7 +510,9 @@ return {
                 render: render
             });
 
-            formController.render();
+            formController.renderNoError();
+
+            formController.setModel(formController.model);
 
             formController.model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
@@ -644,9 +646,6 @@ return {
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });
-            // setTimeout(function () {
-            //     controller.renderNoError(model.get(), {});
-            // }, 5000);
         });
         model.subscribe('waiting:start', partial(that.publish, 'waiting:start'));
         model.subscribe('waiting:end', partial(that.publish, 'waiting:end'));
