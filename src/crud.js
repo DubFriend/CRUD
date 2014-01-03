@@ -573,7 +573,6 @@ return {
             url: url,
             dataType: 'json',
             success: function (response) {
-                console.log('ajax response', response);
                 foreach(response.data, function (item) {
                     var id = item.id;
                     delete item.id;
@@ -585,9 +584,7 @@ return {
                     }));
                 });
             },
-            error: function () {
-                console.error('ajax error', arguments);
-            }
+            error: function () {}
         });
 
         return that;
@@ -642,7 +639,6 @@ return {
 
 
         model.subscribe('posted', function (response) {
-            console.log('posted', response);
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });

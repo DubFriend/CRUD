@@ -84,7 +84,6 @@
             schema = buildSchema();
 
             validate = function (data) {
-                //console.log('VALIDATE', data);
                 var error = {};
                 if(data.text !== 'default') {
                     error.text = 'text error';

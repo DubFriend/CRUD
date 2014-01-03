@@ -19,7 +19,6 @@ var createForminatorModel = function (fig) {
                     action.beforeSend();
                 },
                 success: function (response) {
-                    console.log('success', response);
                     that.publish('posted', response);
                     action.success(response);
                 },

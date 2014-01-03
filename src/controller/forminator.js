@@ -68,7 +68,6 @@ var createForminatorController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
-        //console.log('RENDER', data, errors, extra);
         parentRender(data, errors, extra);
         bind();
     };

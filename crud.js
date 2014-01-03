@@ -382,13 +382,11 @@ var createSchemaModel = function (fig) {
     };
 
     that.delete = function () {
-        console.log('delete', that.id());
         if(!that.isNew()) {
             ajax({
                 url: my.url + '/' + id,
                 method: 'DELETE',
                 success: function (response) {
-                    console.log('delete success', response);
                     var id = that.id();
                     that.publish('destroyed', id);
                 }
@@ -539,7 +537,6 @@ var createForminatorModel = function (fig) {
                     action.beforeSend();
                 },
                 success: function (response) {
-                    console.log('success', response);
                     that.publish('posted', response);
                     action.success(response);
                 },
@@ -1075,7 +1072,6 @@ var createFormController = function (fig, my) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
-        console.log('render');
         parentRender(data, errors, union({
             status: (that.model.isNew() ? 'Create' : 'Edit')
         }, extra));
@@ -1085,7 +1081,6 @@ var createFormController = function (fig, my) {
 
     var parentRenderNoError = that.renderNoError;
     that.renderNoError = function (data) {
-        console.log('renderNoError');
         parentRenderNoError(data, undefined, {
             status: (that.model.isNew() ? 'Create' : 'Edit')
         });
@@ -1675,7 +1670,6 @@ var createForminatorController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data, errors, extra) {
-        //console.log('RENDER', data, errors, extra);
         parentRender(data, errors, extra);
         bind();
     };
@@ -2271,7 +2265,6 @@ return {
             url: url,
             dataType: 'json',
             success: function (response) {
-                console.log('ajax response', response);
                 foreach(response.data, function (item) {
                     var id = item.id;
                     delete item.id;
@@ -2283,9 +2276,7 @@ return {
                     }));
                 });
             },
-            error: function () {
-                console.error('ajax error', arguments);
-            }
+            error: function () {}
         });
 
         return that;
@@ -2340,7 +2331,6 @@ return {
 
 
         model.subscribe('posted', function (response) {
-            console.log('posted', response);
             controller.render(model.get(), {}, {
                 successMessage: fig.successMessage || 'Submit Success.'
             });
