@@ -155,15 +155,15 @@ switch($_SERVER['REQUEST_METHOD']) {
         );
 
 
-        $unaccountedForColumnData = array_map(function ($row) {
-            $row['foo'] = 'bar';
-            return $row;
-        },$results->toArray());
+        // $unaccountedForColumnData = array_map(function ($row) {
+        //     $row['foo'] = 'bar';
+        //     return $row;
+        // },$results->toArray());
 
         $response = array(
             'pages' => ceil($results->count() / ROWS_PER_PAGE),
-            'data' => $unaccountedForColumnData
-            // 'data' => array_merge($results->toArray())
+            // 'data' => $unaccountedForColumnData
+            'data' => array_merge($results->toArray())
         );
         break;
     case 'PUT':

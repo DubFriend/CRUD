@@ -181,15 +181,6 @@ $(document).ready(function () {
             return error;
         },
 
-        //deletable: false,
-        //readOnly: true,
-
-        // id: {
-        //     orderable: true,
-        //     order: 'ascending',
-        //     label: 'id'
-        // },
-
         schema: [
             {
                 name: 'text',
@@ -199,8 +190,6 @@ $(document).ready(function () {
             },
             {
                 name: 'textarea',
-                // orderable: true,
-                // order: 'ascending',
                 type: 'textarea'
             },
             {
@@ -221,7 +210,6 @@ $(document).ready(function () {
                     { value: 'c' },
                     { value: 'd', label: 'D' }
                 ],
-                // orderable: true,
                 value: 'b'
             },
             {
@@ -233,35 +221,7 @@ $(document).ready(function () {
                     { value: '3', label: 'Three' }
                 ]
             }
-        ],
-
-        // instantFilter: true,
-        // filterSchema: [
-        //     {
-        //         name: "Maximum_Awesome",
-        //         label: "Awesome",
-        //         type: 'select',
-        //         values: [
-        //             { value: '1', label: '<= One' },
-        //             { value: '2', label: '<= Two' },
-        //             { value: '3', label: '<= Three' }
-        //         ],
-        //         value: '3'
-        //     },
-        //     {
-        //         name: "Search_Textarea",
-        //         label: "Textarea",
-        //         type: 'text'
-        //     },
-        //     {
-        //         name: "fruit",
-        //         type: 'checkbox',
-        //         values: [
-        //             { value: 'apple', label: 'pomme' },
-        //             { value: 'orange' }
-        //         ]
-        //     }
-        // ]
+        ]
     });
 });
 </script>
