@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 02-01-2014
+// (MIT) 24-01-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -2092,10 +2092,7 @@ return {
         //keybindings for list navigation only if mouse is
         //hovering over the list or paginator.
         $(document).keydown(function (e) {
-            if(
-                listController.$().is(':hover') ||
-                paginatorController.$().is(':hover')
-            ) {
+            if(listController.$().is(':hover')) {
                 switch(e.keyCode) {
                     case 37: //left arrow key
                         e.preventDefault();

@@ -121,12 +121,12 @@
 
     <div class="row">
         <div id="Thing-crud-new" class="col-sm-6"></div>
-        <div id="Thing-crud-filter-container" class="col-sm-6"></div>
+        <!-- <div id="Thing-crud-filter-container" class="col-sm-6"></div> -->
     </div>
 
-    <div class="row">
+   <!--  <div class="row">
         <div id="Thing-crud-paginator-nav" class="col-sm-12"></div>
-    </div>
+    </div> -->
 
     <div class="row">
         <div id="Thing-crud-list-container" class="col-sm-12"></div>
@@ -184,11 +184,11 @@ $(document).ready(function () {
         //deletable: false,
         //readOnly: true,
 
-        id: {
-            orderable: true,
-            order: 'ascending',
-            label: 'id'
-        },
+        // id: {
+        //     orderable: true,
+        //     order: 'ascending',
+        //     label: 'id'
+        // },
 
         schema: [
             {
@@ -199,9 +199,9 @@ $(document).ready(function () {
             },
             {
                 name: 'textarea',
-                type: 'textarea',
-                orderable: true,
-                order: 'ascending'
+                // orderable: true,
+                // order: 'ascending',
+                type: 'textarea'
             },
             {
                 name: 'fruit',
@@ -221,8 +221,8 @@ $(document).ready(function () {
                     { value: 'c' },
                     { value: 'd', label: 'D' }
                 ],
-                value: 'b',
-                orderable: true
+                // orderable: true,
+                value: 'b'
             },
             {
                 name: 'awesome',
@@ -235,33 +235,33 @@ $(document).ready(function () {
             }
         ],
 
-        instantFilter: true,
-        filterSchema: [
-            {
-                name: "Maximum_Awesome",
-                label: "Awesome",
-                type: 'select',
-                values: [
-                    { value: '1', label: '<= One' },
-                    { value: '2', label: '<= Two' },
-                    { value: '3', label: '<= Three' }
-                ],
-                value: '3'
-            },
-            {
-                name: "Search_Textarea",
-                label: "Textarea",
-                type: 'text'
-            },
-            {
-                name: "fruit",
-                type: 'checkbox',
-                values: [
-                    { value: 'apple', label: 'pomme' },
-                    { value: 'orange' }
-                ]
-            }
-        ]
+        // instantFilter: true,
+        // filterSchema: [
+        //     {
+        //         name: "Maximum_Awesome",
+        //         label: "Awesome",
+        //         type: 'select',
+        //         values: [
+        //             { value: '1', label: '<= One' },
+        //             { value: '2', label: '<= Two' },
+        //             { value: '3', label: '<= Three' }
+        //         ],
+        //         value: '3'
+        //     },
+        //     {
+        //         name: "Search_Textarea",
+        //         label: "Textarea",
+        //         type: 'text'
+        //     },
+        //     {
+        //         name: "fruit",
+        //         type: 'checkbox',
+        //         values: [
+        //             { value: 'apple', label: 'pomme' },
+        //             { value: 'orange' }
+        //         ]
+        //     }
+        // ]
     });
 });
 </script>

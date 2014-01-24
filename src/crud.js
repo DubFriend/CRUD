@@ -400,10 +400,7 @@ return {
         //keybindings for list navigation only if mouse is
         //hovering over the list or paginator.
         $(document).keydown(function (e) {
-            if(
-                listController.$().is(':hover') ||
-                paginatorController.$().is(':hover')
-            ) {
+            if(listController.$().is(':hover')) {
                 switch(e.keyCode) {
                     case 37: //left arrow key
                         e.preventDefault();
