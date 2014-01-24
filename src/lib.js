@@ -258,3 +258,8 @@ var mixinPubSub = function (object) {
 
     return object;
 };
+
+if (typeof console === "undefined"){
+    console={};
+    console.warn = function () {};
+}

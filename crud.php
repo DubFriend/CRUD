@@ -153,9 +153,17 @@ switch($_SERVER['REQUEST_METHOD']) {
             buildOrderBySQL($_GET) . ' ' .
             'LIMIT ' . ((getPageNumber() - 1) * ROWS_PER_PAGE) . ', ' . ROWS_PER_PAGE
         );
+
+
+        $unaccountedForColumnData = array_map(function ($row) {
+            $row['foo'] = 'bar';
+            return $row;
+        },$results->toArray());
+
         $response = array(
             'pages' => ceil($results->count() / ROWS_PER_PAGE),
-            'data' => $results->toArray()
+            'data' => $unaccountedForColumnData
+            // 'data' => array_merge($results->toArray())
         );
         break;
     case 'PUT':

@@ -265,6 +265,11 @@ var mixinPubSub = function (object) {
     return object;
 };
 
+if (typeof console === "undefined"){
+    console={};
+    console.warn = function () {};
+}
+
 var createModel = function (fig, my) {
     fig = fig || {};
     var that = mixinPubSub();
@@ -418,7 +423,10 @@ var createRequestModel = function () {
                 ),
                 dataType: 'json',
                 beforeSend: partial(that.publish, fig.moduleName + ':waiting:start'),
-                success: partial(that.publish, 'load'),
+                success: function (response) {
+                    // console.log(response);
+                    partial(that.publish, 'load')(response);
+                },
                 error: partial(ajaxErrorResponse, that),
                 complete: partial(that.publish, fig.moduleName + ':waiting:end')
             });
@@ -942,24 +950,30 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        var viewData = map(modelData, function (value, name) {
-            var type = schema[name].type;
-            if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
-                var mappedValue = {};
-                foreach(schema[name].values, function (choiceObject) {
-                    var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
-                    if(isSelected(choice, value, name)) {
-                        mappedValue[choice] = true;
-                    }
-                });
-                return mappedValue;
+        return map(modelData, function (value, name) {
+            if(schema[name]) {
+                var type = schema[name].type;
+                if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
+                    var mappedValue = {};
+                    foreach(schema[name].values, function (choiceObject) {
+                        var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
+                        if(isSelected(choice, value, name)) {
+                            mappedValue[choice] = true;
+                        }
+                    });
+                    return mappedValue;
+                }
+                else {
+                    return value;
+                }
             }
             else {
-                return value;
+                console.warn(
+                    'warning: schema attribute of name: ' +
+                    name + ' does not exist.'
+                );
             }
         });
-
-        return viewData;
     };
 
     that.render = partial(render, true);
@@ -1705,6 +1719,7 @@ var setEmptyCheckboxes = function (item) {
 
 var mapSchema = function (schema) {
     return map(schema, function (itemRef) {
+        // console.log('item ', itemRef);
         var item = copy(itemRef);
         switch(item.type) {
             case 'radio':
@@ -1928,6 +1943,11 @@ return {
                         schema,
                         identity,
                         function (key, item) {
+
+
+                            // console.log('item', item);
+
+
                             return item.name;
                         }
                     ),
@@ -2086,7 +2106,7 @@ return {
         subscribeWaitingPublish(requestModel, 'order');
         subscribeWaitingPublish(requestModel, 'paginator');
 
-        //kicks off an ajax load event
+        //kicks off an ajax load event (see request model and paginator controller)
         paginatorController.setPage(1);
 
         //keybindings for list navigation only if mouse is

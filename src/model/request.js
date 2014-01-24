@@ -15,7 +15,10 @@ var createRequestModel = function () {
                 ),
                 dataType: 'json',
                 beforeSend: partial(that.publish, fig.moduleName + ':waiting:start'),
-                success: partial(that.publish, 'load'),
+                success: function (response) {
+                    // console.log(response);
+                    partial(that.publish, 'load')(response);
+                },
                 error: partial(ajaxErrorResponse, that),
                 complete: partial(that.publish, fig.moduleName + ':waiting:end')
             });

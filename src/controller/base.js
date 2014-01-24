@@ -77,24 +77,30 @@ var createController = function (fig) {
                 choice === value : value.indexOf(choice) !== -1;
         };
 
-        var viewData = map(modelData, function (value, name) {
-            var type = schema[name].type;
-            if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
-                var mappedValue = {};
-                foreach(schema[name].values, function (choiceObject) {
-                    var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
-                    if(isSelected(choice, value, name)) {
-                        mappedValue[choice] = true;
-                    }
-                });
-                return mappedValue;
+        return map(modelData, function (value, name) {
+            if(schema[name]) {
+                var type = schema[name].type;
+                if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
+                    var mappedValue = {};
+                    foreach(schema[name].values, function (choiceObject) {
+                        var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
+                        if(isSelected(choice, value, name)) {
+                            mappedValue[choice] = true;
+                        }
+                    });
+                    return mappedValue;
+                }
+                else {
+                    return value;
+                }
             }
             else {
-                return value;
+                console.warn(
+                    'warning: schema attribute of name: ' +
+                    name + ' does not exist.'
+                );
             }
         });
-
-        return viewData;
     };
 
     that.render = partial(render, true);

@@ -13,6 +13,7 @@ var setEmptyCheckboxes = function (item) {
 
 var mapSchema = function (schema) {
     return map(schema, function (itemRef) {
+        // console.log('item ', itemRef);
         var item = copy(itemRef);
         switch(item.type) {
             case 'radio':
@@ -236,6 +237,11 @@ return {
                         schema,
                         identity,
                         function (key, item) {
+
+
+                            // console.log('item', item);
+
+
                             return item.name;
                         }
                     ),
@@ -394,7 +400,7 @@ return {
         subscribeWaitingPublish(requestModel, 'order');
         subscribeWaitingPublish(requestModel, 'paginator');
 
-        //kicks off an ajax load event
+        //kicks off an ajax load event (see request model and paginator controller)
         paginatorController.setPage(1);
 
         //keybindings for list navigation only if mouse is
