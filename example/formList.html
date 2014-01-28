@@ -64,7 +64,7 @@
 $(document).ready(function () {
     'use strict';
 
-    CRUD.formList({
+    var CRUDThing = CRUD.formList({
         name: 'Thing',
         url: '../crud.php',
 
@@ -77,6 +77,14 @@ $(document).ready(function () {
             }
             return error;
         },
+
+        // addItemAction: function ($elem, finished) {
+        //     $elem.fadeIn(300, finished);
+        // },
+
+        // removeItemAction: function ($elem, finished) {
+        //     $elem.fadeOut(300, finished);
+        // },
 
         //deletable: false,
         //readOnly: true,
@@ -126,6 +134,26 @@ $(document).ready(function () {
             }
         ]
     });
+
+    // before ajax starts and after it completes
+    var debugSubscribeWaiting = function (type) {
+        CRUDThing.subscribe(type + ':waiting:start', function (model) {
+            console.log(type + ':waiting:start');
+        });
+        CRUDThing.subscribe(type + ':waiting:end', function (model) {
+            console.log(type + ':waiting:end');
+        });
+    };
+
+    // called whenever element is rerendered
+    var debugSubscribeBind = function (type) {
+        CRUDThing.subscribe('bind:' + type, function (jqueryRef) {
+            console.log('bind:' + type);
+        });
+    };
+
+    debugSubscribeWaiting('form');
+    debugSubscribeBind('form');
 });
 </script>
 </body>

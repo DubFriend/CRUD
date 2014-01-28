@@ -6,7 +6,6 @@ var createPaginatorModel = function (fig) {
     var my = {};
     var that = createModel(fig, my),
         requestModel = fig.requestModel;
-        // isFirstPageSet = true;
 
     that.validate = function (testData) {
         testData = testData || my.data;
@@ -26,36 +25,13 @@ var createPaginatorModel = function (fig) {
         return errors;
     };
 
-    that.set = function (newData, options) {
-        console.log('NEW DATA', newData);
-        options = options || {};
-        var errors = options.validate === false ? {} : that.validate(newData);
-        if(isEmpty(errors)) {
-            my.data = union(my.data, newData);
-            if(options.silent !== true) {
-                that.publish('change', newData);
-                if(newData.pageNumber) {
-                    that.publish('change:pageNumber', newData);
-                    requestModel.changePage(newData.pageNumber, 'paginator');
-                }
-            }
-            return true;
+    that.set = partial(that.set, function (newData) {
+        console.log('SET', newData);
+        if(newData.pageNumber) {
+            that.publish('change:pageNumber', newData);
+            requestModel.changePage(newData.pageNumber, 'paginator');
         }
-        else {
-            if(options.silent !== true) {
-                that.publish('error', errors);
-            }
-            return false;
-        }
-    };
-
-    // that.set = partial(that.set, function (newData) {
-    //     console.log('SET', newData);
-    //     if(newData.pageNumber) {
-    //         that.publish('change:pageNumber', newData);
-    //         requestModel.changePage(newData.pageNumber, 'paginator');
-    //     }
-    // });
+    });
 
     return that;
 };

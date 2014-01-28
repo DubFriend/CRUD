@@ -527,6 +527,14 @@ return {
         var newItem = function (model) {
             if(!formController) {
                 formController = buildNewFormController();
+
+                formController.subscribe(
+                    'bind',
+                    createBindPublish(that.publish, formController.model, 'form')
+                );
+
+                subscribeWaitingPublish(that.publish, formController.model, 'form');
+
                 formController.model.subscribe('saved', function () {
                     formController = null;
                 });
@@ -547,6 +555,13 @@ return {
                 template: buildFormListTemplate(),
                 render: render
             });
+
+            controller.subscribe(
+                'bind',
+                createBindPublish(that.publish, model, 'form')
+            );
+
+            subscribeWaitingPublish(that.publish, model, 'form');
 
             controller.setEl('#' + elID);
             controller.render();
