@@ -154,7 +154,10 @@ return {
             var isFirstLoad = true;
             return function (response) {
                 setCRUDList(response.data);
-                paginatorController.model.set({ numberOfPages: response.pages });
+                // console.log('RESPONSE PAGES', response.pages);
+                paginatorController.model.set({
+                    numberOfPages: response.pages || 1
+                });
                 if(isFirstLoad) {
                     paginatorController.render();
                     isFirstLoad = false;

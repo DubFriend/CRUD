@@ -69,15 +69,22 @@ var createPaginatorController = function (fig) {
     };
 
     that.render = function (pages) {
-        pages = pages || calculatePageRange();
-        var error = that.model.validate();
-        that.$().html(fig.render(that.template, {
-            pages: pages,
-            numberOfPages: that.model.get('numberOfPages'),
-            error: error
-        }));
-        that.setSelected(that.model.get('pageNumber'));
-        bind();
+        var numberOfPages = that.model.get('numberOfPages');
+        if(numberOfPages > 1) {
+            pages = pages || calculatePageRange();
+            var error = that.model.validate();
+            that.$().html(fig.render(that.template, {
+                pages: pages,
+                numberOfPages: numberOfPages,
+                error: error
+            }));
+            that.setSelected(that.model.get('pageNumber'));
+            bind();
+        }
+        else {
+            // dont show paginator if there is only one page.
+            that.$().html('');
+        }
     };
 
     that.setPage = function (pageNumber) {
