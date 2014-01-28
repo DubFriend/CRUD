@@ -1719,7 +1719,6 @@ var setEmptyCheckboxes = function (item) {
 
 var mapSchema = function (schema) {
     return map(schema, function (itemRef) {
-        // console.log('item ', itemRef);
         var item = copy(itemRef);
         switch(item.type) {
             case 'radio':
@@ -1752,6 +1751,21 @@ var createDefaultModelBase = function (that, data, id) {
         data: data || mapSchemaToModelData(that.schema),
         validate: that.validate
     });
+};
+
+var createBindPublish = function (publish, controller, moduleName) {
+    return partial(publish, 'bind:' + moduleName, controller.$);
+};
+
+var subscribeWaitingPublish = function (publish, model, moduleName) {
+    model.subscribe(
+        moduleName + ':waiting:start',
+        partial(publish, moduleName + ':waiting:start')
+    );
+    model.subscribe(
+        moduleName + ':waiting:end',
+        partial(publish, moduleName + ':waiting:end')
+    );
 };
 
 var defaultModal = {
@@ -1854,21 +1868,6 @@ return {
             };
         }());
 
-        var createBindPublish = function (controller, moduleName) {
-            return partial(that.publish, 'bind:' + moduleName, controller.$);
-        };
-
-        var subscribeWaitingPublish = function (model, moduleName) {
-            model.subscribe(
-                moduleName + ':waiting:start',
-                partial(that.publish, moduleName + ':waiting:start')
-            );
-            model.subscribe(
-                moduleName + ':waiting:end',
-                partial(that.publish, moduleName + ':waiting:end')
-            );
-        };
-
         var bindModel = function (model) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
@@ -1885,7 +1884,7 @@ return {
                 newItem();
             });
 
-            subscribeWaitingPublish(model, 'form');
+            subscribeWaitingPublish(that.publish, model, 'form');
 
             return model;
         };
@@ -1943,11 +1942,6 @@ return {
                         schema,
                         identity,
                         function (key, item) {
-
-
-                            // console.log('item', item);
-
-
                             return item.name;
                         }
                     ),
@@ -2025,7 +2019,7 @@ return {
             filterModel.subscribe('change', newItem);
             filterController.subscribe(
                 'bind',
-                createBindPublish(filterController, 'filter')
+                createBindPublish(that.publish, filterController, 'filter')
             );
         }
 
@@ -2069,7 +2063,7 @@ return {
 
             formController.subscribe(
                 'bind',
-                createBindPublish(formController, 'form')
+                createBindPublish(that.publish, formController, 'form')
             );
 
             paginatorModel.subscribe('change', newItem);
@@ -2093,18 +2087,18 @@ return {
 
         listController.subscribe(
             'bind',
-            createBindPublish(listController, 'list')
+            createBindPublish(that.publish, listController, 'list')
         );
         paginatorController.subscribe(
             'bind',
-            createBindPublish(paginatorController, 'paginator')
+            createBindPublish(that.publish, paginatorController, 'paginator')
         );
 
         requestModel.subscribe('load', load);
 
-        subscribeWaitingPublish(requestModel, 'filter');
-        subscribeWaitingPublish(requestModel, 'order');
-        subscribeWaitingPublish(requestModel, 'paginator');
+        subscribeWaitingPublish(that.publish, requestModel, 'filter');
+        subscribeWaitingPublish(that.publish, requestModel, 'order');
+        subscribeWaitingPublish(that.publish, requestModel, 'paginator');
 
         //kicks off an ajax load event (see request model and paginator controller)
         paginatorController.setPage(1);

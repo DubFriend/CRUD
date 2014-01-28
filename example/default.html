@@ -170,7 +170,7 @@
 $(document).ready(function () {
     'use strict';
 
-    CRUD.full({
+    var CRUDThing = CRUD.full({
         name: 'Thing',
         url: '../crud.php',
         validate: function (data) {
@@ -263,6 +263,35 @@ $(document).ready(function () {
             }
         ]
     });
+
+
+    // before ajax starts and after it completes
+    var debugSubscribeWaiting = function (type) {
+        CRUDThing.subscribe(type + ':waiting:start', function (model) {
+            console.log(type + ':waiting:start');
+        });
+        CRUDThing.subscribe(type + ':waiting:end', function (model) {
+            console.log(type + ':waiting:end');
+        });
+    };
+
+    // called whenever element is rerendered
+    var debugSubscribeBind = function (type) {
+        CRUDThing.subscribe('bind:' + type, function (jqueryRef) {
+            console.log('bind:' + type);
+        });
+    };
+
+    debugSubscribeWaiting('form');
+    debugSubscribeWaiting('filter');
+    debugSubscribeWaiting('order');
+    debugSubscribeWaiting('paginator');
+
+    debugSubscribeBind('form');
+    debugSubscribeBind('filter');
+    debugSubscribeBind('list');
+    debugSubscribeBind('paginator');
+
 });
 </script>
 </body>
