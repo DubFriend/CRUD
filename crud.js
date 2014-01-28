@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 24-01-2014
+// (MIT) 27-01-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -1475,15 +1475,51 @@ var createPaginatorController = function (fig) {
         that.publish('bind');
     };
 
+    var calculatePageRange = function () {
+        // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
+        var rolloverNegatives = function (array) {
+            var shifted = [];
+            foreach(reverse(array), function (number) {
+                if(number <= 0) {
+                    shifted.push(last(shifted) + 1);
+                }
+                else {
+                    shifted.unshift(number);
+                }
+            });
+            return shifted;
+        };
+
+        //should be called after rolloverNegatives
+        var rolloverPastMaxPageNumber = function (array) {
+            var shifted = [];
+            foreach(array, function (number) {
+                var rolloverValue = shifted.length === 0 ?
+                    number : shifted[0] - 1;
+                if(number <= that.model.get('numberOfPages')) {
+                    shifted.push(number);
+                }
+                else if(rolloverValue > 0) {
+                    shifted.unshift(rolloverValue);
+                }
+            });
+            return shifted;
+        };
+
+        var currentPage = that.model.get('pageNumber');
+        return rolloverPastMaxPageNumber(
+            rolloverNegatives(range(currentPage - 3, currentPage + 3))
+        );
+    };
+
     that.setSelected = function (pageNumber) {
         that.$('li a').removeClass('selected');
         that.$('li a[data-page-number="' + pageNumber + '"]').addClass('selected');
     };
 
     that.render = function (pages) {
-        pages = pages || that.calculatePageRange();
+        pages = pages || calculatePageRange();
         var error = that.model.validate();
-        //that.$().html(Mustache.render(that.template, {
         that.$().html(fig.render(that.template, {
             pages: pages,
             numberOfPages: that.model.get('numberOfPages'),
@@ -1510,102 +1546,6 @@ var createPaginatorController = function (fig) {
             that.setPage(currentPage - 1);
         }
     });
-
-    //determines how many page list items to render based on width of the list
-    //template by default.
-    that.calculatePageRange = (function () {
-        var lastCalculation = 1;
-        var testPageNumbers = [1, 12, 123, 1234, 12345, 123456, 1234567];
-        var widths;
-
-        var initHTMLWidths = function () {
-            that.$().css({ visibility: 'hidden' });
-
-            that.render(testPageNumbers);
-            var $listItems = that.$('li');
-
-            var gotoWidth = that.$('.crud-goto-page-form').width();
-
-            widths = {
-                digits: map(testPageNumbers, function (number, index) {
-                    return $listItems.eq(index).width();
-                }),
-                container: that.$('.crud-pages').width() - gotoWidth - 5,
-                goto: gotoWidth
-            };
-
-            that.render(lastCalculation);
-            that.$().removeAttr('style');
-        };
-
-        var widthOfNumber = function (number) {
-            return widths.digits[number.toString().length - 1];
-        };
-
-        var getPageNumbers = function (startingNumber, buffer, isAscending) {
-            var pageNumber = startingNumber,
-                accumulatedWidth = 0,
-                numbers = [],
-                advance = isAscending ? increment : decrement;
-
-            while(accumulatedWidth < buffer) {
-                pageNumber = advance(pageNumber);
-                accumulatedWidth += widthOfNumber(pageNumber);
-                numbers.push(pageNumber);
-            }
-            numbers.pop();
-            return numbers;
-        };
-
-        // ex: [-2, -1, 0, 1, 2] -> [1, 2, 3, 4, 5]
-        var rolloverNonPositives = function (array) {
-            var shifted = [];
-            foreach(reverse(array), function (number) {
-                if(number <= 0) {
-                    shifted.push(last(shifted) + 1);
-                }
-                else {
-                    shifted.unshift(number);
-                }
-            });
-            return shifted;
-        };
-
-        var fineTune = function (pagesSoFarInput) {
-            var pagesSoFar = copy(pagesSoFarInput);
-            var lengthSoFar = reduce(pagesSoFar, function (acc, pageNumber) {
-                return (acc || 0) + widthOfNumber(pageNumber);
-            });
-            var gapLength = widths.container - lengthSoFar;
-            var nextPage = last(pagesSoFar) + 1;
-            if(
-                gapLength > widthOfNumber(nextPage) &&
-                nextPage <= that.model.get('numberOfPages')
-            ) {
-                pagesSoFar.push(nextPage);
-            }
-            else if(gapLength < 0) {
-                pagesSoFar.pop();
-            }
-            return pagesSoFar;
-        };
-
-        return function () {
-            initHTMLWidths();
-            var currentPage = that.model.get('pageNumber');
-            var bufferWidth = (widths.container - widthOfNumber(currentPage)) / 2;
-            var pagesToRender = fineTune(filter(rolloverNonPositives(
-                    reverse(getPageNumbers(currentPage, bufferWidth, false))
-                    .concat([currentPage])
-                    .concat(getPageNumbers(currentPage, bufferWidth, true))
-                ),
-                function (pageNumber) {
-                    return pageNumber <= that.model.get('numberOfPages');
-                }
-            ));
-            return pagesToRender;
-        };
-    }());
 
     that.model.subscribe('change', function (data) {
         that.render();
