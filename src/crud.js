@@ -448,6 +448,8 @@ return {
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
+            saveAll = fig.saveAll || false,
+
             isSoftREST = fig.isSoftREST || false,
 
             render = fig.render || function (template, data) {
@@ -486,8 +488,9 @@ return {
                     createInput: createInput,
                     uniqueID: generateUniqueID,
                     deletable: deletable,
+                    saveAll: saveAll,
                     createDeleteConfirmationTemplate: createDeleteConfirmationTemplate,
-                }) : createFormListTemplate(viewSchema, name, deletable);
+                }) : createFormListTemplate(viewSchema, name, deletable, saveAll);
         };
 
         var buildFormTemplate = function () {
@@ -542,7 +545,10 @@ return {
             formController.open();
         };
 
+        var modelList = [];
+
         var addItemToList = function (model) {
+
             var elID = name + '-crud-item-' + generateUniqueID();
             $('#' + name + '-crud-form-list')
                 .prepend('<div class="crud-form-list-item" id="' + elID + '"></div>');
@@ -566,22 +572,42 @@ return {
             controller.setEl('#' + elID);
             controller.render();
 
+            modelList.push(model);
+
             model.subscribe('destroyed', function (id) {
                 removeItemAction(controller.$(), function () {
                     controller.$().remove();
+                    modelList = remove(modelList, model);
                 });
             });
 
             addItemAction(controller.$());
         };
 
+        that.saveAllItems = function () {
+            var list = shallowCopy(modelList);
+            foreach(list, function (model) {
+                model.subscribe('form:waiting:end', function bindToFormEnd () {
+                    list = remove(list, model);
+                    model.unsubscribe(bindToFormEnd);
+                    if(isEmpty(list)) {
+                        that.publish('saveAll:end');
+                    }
+                });
+            });
+            that.publish('saveAll:start');
+            $('.crud-form-list-item form').submit();
+        };
+
         $('#' + name + '-crud-new').html(
             fig.newButtonHTML || '<button>Create New ' + name + '</button>'
         );
+        $('#' + name + '-crud-new button').click(newItem);
 
-        $('#' + name + '-crud-new').find('button').click(function () {
-            newItem();
-        });
+        $('#' + name + '-crud-save-all').html(
+            fig.saveAllButtonHTML ||  '<button>Save All</button>'
+        );
+        $('#' + name + '-crud-save-all button').click(that.saveAllItems);
 
         $.ajax({
             method: 'GET',

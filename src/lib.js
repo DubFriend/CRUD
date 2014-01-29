@@ -56,6 +56,10 @@ var copy = function (object) {
     return JSON.parse(JSON.stringify(object));
 };
 
+var shallowCopy = function (objects) {
+    return map(objects, identity);
+};
+
 var foreach = function (collection, callback) {
     for(var i in collection) {
         if(collection.hasOwnProperty(i)) {
@@ -183,6 +187,12 @@ var subSet = function (object, subsetKeys) {
 var excludedSet = function (object, excludedKeys) {
     return filter(object, function (value, key) {
         return excludedKeys.indexOf(key) === -1;
+    });
+};
+
+var remove = function (collection, item) {
+    return filter(collection, function (element) {
+        return element !== item;
     });
 };
 

@@ -25,6 +25,8 @@
 <div id="Thing-crud-container" class="modal crud-form-modal"></div>
 <div id="Thing-crud-new"></div>
 <div id="Thing-crud-form-list"></div>
+<div id="Thing-crud-save-all"></div>
+
 
 <script src="../lib/jquery-1.10.2.js"></script>
 <script src="../lib/mustache.js"></script>
@@ -89,6 +91,8 @@ $(document).ready(function () {
         //deletable: false,
         //readOnly: true,
 
+        saveAll: true,
+
         schema: [
             {
                 name: 'text',
@@ -152,6 +156,15 @@ $(document).ready(function () {
         });
     };
 
+    CRUDThing.subscribe('saveAll:start', function (jqueryRef) {
+        console.log('saveAll:start');
+    });
+
+    CRUDThing.subscribe('saveAll:end', function (jqueryRef) {
+        console.log('saveAll:end');
+    });
+
+    setTimeout(CRUDThing.saveAllItems, 2000);
     debugSubscribeWaiting('form');
     debugSubscribeBind('form');
 });

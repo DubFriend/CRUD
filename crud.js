@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 28-01-2014
+// (MIT) 29-01-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -60,6 +60,10 @@ var isInteger = function (candidate) {
 //deep copy of json objects
 var copy = function (object) {
     return JSON.parse(JSON.stringify(object));
+};
+
+var shallowCopy = function (objects) {
+    return map(objects, identity);
 };
 
 var foreach = function (collection, callback) {
@@ -189,6 +193,12 @@ var subSet = function (object, subsetKeys) {
 var excludedSet = function (object, excludedKeys) {
     return filter(object, function (value, key) {
         return excludedKeys.indexOf(key) === -1;
+    });
+};
+
+var remove = function (collection, item) {
+    return filter(collection, function (element) {
+        return element !== item;
     });
 };
 
@@ -729,7 +739,7 @@ var createFormTemplate = function (schema, crudName) {
     '</form>';
 };
 
-var createFormListTemplate = function (schema, crudName, deletable) {
+var createFormListTemplate = function (schema, crudName, deletable, saveAll) {
     return '' +
     //each form list template gets its own delete confirmation template
     createDeleteConfirmationTemplate() +
@@ -741,7 +751,7 @@ var createFormListTemplate = function (schema, crudName, deletable) {
             '<div class="crud-control-set">' +
                 '<label>&nbsp;</label>' +
                 '<div class="crud-input-group">' +
-                    '<input type="submit" value="Save"/>' +
+                    (saveAll ? '' : '<input type="submit" value="Save"/>') +
                     (deletable ? '<button class="crud-delete">Delete</button>' : '') +
                 '</div>' +
                 '<div class="success">' +
@@ -2101,6 +2111,8 @@ return {
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
+            saveAll = fig.saveAll || false,
+
             isSoftREST = fig.isSoftREST || false,
 
             render = fig.render || function (template, data) {
@@ -2139,8 +2151,9 @@ return {
                     createInput: createInput,
                     uniqueID: generateUniqueID,
                     deletable: deletable,
+                    saveAll: saveAll,
                     createDeleteConfirmationTemplate: createDeleteConfirmationTemplate,
-                }) : createFormListTemplate(viewSchema, name, deletable);
+                }) : createFormListTemplate(viewSchema, name, deletable, saveAll);
         };
 
         var buildFormTemplate = function () {
@@ -2195,7 +2208,10 @@ return {
             formController.open();
         };
 
+        var modelList = [];
+
         var addItemToList = function (model) {
+
             var elID = name + '-crud-item-' + generateUniqueID();
             $('#' + name + '-crud-form-list')
                 .prepend('<div class="crud-form-list-item" id="' + elID + '"></div>');
@@ -2219,22 +2235,42 @@ return {
             controller.setEl('#' + elID);
             controller.render();
 
+            modelList.push(model);
+
             model.subscribe('destroyed', function (id) {
                 removeItemAction(controller.$(), function () {
                     controller.$().remove();
+                    modelList = remove(modelList, model);
                 });
             });
 
             addItemAction(controller.$());
         };
 
+        that.saveAllItems = function () {
+            var list = shallowCopy(modelList);
+            foreach(list, function (model) {
+                model.subscribe('form:waiting:end', function bindToFormEnd () {
+                    list = remove(list, model);
+                    model.unsubscribe(bindToFormEnd);
+                    if(isEmpty(list)) {
+                        that.publish('saveAll:end');
+                    }
+                });
+            });
+            that.publish('saveAll:start');
+            $('.crud-form-list-item form').submit();
+        };
+
         $('#' + name + '-crud-new').html(
             fig.newButtonHTML || '<button>Create New ' + name + '</button>'
         );
+        $('#' + name + '-crud-new button').click(newItem);
 
-        $('#' + name + '-crud-new').find('button').click(function () {
-            newItem();
-        });
+        $('#' + name + '-crud-save-all').html(
+            fig.saveAllButtonHTML ||  '<button>Save All</button>'
+        );
+        $('#' + name + '-crud-save-all button').click(that.saveAllItems);
 
         $.ajax({
             method: 'GET',
