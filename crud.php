@@ -14,7 +14,8 @@ abstract class CRUD {
             $fig['put'] : json_decode(file_get_contents('php://input'), true);
     }
 
-    function respond($requestMethod) {
+    function respond($requestMethod = null) {
+        $requestMethod = $requestMethod ?: $_SERVER['REQUEST_METHOD'];
         switch($requestMethod) {
             case 'GET':
                 return $this->get();
@@ -38,11 +39,20 @@ abstract class CRUD {
     }
 
     protected function getPageNumber() {
-        return isset($this->get['page']) ? $this->get['page'] : 1;
+        //default to page 1 if none are given.
+        // return isset($this->get['page']) ? $this->get['page'] : 1;
+        if(isset($_SERVER['PATH_INFO'])) {
+            $pieces = explode('/', $_SERVER['PATH_INFO']);
+            return count($pieces) === 3 ? $pieces[2] : '1';
+        }
+        else {
+            return '1';
+        }
     }
 
     protected function getID() {
-        return isset($this->get['id']) ? $this->get['id'] : null;
+        // return isset($this->get['id']) ? $this->get['id'] : null;
+        return explode('/', $_SERVER['PATH_INFO'])[1];
     }
 
     protected function getRequestBody() {
@@ -60,7 +70,7 @@ abstract class CRUD {
         return $mapped;
     }
 
-    protected function buildOrderBySQL(array $request) {
+    protected function buildOrderBySQL() {
         $orders = array_filter(
             $this->getOrderParameters(),
             function ($direction) {

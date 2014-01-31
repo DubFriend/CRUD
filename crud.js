@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 29-01-2014
+// (MIT) 31-01-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
