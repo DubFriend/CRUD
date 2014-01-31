@@ -596,7 +596,7 @@ return {
                 });
             });
             that.publish('saveAll:start');
-            $('.crud-form-list-item form').submit();
+            $('#' + name + '-crud-form-list .crud-form-list-item form').submit();
         };
 
         $('#' + name + '-crud-new').html(
