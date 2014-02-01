@@ -126,6 +126,7 @@ return {
         var addItem = function (model, options) {
             options = options || {};
             var itemController = createListItemController({
+                name: name,
                 model: model,
                 schema: viewSchema,
                 template: listItemTemplate,
@@ -154,7 +155,6 @@ return {
             var isFirstLoad = true;
             return function (response) {
                 setCRUDList(response.data);
-                // console.log('RESPONSE PAGES', response.pages);
                 paginatorController.model.set({
                     numberOfPages: response.pages || 1
                 });
@@ -262,6 +262,7 @@ return {
 
         var listController = createListController({
             el: '#' + name + '-crud-list-container',
+            name: name,
             schema: schema,
             modal: modal,
             isIDOrderable: id && id.orderable ? true : false,

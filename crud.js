@@ -524,7 +524,6 @@ var createPaginatorModel = function (fig) {
     };
 
     that.set = partial(that.set, function (newData) {
-        console.log('SET', newData);
         if(newData.pageNumber) {
             that.publish('change:pageNumber', newData);
             requestModel.changePage(newData.pageNumber, 'paginator');
@@ -1198,6 +1197,10 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig),
 
+        // name = fig.name,
+
+        $deleteConfirmation = $('#' + fig.name + '-crud-confirm-delete'),
+
         selectedItem,
         items = [],
 
@@ -1214,18 +1217,18 @@ var createListController = function (fig) {
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
 
         openDeleteConfirmation = function () {
-            modal.open($('.crud-delete-modal'));
+            modal.open($deleteConfirmation.find('.crud-delete-modal'));
         },
 
         closeDeleteConfirmation = function () {
-            modal.close($('.crud-delete-modal'));
+            modal.close($deleteConfirmation.find('.crud-delete-modal'));
         },
 
         bindDeleteConfirmation = function () {
-            $('.crud-cancel-delete').unbind();
-            $('.crud-confirm-delete').unbind();
-            $('.crud-cancel-delete').click(closeDeleteConfirmation);
-            $('.crud-confirm-delete').click(function () {
+            $deleteConfirmation.find('.crud-cancel-delete').unbind();
+            $deleteConfirmation.find('.crud-confirm-delete').unbind();
+            $deleteConfirmation.find('.crud-cancel-delete').click(closeDeleteConfirmation);
+            $deleteConfirmation.find('.crud-confirm-delete').click(function () {
                 foreach(items, function (listItemController) {
                     if(listItemController.isSelected()) {
                         listItemController.model.delete();
@@ -1248,7 +1251,7 @@ var createListController = function (fig) {
 
             that.$('.crud-list-selected').unbind();
             that.$('.crud-list-selected').change(function () {
-                $('.crud-list-select-all').prop('checked', false);
+                that.$('.crud-list-select-all').prop('checked', false);
             });
 
             that.$('.crud-order').unbind();
@@ -1261,8 +1264,9 @@ var createListController = function (fig) {
 
 
 
-    // $('body').prepend(Mustache.render(deleteConfirmationTemplate));
-    $('body').prepend(fig.render(deleteConfirmationTemplate));
+
+    $deleteConfirmation.html(fig.render(deleteConfirmationTemplate));
+    // $('body').prepend(fig.render(deleteConfirmationTemplate));
 
 
     bindDeleteConfirmation();
@@ -1299,6 +1303,7 @@ var createListController = function (fig) {
         var $container = that.$('.crud-list-item-container');
         $container.html('');
         foreach(items, function (item) {
+
             var elID = 'crud-list-item-' + item.model.id();
             $container.append('<tr id="' + elID + '"></tr>');
             item.render();
@@ -1333,7 +1338,7 @@ var createListController = function (fig) {
     };
 
     that.setSelectAll = function (isSelected) {
-        $('.crud-list-select-all').prop('checked', isSelected);
+        that.$('.crud-list-select-all').prop('checked', isSelected);
     };
 
     that.add = function (itemController, options) {
@@ -1376,7 +1381,7 @@ var createListController = function (fig) {
 
 var createListItemController = function (fig) {
     fig = fig || {};
-    fig.el = fig.el || '#crud-list-item-' + fig.model.id();
+    fig.el = '#' + fig.name + '-crud-list-container #crud-list-item-' + fig.model.id();
     var that = createController(fig);
     that.isSelected = function () {
         return that.$('.crud-list-selected').prop('checked') ? true : false;
@@ -1789,6 +1794,7 @@ return {
         var addItem = function (model, options) {
             options = options || {};
             var itemController = createListItemController({
+                name: name,
                 model: model,
                 schema: viewSchema,
                 template: listItemTemplate,
@@ -1817,7 +1823,6 @@ return {
             var isFirstLoad = true;
             return function (response) {
                 setCRUDList(response.data);
-                // console.log('RESPONSE PAGES', response.pages);
                 paginatorController.model.set({
                     numberOfPages: response.pages || 1
                 });
@@ -1925,6 +1930,7 @@ return {
 
         var listController = createListController({
             el: '#' + name + '-crud-list-container',
+            name: name,
             schema: schema,
             modal: modal,
             isIDOrderable: id && id.orderable ? true : false,

@@ -26,7 +26,6 @@ var createPaginatorModel = function (fig) {
     };
 
     that.set = partial(that.set, function (newData) {
-        console.log('SET', newData);
         if(newData.pageNumber) {
             that.publish('change:pageNumber', newData);
             requestModel.changePage(newData.pageNumber, 'paginator');

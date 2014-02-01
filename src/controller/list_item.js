@@ -1,6 +1,6 @@
 var createListItemController = function (fig) {
     fig = fig || {};
-    fig.el = fig.el || '#crud-list-item-' + fig.model.id();
+    fig.el = '#' + fig.name + '-crud-list-container #crud-list-item-' + fig.model.id();
     var that = createController(fig);
     that.isSelected = function () {
         return that.$('.crud-list-selected').prop('checked') ? true : false;
