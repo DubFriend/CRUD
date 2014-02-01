@@ -19,12 +19,16 @@ var createFormController = function (fig, my) {
         modal.close(that.$());
     };
 
+    that.save = function () {
+        that.model.set(that.serialize(), { validate: false });
+        that.model.save();
+    };
+
     my.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {
             e.preventDefault();
-            that.model.set(that.serialize(), { validate: false });
-            that.model.save();
+            that.save();
         });
 
         that.$('.crud-close-form').unbind();

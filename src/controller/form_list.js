@@ -4,6 +4,7 @@ var createFormListController = function (fig) {
     var that = createFormController(fig, my),
         modal = fig.modal,
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
+        isDisplaySavedMessage = fig.isDisplaySavedMessage,
         openDeleteConfirmation = function () {
             modal.open(that.$('.crud-delete-modal'));
         },
@@ -11,12 +12,14 @@ var createFormListController = function (fig) {
             modal.close(that.$('.crud-delete-modal'));
         };
 
-    that.model.subscribe('saved', function () {
-        that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
-        setTimeout(function () {
-            that.render(that.model.get(), {});
-        }, 5000);
-    });
+    if(isDisplaySavedMessage) {
+        that.model.subscribe('saved', function () {
+            that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
+            setTimeout(function () {
+                that.render(that.model.get(), {});
+            }, 5000);
+        });
+    }
 
     that.setModel(that.model);
 

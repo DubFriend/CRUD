@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 31-01-2014
+// (MIT) 01-02-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -393,7 +393,9 @@ var createSchemaModel = function (fig) {
                 }
             });
         }
-        that.publish('error', errors);
+        else {
+            that.publish('error', errors);
+        }
     };
 
     that.delete = function () {
@@ -1063,12 +1065,16 @@ var createFormController = function (fig, my) {
         modal.close(that.$());
     };
 
+    that.save = function () {
+        that.model.set(that.serialize(), { validate: false });
+        that.model.save();
+    };
+
     my.bind = function () {
         that.$().unbind();
         that.$().submit(function (e) {
             e.preventDefault();
-            that.model.set(that.serialize(), { validate: false });
-            that.model.save();
+            that.save();
         });
 
         that.$('.crud-close-form').unbind();
@@ -1150,6 +1156,7 @@ var createFormListController = function (fig) {
     var that = createFormController(fig, my),
         modal = fig.modal,
         deleteConfirmationTemplate = fig.deleteConfirmationTemplate,
+        isDisplaySavedMessage = fig.isDisplaySavedMessage,
         openDeleteConfirmation = function () {
             modal.open(that.$('.crud-delete-modal'));
         },
@@ -1157,12 +1164,14 @@ var createFormListController = function (fig) {
             modal.close(that.$('.crud-delete-modal'));
         };
 
-    that.model.subscribe('saved', function () {
-        that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
-        setTimeout(function () {
-            that.render(that.model.get(), {});
-        }, 5000);
-    });
+    if(isDisplaySavedMessage) {
+        that.model.subscribe('saved', function () {
+            that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
+            setTimeout(function () {
+                that.render(that.model.get(), {});
+            }, 5000);
+        });
+    }
 
     that.setModel(that.model);
 
@@ -2214,7 +2223,7 @@ return {
             formController.open();
         };
 
-        var modelList = [];
+        var controllerList = [];
 
         var addItemToList = function (model) {
 
@@ -2224,6 +2233,7 @@ return {
 
             var controller = createFormListController({
                 el: '#' + elID,
+                isDisplaySavedMessage: !saveAll,
                 schema: schema,
                 modal: modal,
                 model: model,
@@ -2241,12 +2251,12 @@ return {
             controller.setEl('#' + elID);
             controller.render();
 
-            modelList.push(model);
+            controllerList.push(controller);
 
             model.subscribe('destroyed', function (id) {
                 removeItemAction(controller.$(), function () {
+                    controllerList = remove(controllerList, controller);
                     controller.$().remove();
-                    modelList = remove(modelList, model);
                 });
             });
 
@@ -2254,18 +2264,29 @@ return {
         };
 
         that.saveAllItems = function () {
-            var list = shallowCopy(modelList);
-            foreach(list, function (model) {
-                model.subscribe('form:waiting:end', function bindToFormEnd () {
-                    list = remove(list, model);
-                    model.unsubscribe(bindToFormEnd);
-                    if(isEmpty(list)) {
-                        that.publish('saveAll:end');
-                    }
+            if(!isEmpty(controllerList)) {
+                var list = shallowCopy(controllerList);
+                foreach(list, function (controller) {
+                    controller.model.subscribe('error', function bindToFormError (errors) {
+                        controller.model.unsubscribe(bindToFormError);
+                        that.publish('error', errors);
+                    });
+
+                    controller.model.subscribe('saved', function bindToFormEnd () {
+                        list = remove(list, controller);
+                        controller.model.unsubscribe(bindToFormEnd);
+                        if(isEmpty(list)) {
+                            that.publish('saveAll:end');
+                        }
+                    });
                 });
-            });
-            that.publish('saveAll:start');
-            $('#' + name + '-crud-form-list .crud-form-list-item form').submit();
+                that.publish('saveAll:start');
+                $('#' + name + '-crud-form-list .crud-form-list-item form').submit();
+            }
+            else {
+                that.publish('saveAll:start');
+                that.publish('saveAll:end');
+            }
         };
 
         $('#' + name + '-crud-new').html(

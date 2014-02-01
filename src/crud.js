@@ -546,7 +546,7 @@ return {
             formController.open();
         };
 
-        var modelList = [];
+        var controllerList = [];
 
         var addItemToList = function (model) {
 
@@ -556,6 +556,7 @@ return {
 
             var controller = createFormListController({
                 el: '#' + elID,
+                isDisplaySavedMessage: !saveAll,
                 schema: schema,
                 modal: modal,
                 model: model,
@@ -573,12 +574,12 @@ return {
             controller.setEl('#' + elID);
             controller.render();
 
-            modelList.push(model);
+            controllerList.push(controller);
 
             model.subscribe('destroyed', function (id) {
                 removeItemAction(controller.$(), function () {
+                    controllerList = remove(controllerList, controller);
                     controller.$().remove();
-                    modelList = remove(modelList, model);
                 });
             });
 
@@ -586,18 +587,29 @@ return {
         };
 
         that.saveAllItems = function () {
-            var list = shallowCopy(modelList);
-            foreach(list, function (model) {
-                model.subscribe('form:waiting:end', function bindToFormEnd () {
-                    list = remove(list, model);
-                    model.unsubscribe(bindToFormEnd);
-                    if(isEmpty(list)) {
-                        that.publish('saveAll:end');
-                    }
+            if(!isEmpty(controllerList)) {
+                var list = shallowCopy(controllerList);
+                foreach(list, function (controller) {
+                    controller.model.subscribe('error', function bindToFormError (errors) {
+                        controller.model.unsubscribe(bindToFormError);
+                        that.publish('error', errors);
+                    });
+
+                    controller.model.subscribe('saved', function bindToFormEnd () {
+                        list = remove(list, controller);
+                        controller.model.unsubscribe(bindToFormEnd);
+                        if(isEmpty(list)) {
+                            that.publish('saveAll:end');
+                        }
+                    });
                 });
-            });
-            that.publish('saveAll:start');
-            $('#' + name + '-crud-form-list .crud-form-list-item form').submit();
+                that.publish('saveAll:start');
+                $('#' + name + '-crud-form-list .crud-form-list-item form').submit();
+            }
+            else {
+                that.publish('saveAll:start');
+                that.publish('saveAll:end');
+            }
         };
 
         $('#' + name + '-crud-new').html(

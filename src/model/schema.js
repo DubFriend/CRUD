@@ -67,7 +67,9 @@ var createSchemaModel = function (fig) {
                 }
             });
         }
-        that.publish('error', errors);
+        else {
+            that.publish('error', errors);
+        }
     };
 
     that.delete = function () {

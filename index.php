@@ -70,6 +70,7 @@ class CRUDExample extends CRUD {
             // mapIDKeys not necessary in this case since the key is allready
             // named "id" (here for demonstration)
             'data' => $this->mapIDKeys($results->toArray(), 'id')
+            // 'data' => array()
         );
     }
 
