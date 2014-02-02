@@ -3,7 +3,6 @@ abstract class CRUD {
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
     const NOT_IMPLEMENTED = 501;
     const CONFLICT = 409;
-    const BAD_REQUEST = 400;
 
     private $get, $put, $post;
 
@@ -28,6 +27,22 @@ abstract class CRUD {
             default:
                 return $this->unimplementedResponse($requestMethod);
         }
+    }
+
+    protected function get() {
+        $this->unimplementedResponse('GET');
+    }
+
+    protected function put() {
+        $this->unimplementedResponse('PUT');
+    }
+
+    protected function post() {
+        $this->unimplementedResponse('POST');
+    }
+
+    protected function delete() {
+        $this->unimplementedResponse('DELETE');
     }
 
     protected function getFilterParameters() {
@@ -96,25 +111,13 @@ abstract class CRUD {
             ' ORDER BY ' . implode(', ', $orderSQL) : '';
     }
 
-    protected function get() {
-        $this->unimplementedResponse('GET');
-    }
 
-    protected function put() {
-        $this->unimplementedResponse('PUT');
-    }
-
-    protected function post() {
-        $this->unimplementedResponse('POST');
-    }
-
-    protected function delete() {
-        $this->unimplementedResponse('DELETE');
-    }
 
     private function unimplementedResponse($method) {
         http_response_code(self::NOT_IMPLEMENTED);
-        return array('message' => $method . ' requests are not implemented.');
+        return array(
+            'message' => htmlentities($method) . ' requests are not implemented.'
+        );
     }
 
     private function getParameters($startsWith, array $request) {

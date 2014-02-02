@@ -587,21 +587,30 @@ return {
         };
 
         that.saveAllItems = function () {
-            if(!isEmpty(controllerList)) {
-                var list = shallowCopy(controllerList);
-                foreach(list, function (controller) {
-                    controller.model.subscribe('error', function bindToFormError (errors) {
-                        controller.model.unsubscribe(bindToFormError);
-                        that.publish('error', errors);
-                    });
+            var isError = false,
+                list = shallowCopy(controllerList);
 
-                    controller.model.subscribe('saved', function bindToFormEnd () {
+            if(!isEmpty(controllerList)) {
+                foreach(list, function (controller) {
+                    var bindToFormError = function (errors) {
+                        isError = true;
                         list = remove(list, controller);
+                        controller.model.unsubscribe(bindToFormError);
                         controller.model.unsubscribe(bindToFormEnd);
-                        if(isEmpty(list)) {
+                        that.publish('error', errors);
+                    };
+
+                    var bindToFormEnd = function () {
+                        list = remove(list, controller);
+                        controller.model.unsubscribe(bindToFormError);
+                        controller.model.unsubscribe(bindToFormEnd);
+                        if(!isError && isEmpty(list)) {
                             that.publish('saveAll:end');
                         }
-                    });
+                    };
+
+                    controller.model.subscribe('error', bindToFormError);
+                    controller.model.subscribe('saved', bindToFormEnd);
                 });
                 that.publish('saveAll:start');
                 $('#' + name + '-crud-form-list .crud-form-list-item form').submit();

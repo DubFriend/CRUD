@@ -74,6 +74,33 @@ class CRUDExample extends CRUD {
         );
     }
 
+    protected function put() {
+        $requestData = $this->getRequestBody();
+        if($requestData['letter'] === 'a') {
+            http_response_code(409);
+            return array(
+                'letter' => 'server dont like letter a',
+                'GLOBAL' => 'global error message'
+            );
+        }
+        else {
+            $requestData['fruit'] = implode(',', $requestData['fruit']);
+            return $this->sql->update(
+                'crud', $requestData, array('id' => $this->getID())
+            );
+        }
+    }
+
+    protected function post() {
+        $requestData = $this->getRequestBody();
+        $requestData['fruit'] = implode(',', $requestData['fruit']);
+        return $this->sql->insert('crud', $requestData);
+    }
+
+    protected function delete() {
+        return $this->sql->delete('crud', array('id' => $this->getID()));
+    }
+
     // NOTE: dont use this on public servers (sql injection)
     private function buildWhereSQL() {
         $filters = array_filter(
@@ -105,33 +132,6 @@ class CRUDExample extends CRUD {
         }
         return count($filtersSQL) > 0 ?
             ' WHERE ' . implode(' AND ', $filtersSQL) : '';
-    }
-
-    protected function put() {
-        $requestData = $this->getRequestBody();
-        if($requestData['letter'] === 'a') {
-            http_response_code(409);
-            return array(
-                'letter' => 'server dont like letter a',
-                'GLOBAL' => 'global error message'
-            );
-        }
-        else {
-            $requestData['fruit'] = implode(',', $requestData['fruit']);
-            return $this->sql->update(
-                'crud', $requestData, array('id' => $this->getID())
-            );
-        }
-    }
-
-    protected function post() {
-        $requestData = $this->getRequestBody();
-        $requestData['fruit'] = implode(',', $requestData['fruit']);
-        return $this->sql->insert('crud', $requestData);
-    }
-
-    protected function delete() {
-        return $this->sql->delete('crud', array('id' => $this->getID()));
     }
 }
 
