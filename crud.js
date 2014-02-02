@@ -275,6 +275,110 @@ var mixinPubSub = function (object) {
     return object;
 };
 
+
+// queryjs
+// https://github.com/DubFriend/queryjs
+// MIT License 2014 Brian Detering
+var queryjs = (function () {
+    'use strict';
+
+    var queryjs = {};
+
+    var foreach = function (object, callback) {
+        var key;
+        for(key in object) {
+            if(object.hasOwnProperty(key)) {
+                callback(object[key], key, object);
+            }
+        }
+    };
+
+    var extend = function () {
+        var united = {};
+        foreach(arguments, function (object, key) {
+            foreach(object, function (value, key) {
+                united[key] = value;
+            });
+        });
+        return united;
+    };
+
+    var parse = function (url) {
+        var domain = '', hash = '';
+        var getParameterStrings = function () {
+            var isHash = url.indexOf('#') !== -1,
+                isQuery = url.indexOf('?') !== -1,
+                queryString = '';
+
+            if(isQuery) {
+                queryString = url.split('?')[1] || '';
+                if(isHash) {
+                    queryString = queryString.split('#')[0] || '';
+                }
+            }
+
+            if(isQuery) {
+                domain = url.split('?')[0] || '';
+            }
+            else if (isHash) {
+                domain = url.split('#')[0] || '';
+            }
+            else {
+                domain = url;
+            }
+
+            if(isHash) {
+                hash = url.split('#')[1] || '';
+            }
+
+            return queryString ? queryString.split('&') : [];
+        };
+
+        var parameterStrings = getParameterStrings(url),
+            params = {},
+            key, value, i;
+
+        for(i = 0; i < parameterStrings.length; i += 1) {
+            key = parameterStrings[i].split('=')[0];
+            value = parameterStrings[i].split('=')[1];
+            params[key] = value;
+        }
+
+        return {
+            url: domain || '',
+            hash: hash || '',
+            parameters: params
+        };
+    };
+
+    var stringify = function (parsed) {
+        var key, parameterStrings = [];
+
+        foreach(parsed.parameters, function (value, key) {
+            parameterStrings.push(key + '=' + parsed.parameters[key]);
+        });
+
+        return parsed.url +
+            (parameterStrings.length > 0 ?
+                '?' + parameterStrings.join('&') : '') +
+            (parsed.hash ? '#' + parsed.hash : '');
+    };
+
+    queryjs.get = function (url) {
+        return parse(url).parameters;
+    };
+
+    queryjs.set = function (url, params) {
+        var parsed = parse(url);
+        parsed.parameters = extend(parsed.parameters, params);
+        return stringify(parsed);
+    };
+
+    return queryjs;
+
+}());
+
+
 if (typeof console === "undefined"){
     console={};
     console.warn = function () {};
@@ -334,11 +438,13 @@ var createSchemaModel = function (fig) {
         isSoftREST = fig.isSoftREST,
 
         ajax = fig.ajax || function (fig) {
-            var url = that.isNew() ? my.url : my.url + '/' + that.id(),
+            // var url = that.isNew() ? my.url : my.url + '/' + that.id(),
+            var url = that.isNew() ? my.url : queryjs.set(my.url, { id: that.id() }),
                 method, data;
 
             if(isSoftREST) {
-                url += '?method=' + fig.method;
+                // url += '?method=' + fig.method;
+                url = queryjs.set(url, { method: fig.method });
                 method = 'POST';
                 data = my.data;
             }
@@ -383,7 +489,9 @@ var createSchemaModel = function (fig) {
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
-                url: that.isNew() ? my.url : my.url + '/' + id,
+                // url: that.isNew() ? my.url : my.url + '/' + id,
+                url: that.isNew() ? my.url : queryjs.set(my.url, { id: id }),
+
                 method: that.isNew() ? 'POST' : 'PUT',
                 data: my.data,
                 success: function (response) {
@@ -401,7 +509,9 @@ var createSchemaModel = function (fig) {
     that.delete = function () {
         if(!that.isNew()) {
             ajax({
-                url: my.url + '/' + id,
+                // url: my.url + '/' + id,
+                url: queryjs.set(my.url, { id: id }),
+
                 method: 'DELETE',
                 success: function (response) {
                     var id = that.id();
@@ -427,7 +537,9 @@ var createRequestModel = function () {
         ajax = function (fig) {
             fig = fig || {};
             $.ajax({
-                url: url + '/page/' + (fig.page || 1),
+                // url: url + '/page/' + (fig.page || 1),
+                url: queryjs.set(url, { page: fig.page || 1 }),
+
                 method: 'GET',
                 data: union(
                     (filterModel ? appendKey('filter_', filterModel.get()) : {}),

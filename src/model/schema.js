@@ -8,11 +8,13 @@ var createSchemaModel = function (fig) {
         isSoftREST = fig.isSoftREST,
 
         ajax = fig.ajax || function (fig) {
-            var url = that.isNew() ? my.url : my.url + '/' + that.id(),
+            // var url = that.isNew() ? my.url : my.url + '/' + that.id(),
+            var url = that.isNew() ? my.url : queryjs.set(my.url, { id: that.id() }),
                 method, data;
 
             if(isSoftREST) {
-                url += '?method=' + fig.method;
+                // url += '?method=' + fig.method;
+                url = queryjs.set(url, { method: fig.method });
                 method = 'POST';
                 data = my.data;
             }
@@ -57,7 +59,9 @@ var createSchemaModel = function (fig) {
         var errors = that.validate(that.get());
         if(isEmpty(errors)) {
             ajax({
-                url: that.isNew() ? my.url : my.url + '/' + id,
+                // url: that.isNew() ? my.url : my.url + '/' + id,
+                url: that.isNew() ? my.url : queryjs.set(my.url, { id: id }),
+
                 method: that.isNew() ? 'POST' : 'PUT',
                 data: my.data,
                 success: function (response) {
@@ -75,7 +79,9 @@ var createSchemaModel = function (fig) {
     that.delete = function () {
         if(!that.isNew()) {
             ajax({
-                url: my.url + '/' + id,
+                // url: my.url + '/' + id,
+                url: queryjs.set(my.url, { id: id }),
+
                 method: 'DELETE',
                 success: function (response) {
                     var id = that.id();

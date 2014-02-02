@@ -7,7 +7,9 @@ var createRequestModel = function () {
         ajax = function (fig) {
             fig = fig || {};
             $.ajax({
-                url: url + '/page/' + (fig.page || 1),
+                // url: url + '/page/' + (fig.page || 1),
+                url: queryjs.set(url, { page: fig.page || 1 }),
+
                 method: 'GET',
                 data: union(
                     (filterModel ? appendKey('filter_', filterModel.get()) : {}),

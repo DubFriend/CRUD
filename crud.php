@@ -55,19 +55,11 @@ abstract class CRUD {
 
     protected function getPageNumber() {
         //default to page 1 if none are given.
-        // return isset($this->get['page']) ? $this->get['page'] : 1;
-        if(isset($_SERVER['PATH_INFO'])) {
-            $pieces = explode('/', $_SERVER['PATH_INFO']);
-            return count($pieces) === 3 ? $pieces[2] : '1';
-        }
-        else {
-            return '1';
-        }
+        return isset($this->get['page']) ? $this->get['page'] : 1;
     }
 
     protected function getID() {
-        // return isset($this->get['id']) ? $this->get['id'] : null;
-        return explode('/', $_SERVER['PATH_INFO'])[1];
+        return isset($this->get['id']) ? $this->get['id'] : null;
     }
 
     protected function getRequestBody() {
