@@ -4,13 +4,15 @@ abstract class CRUD {
     const NOT_IMPLEMENTED = 501;
     const CONFLICT = 409;
 
-    private $get, $put, $post;
+    private $get, $put, $post, $orderableColumns;
 
     function __construct(array $fig = array()) {
         $this->get = isset($fig['get']) ? $fig['get'] : $_GET;
         $this->post = isset($fig['post']) ? $fig['post'] : $_POST;
         $this->put = isset($fig['put']) ?
             $fig['put'] : json_decode(file_get_contents('php://input'), true);
+        $this->orderableColumns = isset($fig['orderableColumns']) ?
+            $fig['orderableColumns'] : array();
     }
 
     function respond($requestMethod = null) {
@@ -86,19 +88,27 @@ abstract class CRUD {
         );
         $orderSQL = array();
         foreach($orders as $column => $direction) {
-            if($direction === 'ascending') {
-                $orderSQL[] = $column . ' ASC';
-            }
-            else if($direction === 'descending') {
-                $orderSQL[] = $column . ' DESC';
+            if(in_array($column, $this->orderableColumns)) {
+                if($direction === 'ascending') {
+                    $orderSQL[] = $column . ' ASC';
+                }
+                else if($direction === 'descending') {
+                    $orderSQL[] = $column . ' DESC';
+                }
+                else {
+                    throw new Exception(
+                        '"order_" GET variables must by of values ' .
+                        '"ascending", "descending", or "neutral"'
+                    );
+                }
             }
             else {
                 throw new Exception(
-                    '"order_" GET variables must by of values ' .
-                    '"ascending", "descending", or "neutral"'
+                    $column . ' not in the list or acceptable order columns.'
                 );
             }
         }
+
         return count($orderSQL) > 0 ?
             ' ORDER BY ' . implode(', ', $orderSQL) : '';
     }

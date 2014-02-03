@@ -52,26 +52,36 @@ class CRUDExample extends CRUD {
     private $sql;
 
     function __construct($fig) {
-        parent::__construct($fig);
+        parent::__construct(array_merge($fig, array(
+            'orderableColumns' => array('id', 'textarea', 'letter')
+        )));
         $this->sql = $fig['sql'];
     }
 
     protected function get() {
-        $results = $this->sql->query(
-            "SELECT * FROM crud " .
-            $this->buildWhereSQL() . ' ' .
-            $this->buildOrderBySQL() . ' ' .
-            'LIMIT ' . (($this->getPageNumber() - 1) * ROWS_PER_PAGE) .
-                ', ' . ROWS_PER_PAGE
-        );
+        $where = $this->buildWhereSQL();
 
-        return array(
-            'pages' => ceil($results->count() / ROWS_PER_PAGE),
-            // mapIDKeys not necessary in this case since the key is allready
-            // named "id" (here for demonstration)
-            'data' => $this->mapIDKeys($results->toArray(), 'id')
-            // 'data' => array()
-        );
+        if(is_numeric($this->getPageNumber())) {
+            $results = $this->sql->query(
+                "SELECT * FROM crud " .
+                $where['sql'] . ' ' .
+                $this->buildOrderBySQL() . ' ' .
+                'LIMIT ' . (($this->getPageNumber() - 1) * ROWS_PER_PAGE) .
+                    ', ' . ROWS_PER_PAGE,
+                $where['values']
+            );
+
+            return array(
+                'pages' => ceil($results->count() / ROWS_PER_PAGE),
+                // mapIDKeys not necessary in this case since the key is allready
+                // named "id" (here for demonstration)
+                'data' => $this->mapIDKeys($results->toArray(), 'id')
+                // 'data' => array()
+            );
+        }
+        else {
+            throw new Exception('Page number must be an integer');
+        }
     }
 
     protected function put() {
@@ -110,17 +120,21 @@ class CRUDExample extends CRUD {
             }
         );
         $filtersSQL = array();
+        $filtersValues = array();
         foreach($filters as $name => $value) {
             switch($name) {
                 case 'Maximum_Awesome':
-                    $filtersSQL[] = 'awesome <= ' . $value;
+                    $filtersSQL[] = 'awesome <= ?';
+                    $filtersValues[] = $value;
                     break;
                 case 'Search_Textarea':
-                    $filtersSQL[] = 'textarea LIKE "%' . $value . '%"';
+                    $filtersSQL[] = 'textarea LIKE ?';
+                    $filtersValues[] = '%' . $value . '%';
                     break;
                 case 'fruit':
                     if(is_array($value)) {
-                        $filtersSQL[] = 'fruit = "' . implode(',', $value) . '"';
+                        $filtersSQL[] = 'fruit = ?';
+                        $filtersValues[] = implode(',', $value);
                     }
                     else {
                         throw new Exception('Checkboxes should return an array.');
@@ -130,8 +144,12 @@ class CRUDExample extends CRUD {
                     throw new Exception('Invalid filter keyname: "' . $name . '".');
             }
         }
+
         return count($filtersSQL) > 0 ?
-            ' WHERE ' . implode(' AND ', $filtersSQL) : '';
+            array(
+                'sql' => ' WHERE ' . implode(' AND ', $filtersSQL),
+                'values' => $filtersValues
+            ) : array('sql' => '', 'values' => array());
     }
 }
 
