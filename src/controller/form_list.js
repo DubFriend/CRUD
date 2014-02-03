@@ -16,7 +16,8 @@ var createFormListController = function (fig) {
         that.model.subscribe('saved', function () {
             that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
             setTimeout(function () {
-                that.render(that.model.get(), {});
+                that.$('.success').html('');
+                // that.render(that.model.get(), {});
             }, 5000);
         });
     }

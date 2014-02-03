@@ -1,10 +1,10 @@
-var createFormListTemplate = function (schema, crudName, deletable, saveAll) {
+var createFormListTemplate = function (schema, crudName, deletable, saveAll, crudLabel) {
     return '' +
     //each form list template gets its own delete confirmation template
     createDeleteConfirmationTemplate() +
     '<form>' +
         '<fieldset>' +
-            '<legend>' + crudName + '</legend>' +
+            '<legend>' + crudLabel + '</legend>' +
             '<span class="crud-status">{{status}}</span>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +

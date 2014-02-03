@@ -14,6 +14,11 @@
     .crud-help {
         color: red;
     }
+
+
+    .save-all-success, .success {
+        color: green;
+    }
 </style>
 </head>
 
@@ -39,6 +44,7 @@ $(document).ready(function () {
 
     var CRUDThing = CRUD.formList({
         name: 'Thing',
+        label: 'Thing Label',
         url: '../index.php',
 
         //isSoftREST: true,
@@ -66,7 +72,7 @@ $(document).ready(function () {
         //deletable: false,
         //readOnly: true,
 
-        saveAll: true,
+        // saveAll: true,
 
         schema: [
             {
@@ -144,11 +150,20 @@ $(document).ready(function () {
 
     CRUDThing.subscribe('saveAll:end', function (jqueryRef) {
         console.log('saveAll:end');
+        $('body').append(
+            '<div class="save-all-success">' +
+                'Saved' +
+            '</div>'
+        );
+        setTimeout(function () {
+            $('.save-all-success').remove();
+        }, 2000);
     });
 
     CRUDThing.subscribe('saveAll:complete', function () {
         $('.save-all-error').remove();
         if(isError) {
+            $('.save-all-success').remove();
             $('body').append(
                 '<div class="save-all-error crud-help">' +
                     'Error Occured' +

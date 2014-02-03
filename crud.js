@@ -815,11 +815,11 @@ var createDeleteConfirmationTemplate = function () {
     '</div>';
 };
 
-var createFilterTemplate = function (schema, crudName, isInstantFilter) {
+var createFilterTemplate = function (schema, crudName, isInstantFilter, crudLabel) {
     return '' +
     '<form>' +
         '<fieldset>' +
-            '<legend>Search ' + crudName + '</legend>' +
+            '<legend>Search ' + crudLabel + '</legend>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +
                 '<div class="label">&nbsp;</div>' +
@@ -834,11 +834,11 @@ var createFilterTemplate = function (schema, crudName, isInstantFilter) {
     '</form>';
 };
 
-var createFormTemplate = function (schema, crudName) {
+var createFormTemplate = function (schema, crudName, crudLabel) {
     return '' +
     '<form>' +
         '<fieldset>' +
-            '<legend>' + crudName + '</legend>' +
+            '<legend>' + crudLabel + '</legend>' +
             '<span class="crud-status">{{status}}</span>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +
@@ -846,20 +846,20 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="crud-input-group">' +
                     '<input type="submit" value="Save"/>' +
                     '<button class="crud-close-form">Close</button>' +
-                '</div>sdf' +
+                '</div>' +
                 '<div class="crud-help">{{GLOBALHelp}}</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';
 };
 
-var createFormListTemplate = function (schema, crudName, deletable, saveAll) {
+var createFormListTemplate = function (schema, crudName, deletable, saveAll, crudLabel) {
     return '' +
     //each form list template gets its own delete confirmation template
     createDeleteConfirmationTemplate() +
     '<form>' +
         '<fieldset>' +
-            '<legend>' + crudName + '</legend>' +
+            '<legend>' + crudLabel + '</legend>' +
             '<span class="crud-status">{{status}}</span>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +
@@ -1282,7 +1282,8 @@ var createFormListController = function (fig) {
         that.model.subscribe('saved', function () {
             that.render(that.model.get(), {}, { successMessage: 'Save Successfull.' });
             setTimeout(function () {
-                that.render(that.model.get(), {});
+                that.$('.success').html('');
+                // that.render(that.model.get(), {});
             }, 5000);
         });
     }
@@ -1874,6 +1875,7 @@ return {
         var that = mixinPubSub(),
             url = fig.url,
             name = fig.name,
+            label = fig.label || name,
             id = fig.id || false,
             isInstantFilter = fig.instantFilter || false,
             readOnly = fig.readOnly || false,
@@ -2074,10 +2076,11 @@ return {
                 fig.createFilterTemplate.apply({
                     filterSchema: viewFilterSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     isInstantFilter: isInstantFilter,
                     uniqueID: generateUniqueID
-                }) : createFilterTemplate(viewFilterSchema, name, isInstantFilter);
+                }) : createFilterTemplate(viewFilterSchema, name, isInstantFilter, label);
 
             filterModel = createFilterModel({
                 requestModel: requestModel,
@@ -2118,7 +2121,7 @@ return {
         if(!readOnly) {
 
             $('#' + name + '-crud-new').html(
-                fig.newButtonHTML || '<button>Create New ' + name + '</button>'
+                fig.newButtonHTML || '<button>Create New ' + label + '</button>'
             );
 
             $('#' + name + '-crud-new').find('button').click(function () {
@@ -2131,9 +2134,10 @@ return {
                 fig.createFormTemplate.apply({
                     schema: viewSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     uniqueID: generateUniqueID
-                }) : createFormTemplate(viewSchema, name);
+                }) : createFormTemplate(viewSchema, name, label);
 
             formController = createFormController({
                 el: '#' + name + '-crud-container',
@@ -2237,6 +2241,7 @@ return {
         var that = mixinPubSub(),
             url = fig.url,
             name = fig.name,
+            label = fig.label || name,
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
@@ -2277,12 +2282,13 @@ return {
                 fig.createFormListTemplate.apply({
                     schema: viewSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     uniqueID: generateUniqueID,
                     deletable: deletable,
                     saveAll: saveAll,
                     createDeleteConfirmationTemplate: createDeleteConfirmationTemplate,
-                }) : createFormListTemplate(viewSchema, name, deletable, saveAll);
+                }) : createFormListTemplate(viewSchema, name, deletable, saveAll, label);
         };
 
         var buildFormTemplate = function () {
@@ -2290,9 +2296,10 @@ return {
                 fig.createFormTemplate.apply({
                     schema: viewSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     uniqueID: generateUniqueID
-                }) : createFormTemplate(viewSchema, name);
+                }) : createFormTemplate(viewSchema, name, label);
         };
 
         var buildNewFormController = function () {
@@ -2417,7 +2424,7 @@ return {
         };
 
         $('#' + name + '-crud-new').html(
-            fig.newButtonHTML || '<button>Create New ' + name + '</button>'
+            fig.newButtonHTML || '<button>Create New ' + label + '</button>'
         );
         $('#' + name + '-crud-new button').click(newItem);
 

@@ -1,8 +1,8 @@
-var createFilterTemplate = function (schema, crudName, isInstantFilter) {
+var createFilterTemplate = function (schema, crudName, isInstantFilter, crudLabel) {
     return '' +
     '<form>' +
         '<fieldset>' +
-            '<legend>Search ' + crudName + '</legend>' +
+            '<legend>Search ' + crudLabel + '</legend>' +
             reduceFormSchema(schema, crudName) +
             '<div class="crud-control-set">' +
                 '<div class="label">&nbsp;</div>' +

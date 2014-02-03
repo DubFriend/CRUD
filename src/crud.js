@@ -83,6 +83,7 @@ return {
         var that = mixinPubSub(),
             url = fig.url,
             name = fig.name,
+            label = fig.label || name,
             id = fig.id || false,
             isInstantFilter = fig.instantFilter || false,
             readOnly = fig.readOnly || false,
@@ -283,10 +284,11 @@ return {
                 fig.createFilterTemplate.apply({
                     filterSchema: viewFilterSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     isInstantFilter: isInstantFilter,
                     uniqueID: generateUniqueID
-                }) : createFilterTemplate(viewFilterSchema, name, isInstantFilter);
+                }) : createFilterTemplate(viewFilterSchema, name, isInstantFilter, label);
 
             filterModel = createFilterModel({
                 requestModel: requestModel,
@@ -327,7 +329,7 @@ return {
         if(!readOnly) {
 
             $('#' + name + '-crud-new').html(
-                fig.newButtonHTML || '<button>Create New ' + name + '</button>'
+                fig.newButtonHTML || '<button>Create New ' + label + '</button>'
             );
 
             $('#' + name + '-crud-new').find('button').click(function () {
@@ -340,9 +342,10 @@ return {
                 fig.createFormTemplate.apply({
                     schema: viewSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     uniqueID: generateUniqueID
-                }) : createFormTemplate(viewSchema, name);
+                }) : createFormTemplate(viewSchema, name, label);
 
             formController = createFormController({
                 el: '#' + name + '-crud-container',
@@ -446,6 +449,7 @@ return {
         var that = mixinPubSub(),
             url = fig.url,
             name = fig.name,
+            label = fig.label || name,
             readOnly = fig.readOnly || false,
             deletable = isDeletable(fig.deletable, readOnly),
 
@@ -486,12 +490,13 @@ return {
                 fig.createFormListTemplate.apply({
                     schema: viewSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     uniqueID: generateUniqueID,
                     deletable: deletable,
                     saveAll: saveAll,
                     createDeleteConfirmationTemplate: createDeleteConfirmationTemplate,
-                }) : createFormListTemplate(viewSchema, name, deletable, saveAll);
+                }) : createFormListTemplate(viewSchema, name, deletable, saveAll, label);
         };
 
         var buildFormTemplate = function () {
@@ -499,9 +504,10 @@ return {
                 fig.createFormTemplate.apply({
                     schema: viewSchema,
                     name: name,
+                    label: label,
                     createInput: createInput,
                     uniqueID: generateUniqueID
-                }) : createFormTemplate(viewSchema, name);
+                }) : createFormTemplate(viewSchema, name, label);
         };
 
         var buildNewFormController = function () {
@@ -626,7 +632,7 @@ return {
         };
 
         $('#' + name + '-crud-new').html(
-            fig.newButtonHTML || '<button>Create New ' + name + '</button>'
+            fig.newButtonHTML || '<button>Create New ' + label + '</button>'
         );
         $('#' + name + '-crud-new button').click(newItem);
 
