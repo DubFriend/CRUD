@@ -143,13 +143,21 @@ return {
 
         var setCRUDList = function (rows) {
             listController.clear();
-            foreach(rows, function (row) {
-                var id = row.id;
-                delete row.id;
-                addItem(createDefaultModel(row, id));
-                listController.setSelected();
-            });
-            listController.renderItems();
+            if(rows.length > 0) {
+                $('#' + name + '-crud-list-container').show();
+                $('#' + name + '-crud-no-results-message').hide();
+                foreach(rows, function (row) {
+                    var id = row.id;
+                    delete row.id;
+                    addItem(createDefaultModel(row, id));
+                    listController.setSelected();
+                });
+                listController.renderItems();
+            }
+            else {
+                $('#' + name + '-crud-list-container').hide();
+                $('#' + name + '-crud-no-results-message').show();
+            }
         };
 
         var load = (function () {
@@ -555,7 +563,7 @@ return {
         var controllerList = [];
 
         var addItemToList = function (model) {
-
+            $('#' + name +  '-crud-save-all').show();
             var elID = name + '-crud-item-' + generateUniqueID();
             $('#' + name + '-crud-form-list')
                 .prepend('<div class="crud-form-list-item" id="' + elID + '"></div>');
@@ -646,16 +654,21 @@ return {
             url: url,
             dataType: 'json',
             success: function (response) {
-                foreach(response.data, function (item) {
-                    var id = item.id;
-                    delete item.id;
-                    addItemToList(createSchemaModel({
-                        data: item,
-                        url: url,
-                        validate: validate,
-                        id: id
-                    }));
-                });
+                if(response.data.length > 0) {
+                    foreach(response.data, function (item) {
+                        var id = item.id;
+                        delete item.id;
+                        addItemToList(createSchemaModel({
+                            data: item,
+                            url: url,
+                            validate: validate,
+                            id: id
+                        }));
+                    });
+                }
+                else {
+                    $('#' + name +  '-crud-save-all').hide();
+                }
             },
             error: function () {}
         });
