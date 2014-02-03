@@ -592,6 +592,7 @@ var createOrderModel = function (fig) {
     fig = fig || {};
     var my = {};
     var that = createModel(fig, my),
+        orderings = copy(fig.data),
         requestModel = fig.requestModel;
 
     that.set = partial(that.set, partial(requestModel.search, 'order'));
@@ -603,7 +604,15 @@ var createOrderModel = function (fig) {
             var newIndex = (currentIndex + 1) % toggleOrder.length;
             var newData = {};
             newData[name] = toggleOrder[newIndex];
-            that.set(newData);
+
+            if(newData[name] !== 'neutral') {
+                that.set(union(map(orderings, function () {
+                    return 'neutral';
+                }), newData));
+            }
+            else {
+                that.set(newData);
+            }
         };
     }());
 
@@ -1386,11 +1395,7 @@ var createListController = function (fig) {
         };
 
 
-
-
     $deleteConfirmation.html(fig.render(deleteConfirmationTemplate));
-    // $('body').prepend(fig.render(deleteConfirmationTemplate));
-
 
     bindDeleteConfirmation();
 
@@ -1426,7 +1431,6 @@ var createListController = function (fig) {
         var $container = that.$('.crud-list-item-container');
         $container.html('');
         foreach(items, function (item) {
-
             var elID = 'crud-list-item-' + item.model.id();
             $container.append('<tr id="' + elID + '"></tr>');
             item.render();
@@ -1492,11 +1496,13 @@ var createListController = function (fig) {
 
     //rerendering the whole template was a glitchy
     that.orderModel.subscribe('change', function (newData) {
-        that.$('[data-name="' + keys(newData)[0] + '"]').html(
-            '<span  crud-order-' + values(newData)[0] + '">' +
-                orderIcon[values(newData)[0]] +
-            '</span>'
-        );
+        foreach(newData, function (order, column) {
+            that.$('[data-name="' + column + '"]').html(
+                '<span  crud-order-' + order + '">' +
+                    orderIcon[order] +
+                '</span>'
+            );
+        });
     });
 
     return that;

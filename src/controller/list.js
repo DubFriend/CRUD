@@ -68,11 +68,7 @@ var createListController = function (fig) {
         };
 
 
-
-
     $deleteConfirmation.html(fig.render(deleteConfirmationTemplate));
-    // $('body').prepend(fig.render(deleteConfirmationTemplate));
-
 
     bindDeleteConfirmation();
 
@@ -108,7 +104,6 @@ var createListController = function (fig) {
         var $container = that.$('.crud-list-item-container');
         $container.html('');
         foreach(items, function (item) {
-
             var elID = 'crud-list-item-' + item.model.id();
             $container.append('<tr id="' + elID + '"></tr>');
             item.render();
@@ -174,11 +169,13 @@ var createListController = function (fig) {
 
     //rerendering the whole template was a glitchy
     that.orderModel.subscribe('change', function (newData) {
-        that.$('[data-name="' + keys(newData)[0] + '"]').html(
-            '<span  crud-order-' + values(newData)[0] + '">' +
-                orderIcon[values(newData)[0]] +
-            '</span>'
-        );
+        foreach(newData, function (order, column) {
+            that.$('[data-name="' + column + '"]').html(
+                '<span  crud-order-' + order + '">' +
+                    orderIcon[order] +
+                '</span>'
+            );
+        });
     });
 
     return that;
