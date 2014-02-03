@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 01-02-2014
+// (MIT) 02-02-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -846,7 +846,8 @@ var createFormTemplate = function (schema, crudName) {
                 '<div class="crud-input-group">' +
                     '<input type="submit" value="Save"/>' +
                     '<button class="crud-close-form">Close</button>' +
-                '</div>' +
+                '</div>sdf' +
+                '<div class="crud-help">{{GLOBALHelp}}</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';
@@ -870,6 +871,7 @@ var createFormListTemplate = function (schema, crudName, deletable, saveAll) {
                 '<div class="success">' +
                     '{{successMessage}}' +
                 '</div>' +
+                '<div class="crud-help">{{GLOBALHelp}}</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';
@@ -2393,7 +2395,11 @@ return {
                         list = remove(list, controller);
                         controller.model.unsubscribe(bindToFormError);
                         controller.model.unsubscribe(bindToFormEnd);
-                        if(!isError && isEmpty(list)) {
+
+                        if(isEmpty(list)) {
+                            that.publish('saveAll:complete');
+                        }
+                        if(isEmpty(list) && !isError) {
                             that.publish('saveAll:end');
                         }
                     };

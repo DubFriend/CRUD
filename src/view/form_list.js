@@ -16,6 +16,7 @@ var createFormListTemplate = function (schema, crudName, deletable, saveAll) {
                 '<div class="success">' +
                     '{{successMessage}}' +
                 '</div>' +
+                '<div class="crud-help">{{GLOBALHelp}}</div>' +
             '</div>' +
         '</fieldset>' +
     '</form>';

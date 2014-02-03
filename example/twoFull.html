@@ -104,6 +104,10 @@
         color: rgb(236, 37, 37);
     }
 
+    .crud-help {
+        color: red;
+    }
+
     body .crud-list-select-all {
         position: relative;
         top: 2px;
@@ -176,6 +180,9 @@ $(document).ready(function () {
             var error = {};
             if(data.text !== 'default') {
                 error.text = 'text error';
+            }
+            if(data.letter === 'a') {
+                error.GLOBAL = 'global message no a\'s';
             }
             return error;
         },

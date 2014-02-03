@@ -11,7 +11,7 @@
        font-weight: 300;
     }
 
-    .error {
+    .crud-help {
         color: red;
     }
 </style>
@@ -26,7 +26,6 @@
 <div id="Thing-crud-new"></div>
 <div id="Thing-crud-form-list"></div>
 <div id="Thing-crud-save-all"></div>
-
 
 <script src="../lib/jquery-1.10.2.js"></script>
 <script src="../lib/mustache.js"></script>
@@ -48,6 +47,10 @@ $(document).ready(function () {
             var error = {};
             if(data.text.length < 3) {
                 error.text = '3 character minimum';
+            }
+
+            if(data.letter === 'a') {
+                error.GLOBAL = 'global no a\'s';
             }
             return error;
         },
@@ -132,7 +135,10 @@ $(document).ready(function () {
         console.log('saveAll:start');
     });
 
+    var isError = false;
+
     CRUDThing.subscribe('error', function (error) {
+        isError = true;
         console.log('error(formList.html)', error);
     })
 
@@ -140,7 +146,19 @@ $(document).ready(function () {
         console.log('saveAll:end');
     });
 
-    // setTimeout(CRUDThing.saveAllItems, 2000);
+    CRUDThing.subscribe('saveAll:complete', function () {
+        $('.save-all-error').remove();
+        if(isError) {
+            $('body').append(
+                '<div class="save-all-error crud-help">' +
+                    'Error Occured' +
+                '</div>'
+            );
+            isError = false;
+        }
+        console.log('saveAll:complete');
+    });
+
     // debugSubscribeWaiting('form');
     // debugSubscribeBind('form');
 });

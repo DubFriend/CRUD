@@ -604,7 +604,11 @@ return {
                         list = remove(list, controller);
                         controller.model.unsubscribe(bindToFormError);
                         controller.model.unsubscribe(bindToFormEnd);
-                        if(!isError && isEmpty(list)) {
+
+                        if(isEmpty(list)) {
+                            that.publish('saveAll:complete');
+                        }
+                        if(isEmpty(list) && !isError) {
                             that.publish('saveAll:end');
                         }
                     };
