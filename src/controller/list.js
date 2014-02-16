@@ -36,7 +36,7 @@ var createListController = function (fig) {
             $deleteConfirmation.find('.crud-confirm-delete').click(function () {
                 foreach(items, function (listItemController) {
                     if(listItemController.isSelected()) {
-                        listItemController.model.delete();
+                        listItemController.model["delete"]();
                     }
                 });
                 closeDeleteConfirmation();
@@ -97,7 +97,7 @@ var createListController = function (fig) {
             orderIcon: orderIcon
         };
 
-        that.$().html(Mustache.render(that.template, data));
+        that.$().html(fig.render(that.template, data));
     };
 
     that.renderItems = function () {

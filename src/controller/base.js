@@ -73,8 +73,17 @@ var createController = function (fig) {
         schema = schema || that.schema;
         var isSelected = function (choice, value, name) {
             var type = schema[name].type;
-            return type === 'radio' || type === 'select' ?
-                choice === value : value.indexOf(choice) !== -1;
+
+            
+            if(isArray(value)) {
+                return $.inArray(choice, value) !== -1;
+            }
+            else {
+                return choice === value;
+            }
+
+            // return type === 'radio' || type === 'select' ?
+            //     choice === value : $.inArray(choice, value) !== -1;
         };
 
         return map(modelData, function (value, name) {

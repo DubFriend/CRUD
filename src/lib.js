@@ -23,11 +23,12 @@ var partial = function (f) {
 };
 
 var isArray = function (value) {
-    return value instanceof Array;
+    return $.isArray(value);
 };
 
 var isObject = function (value) {
-    return !isArray(value) && (value instanceof Object);
+    return !isArray(value) && (value !== null && typeof value === 'object');
+    // return !isArray(value) && (value instanceof Object);
 };
 
 var isFunction = function (value) {
@@ -53,7 +54,8 @@ var isInteger = function (candidate) {
 
 //deep copy of json objects
 var copy = function (object) {
-    return JSON.parse(JSON.stringify(object));
+    return $.extend(true, {}, object);
+    // return JSON.parse(JSON.stringify(object));
 };
 
 var shallowCopy = function (objects) {
@@ -169,12 +171,19 @@ var filter = function (collection, callback) {
 };
 
 var union = function () {
-    var united = {};
-    foreach(arguments, function (object) {
+    var united = {}, i, object;
+    for(i = 0; i < arguments.length; i += 1) {
+        object = arguments[i];
         foreach(object, function (value, key) {
             united[key] = value;
         });
-    });
+    }
+
+    // foreach(arguments, function (object) {
+    //     foreach(object, function (value, key) {
+    //         united[key] = value;
+    //     });
+    // });
     return united;
 };
 
@@ -259,7 +268,8 @@ var mixinPubSub = function (object) {
 
     object.unsubscribe = function (callback) {
         foreach(topics, function (subscribers) {
-            var index = subscribers.indexOf(callback);
+            var index = $.inArray(callback, subscribers);
+            // var index = subscribers.indexOf(callback);
             if(index !== -1) {
                 subscribers.splice(index, 1);
             }
@@ -278,24 +288,26 @@ var queryjs = (function () {
 
     var queryjs = {};
 
-    var foreach = function (object, callback) {
-        var key;
-        for(key in object) {
-            if(object.hasOwnProperty(key)) {
-                callback(object[key], key, object);
-            }
-        }
-    };
+    var extend = union;
 
-    var extend = function () {
-        var united = {};
-        foreach(arguments, function (object, key) {
-            foreach(object, function (value, key) {
-                united[key] = value;
-            });
-        });
-        return united;
-    };
+    // var foreach = function (object, callback) {
+    //     var key;
+    //     for(key in object) {
+    //         if(object.hasOwnProperty(key)) {
+    //             callback(object[key], key, object);
+    //         }
+    //     }
+    // };
+
+    // var extend = function () {
+    //     var united = {};
+    //     foreach(arguments, function (object, key) {
+    //         foreach(object, function (value, key) {
+    //             united[key] = value;
+    //         });
+    //     });
+    //     return united;
+    // };
 
     var parse = function (url) {
         var domain = '', hash = '';

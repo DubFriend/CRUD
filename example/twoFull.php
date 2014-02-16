@@ -165,11 +165,8 @@
 </div>
 
 <script src="../lib/jquery-1.10.2.js"></script>
-<!-- <script src="../lib/mustache.js"></script> -->
-<script src="../lib/handlebars-v1.3.0.js"></script>
+<script src="../lib/mustache.js"></script>
 <script src="../lib/jquery-modal/jquery.modal.js"></script>
-
-<!-- 
 <script src="src/lib.js"></script>
 <script src="src/model/base.js"></script>
 <script src="src/model/schema.js"></script>
@@ -195,14 +192,13 @@
 <script src="src/controller/list_item.js"></script>
 <script src="src/controller/paginator.js"></script>
 <script src="src/controller/forminator.js"></script>
-<script src="src/crud.js"></script> -->
+<script src="src/crud.js"></script>
 
-<script src="../crud.js"></script>
+<!-- <script src="../crud.js"></script> -->
 
 <script>
 $(document).ready(function () {
     'use strict';
-
     var CRUDThing = CRUD.full({
         name: 'Thing',
         label: 'Thing Label',
@@ -217,10 +213,6 @@ $(document).ready(function () {
                 error.GLOBAL = 'global message no a\'s';
             }
             return error;
-        },
-
-        render: function (template, data) {
-            return Handlebars.compile(template)(data);
         },
 
         //deletable: false,
@@ -323,9 +315,6 @@ $(document).ready(function () {
 
         //deletable: false,
         //readOnly: true,
-        render: function (template, data) {
-            return Handlebars.compile(template)(data);
-        },
 
         id: {
             orderable: true,

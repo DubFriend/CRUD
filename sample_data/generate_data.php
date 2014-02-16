@@ -2,6 +2,8 @@
 ini_set('display_errors', 1);
 error_reporting(E_STRICT|E_ALL);
 
+// phpinfo();
+
 define('NUMBER_OF_ROWS_TO_GENERATE', 5000);
 
 require '../sequel.php';
@@ -19,12 +21,13 @@ function getRandomName($names, $numberOfNames = null) {
     }
     return implode(', ', $namesSample);
 }
-
+    
 $sql = new Sequel(new PDO(
-    'mysql:dbname=crud_demo;host=localhost',
-    'root',
-    'password'
+    'mysql:dbname=crud_demo;host=127.0.0.1',
+    'root'
 ));
+
+
 
 for($i = 0; $i < NUMBER_OF_ROWS_TO_GENERATE; $i += 1) {
     $sql->insert('crud', array(

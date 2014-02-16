@@ -137,7 +137,9 @@ return {
             itemController.subscribe('edit', editCallback);
             listController.add(itemController, options);
             listController.setSelected(itemController);
-            bindModel(model);
+            if(options.bind !== false) {
+                bindModel(model);
+            }
             return itemController;
         };
 
@@ -177,7 +179,11 @@ return {
         var bindModel = function (model) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
-                    var itemController = addItem(model, { prepend: true });
+                    console.log('new item');
+                    var itemController = addItem(model, {
+                        prepend: true,
+                        bind: false
+                    });
                     listController.renderItems();
                     listController.setSelected(itemController);
                 }
@@ -414,38 +420,38 @@ return {
 
         //keybindings for list navigation only if mouse is
         //hovering over the list or paginator.
-        $(document).keydown(function (e) {
-            if(listController.$().is(':hover')) {
-                switch(e.keyCode) {
-                    case 37: //left arrow key
-                        e.preventDefault();
-                        formController.close();
-                        paginatorController.setPreviousPage();
-                        break;
-                    case 38: //up arrow key
-                        e.preventDefault();
-                        listController.setPreviousSelected();
-                        break;
-                    case 39: //right arrow key
-                        e.preventDefault();
-                        formController.close();
-                        paginatorController.setNextPage();
-                        break;
-                    case 40: //down arrow key
-                        e.preventDefault();
-                        listController.setNextSelected();
-                        break;
-                    case 13: //enter key
-                        if(listController.selectedItem) {
-                            e.preventDefault();
-                            listController.selectedItem.publish(
-                                'edit', listController.selectedItem
-                            );
-                        }
-                        break;
-                }
-            }
-        });
+        // $(document).keydown(function (e) {
+        //     if(listController.$().is(':hover')) {
+        //         switch(e.keyCode) {
+        //             case 37: //left arrow key
+        //                 e.preventDefault();
+        //                 formController.close();
+        //                 paginatorController.setPreviousPage();
+        //                 break;
+        //             case 38: //up arrow key
+        //                 e.preventDefault();
+        //                 listController.setPreviousSelected();
+        //                 break;
+        //             case 39: //right arrow key
+        //                 e.preventDefault();
+        //                 formController.close();
+        //                 paginatorController.setNextPage();
+        //                 break;
+        //             case 40: //down arrow key
+        //                 e.preventDefault();
+        //                 listController.setNextSelected();
+        //                 break;
+        //             case 13: //enter key
+        //                 if(listController.selectedItem) {
+        //                     e.preventDefault();
+        //                     listController.selectedItem.publish(
+        //                         'edit', listController.selectedItem
+        //                     );
+        //                 }
+        //                 break;
+        //         }
+        //     }
+        // });
 
         return that;
     },

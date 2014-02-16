@@ -71,11 +71,16 @@ class CRUDExample extends CRUD {
                 $where['values']
             );
 
+            $resultsArray = $results->toArray();
+            foreach($resultsArray as $i => $row) {
+                $resultsArray[$i]['fruit'] = explode(',', $row['fruit']);
+            }
+
             return array(
                 'pages' => ceil($results->count() / ROWS_PER_PAGE),
                 // mapIDKeys not necessary in this case since the key is allready
                 // named "id" (here for demonstration)
-                'data' => $this->mapIDKeys($results->toArray(), 'id')
+                'data' => $this->mapIDKeys($resultsArray, 'id')
                 // 'data' => array()
             );
         }
@@ -103,7 +108,9 @@ class CRUDExample extends CRUD {
 
     protected function post() {
         $requestData = $this->getRequestBody();
-        $requestData['fruit'] = implode(',', $requestData['fruit']);
+        if(isset($requestData['fruit'])) {
+            $requestData['fruit'] = implode(',', $requestData['fruit']);
+        }
         return $this->sql->insert('crud', $requestData);
     }
 
@@ -155,8 +162,8 @@ class CRUDExample extends CRUD {
 
 $controller = new CRUDExample(array('sql' => new Sequel(new PDO(
     'mysql:dbname=crud_demo;host=localhost',
-    'root',
-    'P0l.ar-B3ar'
+    'root'
+    // 'password'
 ))));
 
 echo json_encode($controller->respond());

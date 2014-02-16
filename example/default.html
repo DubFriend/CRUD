@@ -119,6 +119,8 @@
 
     <div id="Thing-crud-container" class="modal crud-form-modal"></div>
 
+    <div id="Thing-crud-confirm-delete"></div>
+
     <div class="row">
         <div id="Thing-crud-new" class="col-sm-6"></div>
         <div id="Thing-crud-filter-container" class="col-sm-6"></div>
@@ -130,6 +132,7 @@
 
     <div class="row">
         <div id="Thing-crud-list-container" class="col-sm-12"></div>
+        <div id="Thing-crud-no-results-message">No Results</div>
     </div>
 </div>
 
@@ -204,7 +207,8 @@ $(document).ready(function () {
                     { value: '1', label: 'One' },
                     { value: '2', label: 'Two' },
                     { value: '3', label: 'Three' }
-                ]
+                ],
+                value: '2'
             }
         ],
 
@@ -259,15 +263,15 @@ $(document).ready(function () {
         });
     };
 
-    debugSubscribeWaiting('form');
-    debugSubscribeWaiting('filter');
-    debugSubscribeWaiting('order');
-    debugSubscribeWaiting('paginator');
+    // debugSubscribeWaiting('form');
+    // debugSubscribeWaiting('filter');
+    // debugSubscribeWaiting('order');
+    // debugSubscribeWaiting('paginator');
 
-    debugSubscribeBind('form');
-    debugSubscribeBind('filter');
-    debugSubscribeBind('list');
-    debugSubscribeBind('paginator');
+    // debugSubscribeBind('form');
+    // debugSubscribeBind('filter');
+    // debugSubscribeBind('list');
+    // debugSubscribeBind('paginator');
 
 });
 </script>

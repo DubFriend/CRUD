@@ -11,7 +11,7 @@ var createForminatorTemplate = function (schema, crudName) {
                     reduce(schema.actions, function (acc, action) {
                         return (acc || '') +
                         '<input type="' + action.type + '" ' +
-                               'class="' + action.class + '" ' +
+                               'class="' + action["class"] + '" ' +
                                'value="' + action.label + '"/>';
                     }) +
                 '</div>' +

@@ -76,7 +76,7 @@ var createSchemaModel = function (fig) {
         }
     };
 
-    that.delete = function () {
+    that["delete"] = function () {
         if(!that.isNew()) {
             ajax({
                 // url: my.url + '/' + id,

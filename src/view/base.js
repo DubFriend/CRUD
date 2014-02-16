@@ -3,7 +3,7 @@ var createInput = function (fig) {
     var item = fig.item;
     var name = item.name;
     var crudName = fig.name;
-    var className = fig.class || '';
+    var className = fig["class"] || '';
     var ID = fig.ID ? fig.ID + '-' : generateUniqueID() + '-';
 
     var input = function (checked, value) {
@@ -99,7 +99,7 @@ var reduceFormSchema = function (schema, crudName) {
                 createInput({
                     item: item,
                     name: crudName,
-                    class: 'foo'
+                    "class": 'foo'
                 }) +
             '</div>' +
             '<div class="crud-help">{{' + item.name + 'Help}}</div>' +

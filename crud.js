@@ -29,11 +29,13 @@ var partial = function (f) {
 };
 
 var isArray = function (value) {
-    return value instanceof Array;
+    return $.isArray(value);
+    // return value instanceof Array;
 };
 
 var isObject = function (value) {
-    return !isArray(value) && (value instanceof Object);
+    return !isArray(value) && (value !== null && typeof value === 'object');
+    // return !isArray(value) && (value instanceof Object);
 };
 
 var isFunction = function (value) {
@@ -59,7 +61,8 @@ var isInteger = function (candidate) {
 
 //deep copy of json objects
 var copy = function (object) {
-    return JSON.parse(JSON.stringify(object));
+    return $.extend(true, {}, object);
+    // return JSON.parse(JSON.stringify(object));
 };
 
 var shallowCopy = function (objects) {
@@ -175,12 +178,13 @@ var filter = function (collection, callback) {
 };
 
 var union = function () {
-    var united = {};
-    foreach(arguments, function (object) {
+    var united = {}, i, object;
+    for(i = 0; i < arguments.length; i += 1) {
+        object = arguments[i];
         foreach(object, function (value, key) {
             united[key] = value;
         });
-    });
+    }
     return united;
 };
 
@@ -265,7 +269,8 @@ var mixinPubSub = function (object) {
 
     object.unsubscribe = function (callback) {
         foreach(topics, function (subscribers) {
-            var index = subscribers.indexOf(callback);
+            var index = $.inArray(callback, subscribers);
+            // var index = subscribers.indexOf(callback);
             if(index !== -1) {
                 subscribers.splice(index, 1);
             }
@@ -284,24 +289,26 @@ var queryjs = (function () {
 
     var queryjs = {};
 
-    var foreach = function (object, callback) {
-        var key;
-        for(key in object) {
-            if(object.hasOwnProperty(key)) {
-                callback(object[key], key, object);
-            }
-        }
-    };
+    // var foreach = function (object, callback) {
+    //     var key;
+    //     for(key in object) {
+    //         if(object.hasOwnProperty(key)) {
+    //             callback(object[key], key, object);
+    //         }
+    //     }
+    // };
 
-    var extend = function () {
-        var united = {};
-        foreach(arguments, function (object, key) {
-            foreach(object, function (value, key) {
-                united[key] = value;
-            });
-        });
-        return united;
-    };
+    // var extend = function () {
+    //     var united = {};
+    //     foreach(arguments, function (object, key) {
+    //         foreach(object, function (value, key) {
+    //             united[key] = value;
+    //         });
+    //     });
+    //     return united;
+    // };
+
+    extend = union;
 
     var parse = function (url) {
         var domain = '', hash = '';
@@ -438,6 +445,8 @@ var createSchemaModel = function (fig) {
         isSoftREST = fig.isSoftREST,
 
         ajax = fig.ajax || function (fig) {
+            
+
             // var url = that.isNew() ? my.url : my.url + '/' + that.id(),
             var url = that.isNew() ? my.url : queryjs.set(my.url, { id: that.id() }),
                 method, data;
@@ -453,19 +462,24 @@ var createSchemaModel = function (fig) {
                 data = fig.method === 'PUT' || fig.method === 'DELETE' ?
                         JSON.stringify(my.data) : my.data;
             }
+
+            // console.log('method: ', method, ' url: ', url);
+
+
+
+
             $.ajax({
-                //url: that.isNew() ? my.url : my.url + '/' + that.id(),
-                //method: fig.method,
                 url: url,
                 method: method,
                 data: data,
-                // data: fig.method === 'PUT' || fig.method === 'DELETE' ?
-                //         JSON.stringify(my.data) : my.data,
-                dataType: 'json',
+                
+                cache: false,
+
+                dataType: fig.dataType || 'json',
                 beforeSend: partial(that.publish, 'form:waiting:start'),
                 success: fig.success,
-                error: partial(ajaxErrorResponse, that),
-                complete: partial(that.publish, 'form:waiting:end')
+                error: fig.error || partial(ajaxErrorResponse, that),
+                complete: fig.complete || partial(that.publish, 'form:waiting:end')
             });
         };
 
@@ -487,17 +501,22 @@ var createSchemaModel = function (fig) {
 
     that.save = function () {
         var errors = that.validate(that.get());
+        // console.log('errors', keys(errors));
         if(isEmpty(errors)) {
             ajax({
                 // url: that.isNew() ? my.url : my.url + '/' + id,
                 url: that.isNew() ? my.url : queryjs.set(my.url, { id: id }),
-
                 method: that.isNew() ? 'POST' : 'PUT',
                 data: my.data,
                 success: function (response) {
+                    // console.log('saved', response);
                     var wasNew = that.isNew();
                     id = that.isNew() ? response : id;
                     that.publish('saved', wasNew);
+                },
+                error: function (jqXHR, text) {
+                    console.log('error: ', text);
+                    ajaxErrorResponse(that, jqXHR);
                 }
             });
         }
@@ -506,7 +525,8 @@ var createSchemaModel = function (fig) {
         }
     };
 
-    that.delete = function () {
+    // that.delete = function () {
+    that["delete"] = function () {
         if(!that.isNew()) {
             ajax({
                 // url: my.url + '/' + id,
@@ -536,10 +556,11 @@ var createRequestModel = function () {
         filterModel,
         ajax = function (fig) {
             fig = fig || {};
+            // console.log('url', queryjs.set(url, { page: fig.page || 1 }));
             $.ajax({
                 // url: url + '/page/' + (fig.page || 1),
                 url: queryjs.set(url, { page: fig.page || 1 }),
-
+                cache: false,
                 method: 'GET',
                 data: union(
                     (filterModel ? appendKey('filter_', filterModel.get()) : {}),
@@ -548,7 +569,6 @@ var createRequestModel = function () {
                 dataType: 'json',
                 beforeSend: partial(that.publish, fig.moduleName + ':waiting:start'),
                 success: function (response) {
-                    // console.log(response);
                     partial(that.publish, 'load')(response);
                 },
                 error: partial(ajaxErrorResponse, that),
@@ -556,14 +576,18 @@ var createRequestModel = function () {
             });
         };
 
+    
+
     that.init = function (fig) {
         url = fig.url;
         paginatorModel = fig.paginatorModel;
         filterModel = fig.filterModel;
         orderModel = fig.orderModel;
+        // console.log('url', url);
     };
 
     that.changePage = function (pageNumber, moduleName) {
+
         ajax({ page: pageNumber, moduleName: moduleName });
     };
 
@@ -600,7 +624,8 @@ var createOrderModel = function (fig) {
     that.toggle = (function () {
         var toggleOrder = ['neutral', 'ascending', 'descending'];
         return function (name) {
-            var currentIndex = toggleOrder.indexOf(my.data[name]);
+            // var currentIndex = toggleOrder.indexOf(my.data[name]);
+            var currentIndex = $.inArray(my.data[name], toggleOrder);
             var newIndex = (currentIndex + 1) % toggleOrder.length;
             var newData = {};
             newData[name] = toggleOrder[newIndex];
@@ -701,7 +726,7 @@ var createInput = function (fig) {
     var item = fig.item;
     var name = item.name;
     var crudName = fig.name;
-    var className = fig.class || '';
+    var className = fig["class"] || '';
     var ID = fig.ID ? fig.ID + '-' : generateUniqueID() + '-';
 
     var input = function (checked, value) {
@@ -797,7 +822,7 @@ var reduceFormSchema = function (schema, crudName) {
                 createInput({
                     item: item,
                     name: crudName,
-                    class: 'foo'
+                    "class": 'foo'
                 }) +
             '</div>' +
             '<div class="crud-help">{{' + item.name + 'Help}}</div>' +
@@ -993,7 +1018,7 @@ var createForminatorTemplate = function (schema, crudName) {
                     reduce(schema.actions, function (acc, action) {
                         return (acc || '') +
                         '<input type="' + action.type + '" ' +
-                               'class="' + action.class + '" ' +
+                               'class="' + action["class"] + '" ' +
                                'value="' + action.label + '"/>';
                     }) +
                 '</div>' +
@@ -1039,6 +1064,11 @@ var createController = function (fig) {
             else {
                 errors = {};
             }
+            
+            var foo = union(
+                that.mapModelToView(data), errors, (extra || {})
+            );
+
             that.$().html(fig.render(that.template, union(
                 that.mapModelToView(data), errors, (extra || {})
             )));
@@ -1080,17 +1110,44 @@ var createController = function (fig) {
         schema = schema || that.schema;
         var isSelected = function (choice, value, name) {
             var type = schema[name].type;
-            return type === 'radio' || type === 'select' ?
-                choice === value : value.indexOf(choice) !== -1;
+
+            // if(type === 'select') {
+            //     console.log('choice: ', choice, 'value: ', value);
+            // }
+
+            // if(isArray(choice)) {
+            //     console.log('array ', name);
+            // }
+
+            // console.log('type: ', type, ' choice: ', choice, ' value: ', value);
+            if(isArray(value)) {
+                return $.inArray(choice, value) !== -1;
+            }
+            else {
+                return choice === value;
+            }
+
         };
 
         return map(modelData, function (value, name) {
+            
+            // console.log(name + ': ', typeof value);
+
             if(schema[name]) {
                 var type = schema[name].type;
-                if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
+                
+
+                if(
+                    type === 'checkbox' ||
+                    type === 'select' ||
+                    type === 'radio'
+                ) {
                     var mappedValue = {};
                     foreach(schema[name].values, function (choiceObject) {
-                        var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
+
+                        var choice = isObject(choiceObject) ?
+                            choiceObject.value : choiceObject;
+
                         if(isSelected(choice, value, name)) {
                             mappedValue[choice] = true;
                         }
@@ -1309,7 +1366,7 @@ var createFormListController = function (fig) {
         that.$('.crud-confirm-delete').unbind();
         that.$('.crud-confirm-delete').click(function (e) {
             e.preventDefault();
-            that.model.delete();
+            that.model["delete"]();
             closeDeleteConfirmation();
         });
 
@@ -1328,8 +1385,6 @@ var createFormListController = function (fig) {
 var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig),
-
-        // name = fig.name,
 
         $deleteConfirmation = $('#' + fig.name + '-crud-confirm-delete'),
 
@@ -1363,7 +1418,7 @@ var createListController = function (fig) {
             $deleteConfirmation.find('.crud-confirm-delete').click(function () {
                 foreach(items, function (listItemController) {
                     if(listItemController.isSelected()) {
-                        listItemController.model.delete();
+                        listItemController.model["delete"]();
                     }
                 });
                 closeDeleteConfirmation();
@@ -1395,6 +1450,7 @@ var createListController = function (fig) {
         };
 
 
+
     $deleteConfirmation.html(fig.render(deleteConfirmationTemplate));
 
     bindDeleteConfirmation();
@@ -1424,7 +1480,7 @@ var createListController = function (fig) {
             orderIcon: orderIcon
         };
 
-        that.$().html(Mustache.render(that.template, data));
+        that.$().html(fig.render(that.template, data));
     };
 
     that.renderItems = function () {
@@ -1533,6 +1589,7 @@ var createListItemController = function (fig) {
         return union(
             { id: that.model.id() },
             map(parentMapModelToView(modelData), function (value, itemName) {
+
                 if(isObject(value)) {
                     return mapToArray(value, function (isSelected, name) {
                         return mapToValueLabels(itemName, name);
@@ -1547,6 +1604,10 @@ var createListItemController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data) {
+        // data = data || that.model.get();
+        // if(typeof data.fruit === 'string') {
+        //     data.fruit = data.fruit.split(',');
+        // }
         parentRender(data);
         that.bindView();
     };
@@ -1934,11 +1995,16 @@ return {
             itemController.subscribe('edit', editCallback);
             listController.add(itemController, options);
             listController.setSelected(itemController);
-            bindModel(model);
+            
+            if(options.bind !== false) {
+                bindModel(model);
+            }
+
             return itemController;
         };
 
         var setCRUDList = function (rows) {
+            // console.log('setCRUDList first fruit: ', rows[0].fruit);
             listController.clear();
             if(rows.length > 0) {
                 $('#' + name + '-crud-list-container').show();
@@ -1972,9 +2038,14 @@ return {
         }());
 
         var bindModel = function (model) {
+
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
-                    var itemController = addItem(model, { prepend: true });
+                    // console.log('new item');
+                    var itemController = addItem(model, {
+                        prepend: true,
+                        bind: false
+                    });
                     listController.renderItems();
                     listController.setSelected(itemController);
                 }
@@ -1997,6 +2068,7 @@ return {
         };
 
         var newItem = function () {
+
             var defaultModel = createDefaultModel();
             if(!readOnly) {
                 setForm(defaultModel);
@@ -2211,38 +2283,38 @@ return {
 
         //keybindings for list navigation only if mouse is
         //hovering over the list or paginator.
-        $(document).keydown(function (e) {
-            if(listController.$().is(':hover')) {
-                switch(e.keyCode) {
-                    case 37: //left arrow key
-                        e.preventDefault();
-                        formController.close();
-                        paginatorController.setPreviousPage();
-                        break;
-                    case 38: //up arrow key
-                        e.preventDefault();
-                        listController.setPreviousSelected();
-                        break;
-                    case 39: //right arrow key
-                        e.preventDefault();
-                        formController.close();
-                        paginatorController.setNextPage();
-                        break;
-                    case 40: //down arrow key
-                        e.preventDefault();
-                        listController.setNextSelected();
-                        break;
-                    case 13: //enter key
-                        if(listController.selectedItem) {
-                            e.preventDefault();
-                            listController.selectedItem.publish(
-                                'edit', listController.selectedItem
-                            );
-                        }
-                        break;
-                }
-            }
-        });
+        // $(document).keydown(function (e) {
+        //     if(listController.$().is(':hover')) {
+        //         switch(e.keyCode) {
+        //             case 37: //left arrow key
+        //                 e.preventDefault();
+        //                 formController.close();
+        //                 paginatorController.setPreviousPage();
+        //                 break;
+        //             case 38: //up arrow key
+        //                 e.preventDefault();
+        //                 listController.setPreviousSelected();
+        //                 break;
+        //             case 39: //right arrow key
+        //                 e.preventDefault();
+        //                 formController.close();
+        //                 paginatorController.setNextPage();
+        //                 break;
+        //             case 40: //down arrow key
+        //                 e.preventDefault();
+        //                 listController.setNextSelected();
+        //                 break;
+        //             case 13: //enter key
+        //                 if(listController.selectedItem) {
+        //                     e.preventDefault();
+        //                     listController.selectedItem.publish(
+        //                         'edit', listController.selectedItem
+        //                     );
+        //                 }
+        //                 break;
+        //         }
+        //     }
+        // });
 
         return that;
     },
@@ -2535,5 +2607,6 @@ return {
 };
 
 }());
+
 
 }).call(this);
