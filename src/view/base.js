@@ -88,6 +88,7 @@ var createInput = function (fig) {
 };
 
 
+
 var reduceFormSchema = function (schema, crudName) {
     return reduce(schema, function (acc, item) {
         return (acc || '') +

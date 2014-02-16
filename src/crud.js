@@ -176,10 +176,11 @@ return {
             };
         }());
 
+
         var bindModel = function (model) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
-                    console.log('new item');
+                    // console.log('new item');
                     var itemController = addItem(model, {
                         prepend: true,
                         bind: false

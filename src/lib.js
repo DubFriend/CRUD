@@ -178,12 +178,6 @@ var union = function () {
             united[key] = value;
         });
     }
-
-    // foreach(arguments, function (object) {
-    //     foreach(object, function (value, key) {
-    //         united[key] = value;
-    //     });
-    // });
     return united;
 };
 

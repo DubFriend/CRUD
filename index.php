@@ -162,8 +162,8 @@ class CRUDExample extends CRUD {
 
 $controller = new CRUDExample(array('sql' => new Sequel(new PDO(
     'mysql:dbname=crud_demo;host=localhost',
-    'root'
-    // 'password'
+    'root',
+    'P0l.ar-B3ar'
 ))));
 
 echo json_encode($controller->respond());

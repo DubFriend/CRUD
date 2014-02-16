@@ -32,6 +32,7 @@ var createController = function (fig) {
             else {
                 errors = {};
             }
+
             that.$().html(fig.render(that.template, union(
                 that.mapModelToView(data), errors, (extra || {})
             )));
@@ -74,7 +75,15 @@ var createController = function (fig) {
         var isSelected = function (choice, value, name) {
             var type = schema[name].type;
 
-            
+            // if(type === 'select') {
+            //     console.log('choice: ', choice, 'value: ', value);
+            // }
+
+            // if(isArray(choice)) {
+            //     console.log('array ', name);
+            // }
+
+            // console.log('type: ', type, ' choice: ', choice, ' value: ', value);
             if(isArray(value)) {
                 return $.inArray(choice, value) !== -1;
             }
@@ -82,17 +91,27 @@ var createController = function (fig) {
                 return choice === value;
             }
 
-            // return type === 'radio' || type === 'select' ?
-            //     choice === value : $.inArray(choice, value) !== -1;
         };
 
         return map(modelData, function (value, name) {
+
+            // console.log(name + ': ', typeof value);
+
             if(schema[name]) {
                 var type = schema[name].type;
-                if(type === 'checkbox' || type === 'select' || type === 'radio' ) {
+
+
+                if(
+                    type === 'checkbox' ||
+                    type === 'select' ||
+                    type === 'radio'
+                ) {
                     var mappedValue = {};
                     foreach(schema[name].values, function (choiceObject) {
-                        var choice = isObject(choiceObject) ? choiceObject.value : choiceObject;
+
+                        var choice = isObject(choiceObject) ?
+                            choiceObject.value : choiceObject;
+
                         if(isSelected(choice, value, name)) {
                             mappedValue[choice] = true;
                         }

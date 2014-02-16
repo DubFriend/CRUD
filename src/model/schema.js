@@ -8,6 +8,8 @@ var createSchemaModel = function (fig) {
         isSoftREST = fig.isSoftREST,
 
         ajax = fig.ajax || function (fig) {
+
+
             // var url = that.isNew() ? my.url : my.url + '/' + that.id(),
             var url = that.isNew() ? my.url : queryjs.set(my.url, { id: that.id() }),
                 method, data;
@@ -23,19 +25,24 @@ var createSchemaModel = function (fig) {
                 data = fig.method === 'PUT' || fig.method === 'DELETE' ?
                         JSON.stringify(my.data) : my.data;
             }
+
+            // console.log('method: ', method, ' url: ', url);
+
+
+
+
             $.ajax({
-                //url: that.isNew() ? my.url : my.url + '/' + that.id(),
-                //method: fig.method,
                 url: url,
                 method: method,
                 data: data,
-                // data: fig.method === 'PUT' || fig.method === 'DELETE' ?
-                //         JSON.stringify(my.data) : my.data,
-                dataType: 'json',
+
+                cache: false,
+
+                dataType: fig.dataType || 'json',
                 beforeSend: partial(that.publish, 'form:waiting:start'),
                 success: fig.success,
-                error: partial(ajaxErrorResponse, that),
-                complete: partial(that.publish, 'form:waiting:end')
+                error: fig.error || partial(ajaxErrorResponse, that),
+                complete: fig.complete || partial(that.publish, 'form:waiting:end')
             });
         };
 
@@ -57,17 +64,22 @@ var createSchemaModel = function (fig) {
 
     that.save = function () {
         var errors = that.validate(that.get());
+        // console.log('errors', keys(errors));
         if(isEmpty(errors)) {
             ajax({
                 // url: that.isNew() ? my.url : my.url + '/' + id,
                 url: that.isNew() ? my.url : queryjs.set(my.url, { id: id }),
-
                 method: that.isNew() ? 'POST' : 'PUT',
                 data: my.data,
                 success: function (response) {
+                    // console.log('saved', response);
                     var wasNew = that.isNew();
                     id = that.isNew() ? response : id;
                     that.publish('saved', wasNew);
+                },
+                error: function (jqXHR, text) {
+                    console.log('error: ', text);
+                    ajaxErrorResponse(that, jqXHR);
                 }
             });
         }
@@ -76,6 +88,7 @@ var createSchemaModel = function (fig) {
         }
     };
 
+    // that.delete = function () {
     that["delete"] = function () {
         if(!that.isNew()) {
             ajax({

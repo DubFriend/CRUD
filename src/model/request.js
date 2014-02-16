@@ -6,6 +6,7 @@ var createRequestModel = function () {
         filterModel,
         ajax = function (fig) {
             fig = fig || {};
+            // console.log('url', queryjs.set(url, { page: fig.page || 1 }));
             $.ajax({
                 // url: url + '/page/' + (fig.page || 1),
                 url: queryjs.set(url, { page: fig.page || 1 }),
@@ -18,7 +19,6 @@ var createRequestModel = function () {
                 dataType: 'json',
                 beforeSend: partial(that.publish, fig.moduleName + ':waiting:start'),
                 success: function (response) {
-                    // console.log(response);
                     partial(that.publish, 'load')(response);
                 },
                 error: partial(ajaxErrorResponse, that),
@@ -26,14 +26,18 @@ var createRequestModel = function () {
             });
         };
 
+
+
     that.init = function (fig) {
         url = fig.url;
         paginatorModel = fig.paginatorModel;
         filterModel = fig.filterModel;
         orderModel = fig.orderModel;
+        // console.log('url', url);
     };
 
     that.changePage = function (pageNumber, moduleName) {
+
         ajax({ page: pageNumber, moduleName: moduleName });
     };
 

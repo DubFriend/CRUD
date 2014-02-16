@@ -10,8 +10,8 @@ var createOrderModel = function (fig) {
     that.toggle = (function () {
         var toggleOrder = ['neutral', 'ascending', 'descending'];
         return function (name) {
-            var currentIndex = $.inArray(my.data[name], toggleOrder);
             // var currentIndex = toggleOrder.indexOf(my.data[name]);
+            var currentIndex = $.inArray(my.data[name], toggleOrder);
             var newIndex = (currentIndex + 1) % toggleOrder.length;
             var newData = {};
             newData[name] = toggleOrder[newIndex];

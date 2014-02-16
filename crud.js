@@ -1,5 +1,5 @@
 // crud version 0.4.0
-// (MIT) 02-02-2014
+// (MIT) 16-02-2014
 // https://github.com/DubFriend/CRUD
 (function () {
 'use strict';
@@ -30,7 +30,6 @@ var partial = function (f) {
 
 var isArray = function (value) {
     return $.isArray(value);
-    // return value instanceof Array;
 };
 
 var isObject = function (value) {
@@ -289,6 +288,8 @@ var queryjs = (function () {
 
     var queryjs = {};
 
+    var extend = union;
+
     // var foreach = function (object, callback) {
     //     var key;
     //     for(key in object) {
@@ -307,8 +308,6 @@ var queryjs = (function () {
     //     });
     //     return united;
     // };
-
-    extend = union;
 
     var parse = function (url) {
         var domain = '', hash = '';
@@ -445,7 +444,7 @@ var createSchemaModel = function (fig) {
         isSoftREST = fig.isSoftREST,
 
         ajax = fig.ajax || function (fig) {
-            
+
 
             // var url = that.isNew() ? my.url : my.url + '/' + that.id(),
             var url = that.isNew() ? my.url : queryjs.set(my.url, { id: that.id() }),
@@ -472,7 +471,7 @@ var createSchemaModel = function (fig) {
                 url: url,
                 method: method,
                 data: data,
-                
+
                 cache: false,
 
                 dataType: fig.dataType || 'json',
@@ -576,7 +575,7 @@ var createRequestModel = function () {
             });
         };
 
-    
+
 
     that.init = function (fig) {
         url = fig.url;
@@ -600,7 +599,6 @@ var createRequestModel = function () {
 
     return that;
 };
-
 var createFilterModel = function (fig) {
     fig = fig || {};
     var my = {},
@@ -643,7 +641,6 @@ var createOrderModel = function (fig) {
 
     return that;
 };
-
 var createPaginatorModel = function (fig) {
     fig = fig || {};
     fig.data = fig.data || {};
@@ -809,6 +806,7 @@ var createInput = function (fig) {
             throw 'Invalid input type: ' + item.type;
     }
 };
+
 
 
 var reduceFormSchema = function (schema, crudName) {
@@ -1064,10 +1062,6 @@ var createController = function (fig) {
             else {
                 errors = {};
             }
-            
-            var foo = union(
-                that.mapModelToView(data), errors, (extra || {})
-            );
 
             that.$().html(fig.render(that.template, union(
                 that.mapModelToView(data), errors, (extra || {})
@@ -1130,12 +1124,12 @@ var createController = function (fig) {
         };
 
         return map(modelData, function (value, name) {
-            
+
             // console.log(name + ': ', typeof value);
 
             if(schema[name]) {
                 var type = schema[name].type;
-                
+
 
                 if(
                     type === 'checkbox' ||
@@ -1386,6 +1380,8 @@ var createListController = function (fig) {
     fig = fig || {};
     var that = createController(fig),
 
+        // name = fig.name,
+
         $deleteConfirmation = $('#' + fig.name + '-crud-confirm-delete'),
 
         selectedItem,
@@ -1448,7 +1444,6 @@ var createListController = function (fig) {
             });
             that.publish('bind');
         };
-
 
 
     $deleteConfirmation.html(fig.render(deleteConfirmationTemplate));
@@ -1589,7 +1584,6 @@ var createListItemController = function (fig) {
         return union(
             { id: that.model.id() },
             map(parentMapModelToView(modelData), function (value, itemName) {
-
                 if(isObject(value)) {
                     return mapToArray(value, function (isSelected, name) {
                         return mapToValueLabels(itemName, name);
@@ -1604,10 +1598,6 @@ var createListItemController = function (fig) {
 
     var parentRender = that.render;
     that.render = function (data) {
-        // data = data || that.model.get();
-        // if(typeof data.fruit === 'string') {
-        //     data.fruit = data.fruit.split(',');
-        // }
         parentRender(data);
         that.bindView();
     };
@@ -1995,16 +1985,13 @@ return {
             itemController.subscribe('edit', editCallback);
             listController.add(itemController, options);
             listController.setSelected(itemController);
-            
             if(options.bind !== false) {
                 bindModel(model);
             }
-
             return itemController;
         };
 
         var setCRUDList = function (rows) {
-            // console.log('setCRUDList first fruit: ', rows[0].fruit);
             listController.clear();
             if(rows.length > 0) {
                 $('#' + name + '-crud-list-container').show();
@@ -2037,8 +2024,8 @@ return {
             };
         }());
 
-        var bindModel = function (model) {
 
+        var bindModel = function (model) {
             model.subscribe('saved', function (wasNew) {
                 if(wasNew) {
                     // console.log('new item');
@@ -2068,7 +2055,6 @@ return {
         };
 
         var newItem = function () {
-
             var defaultModel = createDefaultModel();
             if(!readOnly) {
                 setForm(defaultModel);
@@ -2607,6 +2593,5 @@ return {
 };
 
 }());
-
 
 }).call(this);
