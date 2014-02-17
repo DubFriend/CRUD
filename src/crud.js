@@ -140,6 +140,8 @@ return {
             if(options.bind !== false) {
                 bindModel(model);
             }
+            $('#' + name + '-crud-list-container').show();
+            $('#' + name + '-crud-no-results-message').hide();
             return itemController;
         };
 
