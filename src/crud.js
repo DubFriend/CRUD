@@ -512,7 +512,7 @@ return {
                     uniqueID: generateUniqueID,
                     deletable: deletable,
                     saveAll: saveAll,
-                    createDeleteConfirmationTemplate: createDeleteConfirmationTemplate,
+                    createDeleteConfirmationTemplate: createDeleteConfirmationTemplate
                 }) : createFormListTemplate(viewSchema, name, deletable, saveAll, label);
         };
 

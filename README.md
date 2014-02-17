@@ -1,6 +1,8 @@
 #CRUD
 ##For when you need to get some serious crud done.
 
+Compatable with IE8+
+
 CRUD generates a full featured ajax interface for Creating, Reading, Updating and Deleting Data.
 
 CRUD makes RESTful AJAX requests to the url of your choosing, and makes no assumptions about the backend implementation.  The example backend implementation here is written in PHP, but you are free to use any server side language or framework that you wish.
